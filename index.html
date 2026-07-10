@@ -323,8 +323,46 @@
       #mobile-dash-button {
         right: calc(var(--hud-safe-right) + var(--hud-gap));
       }
+
+      /*
+       * Mobile Interaktions-Button (P3e, Übergabe-Auftrag „Verstecken in Objekten (§5), Stufe
+       * 1", Entscheidung a): EIN Tap-Button (kein Halten), Verdrahtung in `scenes/MatchScene.ts`s
+       * `setupInteractControls()`, Zustand in `net/interactInput.ts`s `MobileInteractState`.
+       * Teilt sich die Basis-Optik mit den Bewegungsmodus-Buttons (`.mobile-move-mode-button`,
+       * Größe/Form/Touch-Verhalten identisch, Mobile-Tag-1-Regel 4) — bekommt hier NUR eine
+       * eigene Position: unten MITTIG, zwischen Schleichen (links) und Dash (rechts) verankert.
+       */
+      #mobile-interact-button {
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      /*
+       * Versteckt-Hinweis (P3e, Entscheidung m): dauerhafter Hinweis „Du bist versteckt — E zum
+       * Verlassen", solange die eigene Figur `isHidden` ist — ANDERS als `#catch-announcement`
+       * KEIN Zeit-Ausblenden (Muster `#audio-unlock-hint`), `scenes/MatchScene.ts`s
+       * `updateHiddenVisual()`/`initializeHiddenVisual()` schalten ausschließlich die
+       * `.visible`-Klasse. Oberhalb der mobilen Buttons verankert (Muster `#audio-unlock-hint`).
+       */
+      #hidden-hint {
+        position: fixed;
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap));
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 sans-serif;
+        text-align: center;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 300ms ease;
+      }
+
+      #hidden-hint.visible {
+        opacity: 1;
+      }
     </style>
-    <script type="module" crossorigin src="./assets/index-EmYEz4p5.js"></script>
+    <script type="module" crossorigin src="./assets/index-BK57u_44.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -335,8 +373,10 @@
       <div id="match-result"></div>
       <div id="sound-compass"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
+      <div id="hidden-hint">Du bist versteckt — E zum Verlassen</div>
       <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
       <div id="mobile-dash-button" class="mobile-move-mode-button">Dash</div>
+      <div id="mobile-interact-button" class="mobile-move-mode-button">Interagieren</div>
     </div>
   </body>
 </html>
