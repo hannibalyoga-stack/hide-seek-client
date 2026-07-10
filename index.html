@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Hide Seek — Client (Dev)</title>
+    <style>
+      /*
+       * Mobile-Tag-1-Regeln (CLAUDE.md, Übergabe-Aufträge T4a/T4c):
+       * - UI-Layout relativ (%, vw/vh), keine festen Pixelkoordinaten (Regel 3).
+       * - Safe-Area-Insets ab Tag 1 (Regel 5): ALLE VIER env(safe-area-inset-*) mit
+       *   Fallback, nicht nur die oberen drei — das Debug-HUD sitzt oben (top/left/right),
+       *   die neue Statuszeile unten (bottom/left/right), zusammen decken beide Elemente
+       *   alle vier Seiten ab.
+       * - Debug-Overlay-/Statuszeilen-Text ist explizit von der "Schrift >= 18pt"-Regel
+       *   ausgenommen (siehe .claude/skills/mobile-first-review/SKILL.md) — beides ist
+       *   reiner Diagnose-/Debug-Text, keine Spieler-UI.
+       * - Beide HUD-Elemente sind `pointer-events: none` (Regel 1: der Whole-Canvas-
+       *   Joystick bleibt der EINZIGE Eingabepfad, kein Overlay darf ihn stoeren).
+       *
+       * CSS-Custom-Properties statt wiederholter Literale (T4c): Abstand, Schriftgröße und
+       * Textfarbe sind hier EINMAL benannt, beide HUD-Elemente referenzieren dieselben
+       * Variablen statt eigener Zahlen.
+       */
+      :root {
+        --hud-safe-top: env(safe-area-inset-top, 0px);
+        --hud-safe-right: env(safe-area-inset-right, 0px);
+        --hud-safe-bottom: env(safe-area-inset-bottom, 0px);
+        --hud-safe-left: env(safe-area-inset-left, 0px);
+        --hud-gap: 0.5rem;
+        --hud-font-size: 1rem;
+        --hud-text-color: #fff;
+        /*
+         * Low-Time-Warnfarbe (Übergabe-Auftrag P3c-2, Ziel 6, Critic-Auflage 6): warmes Amber
+         * statt Kampf-/Verletzungs-Rot (K1, design-neutral) — reine Darstellung, kein Sound.
+         */
+        --hud-low-time-color: #ffb300;
+        /*
+         * Endgame-Countdown-Farbe (Übergabe-Auftrag P3c-3 „Portal-Endgame-Mechanik (editor-
+         * unabhängig)"): dasselbe Violett wie die Portal-Ringe (`PORTAL_COLOR`,
+         * `apps/client/src/config.ts`) — visuell klar unterscheidbar vom Haupttimer/der
+         * Low-Time-Warnung, reine Darstellung, kein Sound.
+         */
+        --hud-endgame-color: #a78bfa;
+        /*
+         * Mobile Bewegungsmodus-Buttons (P3d, Übergabe-Auftrag „Bewegungsmodi (Schleichen/
+         * Gehen/Dash)"): 3,5rem ≈ 56px bei Standard-Root-Schriftgröße — komfortabel über der
+         * Mobile-Tag-1-Mindestgröße von 48px (Regel 4), relativ zur Root-Schriftgröße (nicht
+         * hart auf einen Bildschirm-Pixelwert verdrahtet, skaliert mit Nutzer-/Browser-
+         * Textgrößeneinstellungen) statt eines zweiten, potenziell abweichenden Literalwerts.
+         */
+        --move-mode-button-size: 3.5rem;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        overflow: hidden;
+      }
+
+      #game-container {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+      }
+
+      #debug-overlay {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        left: calc(var(--hud-safe-left) + var(--hud-gap));
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 monospace;
+        white-space: pre-line;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+      }
+
+      /*
+       * Statuszeile (Übergabe-Auftrag T4c, Felix-Default E-T4c-4): eigenständiges,
+       * nicht-interaktives Element für den dreiwertigen Verbindungsstatus ("verbunden" /
+       * "reconnecte…" / "Verbindung verloren") — bewusst getrennt vom technischen
+       * Debug-HUD oben, damit der reine Verbindungszustand auf einen Blick sichtbar bleibt.
+       * Unten verankert (safe-area-inset-bottom), damit zusammen mit #debug-overlay oben
+       * alle vier Insets tatsächlich genutzt werden.
+       */
+      #connection-status {
+        position: fixed;
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap));
+        left: calc(var(--hud-safe-left) + var(--hud-gap));
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 monospace;
+        text-align: center;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+      }
+
+      /*
+       * Fang-Moment-Einblendung (Übergabe-Auftrag P3c-1, Ziel 5, Critic-Auflage 2): kurze,
+       * zentrierte HUD-Meldung ("<Rolle> wurde zum Geist"), unabhängig vom technischen
+       * Debug-HUD — relatives Layout (Regel 3), pointer-events: none (Regel 1). Ein-/
+       * Ausblenden per CSS-Transition über die `.visible`-Klasse, die
+       * `scenes/MatchScene.ts` zeitgesteuert (`CATCH_ANNOUNCEMENT_DURATION_MS`) setzt/entfernt.
+       */
+      #catch-announcement {
+        position: fixed;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(90vw, 32rem);
+        color: var(--hud-text-color);
+        font: calc(var(--hud-font-size) * 1.3) / 1.4 sans-serif;
+        text-align: center;
+        text-shadow: 0 0 6px #000;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 300ms ease;
+      }
+
+      #catch-announcement.visible {
+        opacity: 1;
+      }
+
+      /*
+       * Timer-HUD (Übergabe-Auftrag P3c-2 „Formales Matchende + Sieg", Ziel 6): dauerhaft
+       * sichtbare MM:SS-Zeile, eigenständiges DOM-Element (NICHT Teil des `#debug-overlay`-
+       * Textblocks, siehe `scenes/MatchScene.ts`s `updateMatchTimerHud()`-Dokumentation) — oben
+       * rechts verankert, damit sie sich nicht mit dem linksbündigen `#debug-overlay`-Text
+       * überlappt. Relatives Layout (Regel 3), `pointer-events: none` (Regel 1).
+       */
+      #match-timer {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        color: var(--hud-text-color);
+        font: calc(var(--hud-font-size) * 1.4) / 1.4 monospace;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+      }
+
+      /*
+       * Low-Time-Warnung (Critic-Auflage 6): Farbwechsel + Puls in den letzten
+       * `MATCH_LOW_TIME_WARNING_TICKS` (siehe `hud/matchTimer.ts`s `isMatchLowTime`) — reine
+       * Darstellung, kein Sound.
+       */
+      #match-timer.low-time {
+        color: var(--hud-low-time-color);
+        animation: match-timer-pulse 800ms ease-in-out infinite;
+      }
+
+      @keyframes match-timer-pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+
+      /*
+       * Endgame-Countdown (Übergabe-Auftrag P3c-3, Entscheidung i): schaltet dieselbe
+       * Timer-Zeile auf eine eigene Farbe um, sobald `scenes/MatchScene.ts`s
+       * `updateMatchTimerHud()` per `isEndgamePhase(...)` in die Endgame-Phase wechselt — bewusst
+       * OHNE Puls (reine Farbunterscheidung genügt, kein zweiter Dauer-Puls neben `low-time`).
+       * Schließt sich mit `.low-time` gegenseitig aus (`updateMatchTimerHud()` entfernt jeweils
+       * die andere Klasse).
+       */
+      #match-timer.endgame {
+        color: var(--hud-endgame-color);
+      }
+
+      /*
+       * Ergebnis-Overlay (Übergabe-Auftrag P3c-2, Entwurfs-Entscheidung g): eigenständiges
+       * DOM-Element — NICHT `#catch-announcement` wiederverwendet (das blendet nach
+       * `CATCH_ANNOUNCEMENT_DURATION_MS` aus; das Ergebnis muss die vollen
+       * `MATCH_END_DELAY_TICKS` sichtbar stehen). Mehrzeiliger Text (`white-space: pre-line`,
+       * siehe `scenes/MatchScene.ts`s `renderMatchResultText()`), zentriert, relatives Layout
+       * (Regel 3), `pointer-events: none` (Regel 1).
+       */
+      #match-result {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(90vw, 32rem);
+        color: var(--hud-text-color);
+        font: calc(var(--hud-font-size) * 1.3) / 1.5 sans-serif;
+        text-align: center;
+        text-shadow: 0 0 6px #000;
+        white-space: pre-line;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 300ms ease;
+      }
+
+      #match-result.visible {
+        opacity: 1;
+      }
+
+      /*
+       * Sound-Kompass (Übergabe-Auftrag „Spatial Audio Stufe 1", Scheibe B, E10): Container
+       * füllt die Fläche INNERHALB der Safe-Area-Insets (Mobile-Regel 5 — Randindikatoren sind
+       * der klassische Notch-Konflikt) — `scenes/MatchScene.ts`s `computeEdgePositionPercent`
+       * rechnet in Prozent RELATIV zu genau dieser Fläche (`container.clientWidth/Height`,
+       * Mobile-Regel 3: relatives Layout, keine festen Pixelkoordinaten). `pointer-events: none`
+       * (Regel 1): der Kompass darf den Whole-Canvas-Joystick nie stören. Fester Element-Pool
+       * (`KOMPASS_MAX_INDIKATOREN` Stück, in `setupSoundCompassDom()` einmalig angelegt) —
+       * `.visible` schaltet Sichtbarkeit, Position/Größe/Farbe/Form kommen als Inline-Styles pro
+       * Frame (`updateSoundCompassHud()`).
+       */
+      #sound-compass {
+        position: fixed;
+        top: var(--hud-safe-top);
+        right: var(--hud-safe-right);
+        bottom: var(--hud-safe-bottom);
+        left: var(--hud-safe-left);
+        pointer-events: none;
+      }
+
+      .sound-compass-indicator {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        display: none;
+      }
+
+      .sound-compass-indicator.visible {
+        display: block;
+      }
+
+      /* Typ+Rolle → Form (E10/F7, Greybox): Kreis (Verstecker) ist der `border-radius: 50%`-Default der Klasse, Dreieck (Fänger) überschreibt per Clip-Path. */
+      .sound-compass-indicator--shape-circle {
+        border-radius: 50%;
+      }
+
+      .sound-compass-indicator--shape-triangle {
+        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      }
+
+      /*
+       * Audio-Unlock-Hinweis (E9, Mobile-Tag-1-Regel 8): dezent, verschwindet nach der ersten
+       * Pointer-Geste (Phasers eingebautes Unlock, siehe `scenes/MatchScene.ts`s
+       * `setupAudioUnlock()`). Unten zentriert, oberhalb der mobilen Bewegungsmodus-Buttons.
+       */
+      #audio-unlock-hint {
+        position: fixed;
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap));
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 sans-serif;
+        text-align: center;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 300ms ease;
+      }
+
+      #audio-unlock-hint.visible {
+        opacity: 1;
+      }
+
+      /*
+       * Mobile Bewegungsmodus-Buttons (P3d, Übergabe-Auftrag „Bewegungsmodi (Schleichen/Gehen/
+       * Dash)"): zwei runde DOM-Buttons — Schleichen-TOGGLE (bleibt aktiv bis zum nächsten Tap)
+       * + Dash-TAP (einmaliger Wunsch pro Tap, Verdrahtung in `scenes/MatchScene.ts`s
+       * `setupMoveModeControls()`, Zustand in `net/moveModeInput.ts`s `MobileMoveModeState`).
+       *
+       * ANDERS als die reinen HUD-Anzeige-Elemente oben (`pointer-events: none`) sind diese
+       * beiden Elemente bewusst `pointer-events: auto` — sie SIND die Eingabe (Mobile-Tag-1-
+       * Regel 1: Pointer-only, kein separater Touch-Sonderpfad). `touch-action: none` +
+       * `-webkit-tap-highlight-color: transparent` unterdrücken Browser-Standardgesten
+       * (Doppel-Tap-Zoom, Tipp-Hervorhebung), die sonst mit dem Whole-Canvas-Joystick
+       * kollidieren könnten.
+       *
+       * Größe ≥ 48 px (Regel 4, `--move-mode-button-size` oben, `min-width`/`min-height` als
+       * harte Untergrenze zusätzlich zur Basisgröße). Position relativ zu den Safe-Area-Insets
+       * + `--hud-gap` verankert (Regel 3/5), NICHT auf einen festen Bildschirm-Pixelwert.
+       *
+       * Eigene DOM-Geschwister außerhalb des Phaser-Canvas (nicht dessen Kind): ein Tap auf
+       * einen dieser Buttons erreicht Phasers Whole-Canvas-Joystick-`pointerdown`-Listener
+       * (`net/pointerJoystick.ts`) dadurch STRUKTURELL nie — kein Joystick-Ursprung wird
+       * gesetzt. `stopPropagation()`/`preventDefault()` im jeweiligen Handler
+       * (`scenes/MatchScene.ts`) sind zusätzliche, defensive Absicherung, kein Ersatz für diese
+       * strukturelle Trennung.
+       */
+      .mobile-move-mode-button {
+        position: fixed;
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap));
+        width: var(--move-mode-button-size);
+        height: var(--move-mode-button-size);
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--hud-text-color);
+        background: rgba(0, 0, 0, 0.35);
+        color: var(--hud-text-color);
+        font: 0.9rem / 1.2 sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      #mobile-sneak-button {
+        left: calc(var(--hud-safe-left) + var(--hud-gap));
+      }
+
+      /* Aktiv-Zustand des Schleichen-Toggles (`scenes/MatchScene.ts`) — reine Darstellung. */
+      #mobile-sneak-button.active {
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      #mobile-dash-button {
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/index-D09A2pBM.js"></script>
+  </head>
+  <body>
+    <div id="game-container">
+      <div id="debug-overlay"></div>
+      <div id="connection-status"></div>
+      <div id="catch-announcement"></div>
+      <div id="match-timer"></div>
+      <div id="match-result"></div>
+      <div id="sound-compass"></div>
+      <div id="audio-unlock-hint">Tippen für Ton</div>
+      <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
+      <div id="mobile-dash-button" class="mobile-move-mode-button">Dash</div>
+    </div>
+  </body>
+</html>
