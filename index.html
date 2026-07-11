@@ -43,6 +43,16 @@
          */
         --hud-endgame-color: #a78bfa;
         /*
+         * Rot-Zonen-Randmarker-Farbe (Übergabe-Auftrag P3g „Shrink-Endgame", Entwurfs-
+         * Entscheidung i): dasselbe Rot wie das Map-Shrink-Overlay (`REVEAL_MARKER_COLOR`/
+         * `SHRINK_ROT_FILL_COLOR`, `apps/client/src/config.ts`) — visueller Zusammenhang
+         * zwischen Fläche und Randmarker, kein Kampf-/Schadens-Rot (K1 verbietet Kampf-
+         * Vokabular, nicht die bereits kanonische Gelb/Rot-Sperrzonen-Sprache, spielkonzept.md §7).
+         */
+        --reveal-marker-color: #dc2626;
+        /* Randmarker-Kantenlänge in Pixeln (`REVEAL_MARKER_SIZE_PX`, `apps/client/src/config.ts`). */
+        --reveal-marker-size: 20px;
+        /*
          * Mobile Bewegungsmodus-Buttons (P3d, Übergabe-Auftrag „Bewegungsmodi (Schleichen/
          * Gehen/Dash)"): 3,5rem ≈ 56px bei Standard-Root-Schriftgröße — komfortabel über der
          * Mobile-Tag-1-Mindestgröße von 48px (Regel 4), relativ zur Root-Schriftgröße (nicht
@@ -268,6 +278,37 @@
       }
 
       /*
+       * Fänger-Randmarker (Übergabe-Auftrag P3g „Shrink-Endgame", Entwurfs-Entscheidung i):
+       * Container füllt dieselbe Safe-Area-bereinigte Fläche wie `#sound-compass` (Mobile-Regel
+       * 5), fester Element-Pool (`REVEAL_MARKER_MAX_COUNT`, in `setupRevealMarkerDom()` einmalig
+       * angelegt). `pointer-events: none` (Regel 1): darf den Whole-Canvas-Joystick nie stören.
+       * `scenes/MatchScene.ts`s `updateRevealMarkersHud()` setzt Position/Drehung PRO FRAME als
+       * EINEN kombinierten Inline-`transform` (Translate + Rotate) — deshalb bewusst KEIN
+       * `transform` in dieser Regel selbst (würde sonst überschrieben/kollidieren).
+       */
+      #reveal-markers {
+        position: fixed;
+        top: var(--hud-safe-top);
+        right: var(--hud-safe-right);
+        bottom: var(--hud-safe-bottom);
+        left: var(--hud-safe-left);
+        pointer-events: none;
+      }
+
+      .reveal-marker {
+        position: absolute;
+        width: var(--reveal-marker-size);
+        height: var(--reveal-marker-size);
+        background: var(--reveal-marker-color);
+        clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        display: none;
+      }
+
+      .reveal-marker.visible {
+        display: block;
+      }
+
+      /*
        * Audio-Unlock-Hinweis (E9, Mobile-Tag-1-Regel 8): dezent, verschwindet nach der ersten
        * Pointer-Geste (Phasers eingebautes Unlock, siehe `scenes/MatchScene.ts`s
        * `setupAudioUnlock()`). Unten zentriert, oberhalb der mobilen Bewegungsmodus-Buttons.
@@ -387,7 +428,7 @@
         opacity: 1;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BGcPMJPz.js"></script>
+    <script type="module" crossorigin src="./assets/index-DKwW7Te_.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -398,6 +439,7 @@
       <div id="wins-counter">Wins: 0</div>
       <div id="match-result"></div>
       <div id="sound-compass"></div>
+      <div id="reveal-markers"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
       <div id="hidden-hint">Du bist versteckt — E zum Verlassen</div>
       <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
