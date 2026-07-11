@@ -60,6 +60,13 @@
          * Textgrößeneinstellungen) statt eines zweiten, potenziell abweichenden Literalwerts.
          */
         --move-mode-button-size: 3.5rem;
+        /*
+         * Debug-HUD-Toggle-Button (Playtest-Fix, Felix 2026-07-11): 3,25rem = 52px bei
+         * Standard-Root-Schriftgröße — über der Mobile-Tag-1-Mindestgröße von 48px (Regel 4),
+         * `min-width`/`min-height: 48px` unten als harte Untergrenze zusätzlich (Muster
+         * `--move-mode-button-size`).
+         */
+        --debug-toggle-button-size: 3.25rem;
       }
 
       html,
@@ -78,9 +85,17 @@
         height: 100vh;
       }
 
+      /*
+       * Debug-HUD (Playtest-Fix, Felix 2026-07-11: „das große Debug-Overlay stört sehr im
+       * normalen Spiel"): startet AUSGEBLENDET (`display: none` Default), `#debug-toggle-
+       * button` schaltet die `.visible`-Klasse um (`scenes/MatchScene.ts`s `setupDebugToggle()`).
+       * `top` verschoben (Muster `#wins-counter` unter `#match-timer`), damit die IMMER
+       * sichtbare `#players-count`-Zeile darüber Platz hat, ohne zu überlappen.
+       */
       #debug-overlay {
+        display: none;
         position: fixed;
-        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + 2em);
         left: calc(var(--hud-safe-left) + var(--hud-gap));
         right: calc(var(--hud-safe-right) + var(--hud-gap));
         color: var(--hud-text-color);
@@ -88,6 +103,61 @@
         white-space: pre-line;
         text-shadow: 0 0 4px #000;
         pointer-events: none;
+      }
+
+      #debug-overlay.visible {
+        display: block;
+      }
+
+      /*
+       * Spielerzahl-HUD (Playtest-Fix, Felix 2026-07-11): dauerhaft sichtbar, NICHT Teil des
+       * togglebaren Debug-Overlays („muss immer existieren"). Oben links verankert (Safe-Area,
+       * Regel 3/5) — derselbe Eckenbereich wie `#debug-overlay`, aber IMMER sichtbar.
+       */
+      #players-count {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        left: calc(var(--hud-safe-left) + var(--hud-gap));
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 monospace;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+      }
+
+      /*
+       * Debug-HUD-Toggle-Button (Playtest-Fix, Felix 2026-07-11): oben rechts verankert, ÜBER
+       * `#match-timer`/`#wins-counter` (die beide entsprechend nach unten verschoben sind).
+       * Muster `.mobile-move-mode-button` (Größe ≥ 48px, Safe-Area, `pointer-events: auto` — DAS
+       * ist die Eingabe, kein Whole-Canvas-Joystick-Konflikt dank `stopPropagation()` im
+       * Handler). Funktioniert identisch per Maus (Desktop) UND Touch (Mobile-Tag-1-Regel 1:
+       * EIN Pointer-Eingabepfad).
+       */
+      #debug-toggle-button {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        width: var(--debug-toggle-button-size);
+        height: var(--debug-toggle-button-size);
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--hud-text-color);
+        background: rgba(0, 0, 0, 0.35);
+        color: var(--hud-text-color);
+        font: 0.75rem / 1.2 sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      /* Aktiv-Zustand (Debug-Overlay gerade eingeblendet) — reine Darstellung, Muster `#mobile-sneak-button.active`. */
+      #debug-toggle-button.active {
+        background: rgba(255, 255, 255, 0.35);
       }
 
       /*
@@ -143,9 +213,14 @@
        * rechts verankert, damit sie sich nicht mit dem linksbündigen `#debug-overlay`-Text
        * überlappt. Relatives Layout (Regel 3), `pointer-events: none` (Regel 1).
        */
+      /*
+       * Playtest-Fix (Felix, 2026-07-11): `top` um `--debug-toggle-button-size` + Gap nach unten
+       * verschoben — Platz für den neuen `#debug-toggle-button` oben rechts (Muster: derselbe
+       * additive Offset wie `#wins-counter` unter `#match-timer`, nur eine Ebene höher).
+       */
       #match-timer {
         position: fixed;
-        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap));
         right: calc(var(--hud-safe-right) + var(--hud-gap));
         color: var(--hud-text-color);
         font: calc(var(--hud-font-size) * 1.4) / 1.4 monospace;
@@ -193,7 +268,7 @@
        */
       #wins-counter {
         position: fixed;
-        top: calc(var(--hud-safe-top) + var(--hud-gap) + 2em);
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap) + 2em);
         right: calc(var(--hud-safe-right) + var(--hud-gap));
         color: var(--hud-text-color);
         font: var(--hud-font-size) / 1.4 monospace;
@@ -428,11 +503,13 @@
         opacity: 1;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-DKwW7Te_.js"></script>
+    <script type="module" crossorigin src="./assets/index-Drpslv0T.js"></script>
   </head>
   <body>
     <div id="game-container">
       <div id="debug-overlay"></div>
+      <div id="players-count">Players: 0</div>
+      <div id="debug-toggle-button">DBG</div>
       <div id="connection-status"></div>
       <div id="catch-announcement"></div>
       <div id="match-timer"></div>
