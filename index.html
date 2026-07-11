@@ -176,6 +176,31 @@
       }
 
       /*
+       * Wins-HUD (Übergabe-Auftrag „Matchflow: Rollen-Rotation + Rematch", Entwurfs-Entscheidung
+       * d/AK-10, Kanon §7: Spieltexte Englisch): dauerhafte EIGENANZEIGE „Wins: n" — direkt UNTER
+       * `#match-timer` verankert (safe-area + Gap + eine Zeilenhöhe, relatives Layout, Regel 3),
+       * reine Text-Ausgabe, kein neues Touch-Target (Regel 4 nicht einschlägig).
+       */
+      #wins-counter {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + 2em);
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 monospace;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+        transition:
+          transform 200ms ease,
+          color 200ms ease;
+      }
+
+      /* Blitz-Nit (Game-Design-Critic-Review): kurzer Aufblitz-Zustand bei Sieg-Inkrement — reine CSS-Transition, `scenes/MatchScene.ts`s `updateWinsHud()` schaltet die Klasse zeitgesteuert. */
+      #wins-counter.pulse {
+        color: var(--hud-endgame-color);
+        transform: scale(1.3);
+      }
+
+      /*
        * Ergebnis-Overlay (Übergabe-Auftrag P3c-2, Entwurfs-Entscheidung g): eigenständiges
        * DOM-Element — NICHT `#catch-announcement` wiederverwendet (das blendet nach
        * `CATCH_ANNOUNCEMENT_DURATION_MS` aus; das Ergebnis muss die vollen
@@ -362,7 +387,7 @@
         opacity: 1;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BK57u_44.js"></script>
+    <script type="module" crossorigin src="./assets/index-BGcPMJPz.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -370,6 +395,7 @@
       <div id="connection-status"></div>
       <div id="catch-announcement"></div>
       <div id="match-timer"></div>
+      <div id="wins-counter">Wins: 0</div>
       <div id="match-result"></div>
       <div id="sound-compass"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
