@@ -52,3 +52,7 @@ Round-Robin-Pool im Client, nicht als Einzel-Endabnahme jedes Takes).
 | `audio/schritt-schleichen-verstecker/schritt-schleichen-verstecker-t3.mp3` | `audio.schritt-schleichen-verstecker-t3` | `59a4f30a0749b5dc8a73f3f8ec2a2b161a5ff23dfa9fb848ab8a168801a3291c` | vorschlag |
 | `audio/schritt-schleichen-verstecker/schritt-schleichen-verstecker-t4.mp3` | `audio.schritt-schleichen-verstecker-t4` | `b04ea5585d78e48469a0e8b8f35a63edbf8dbaf3466ff447d76479eb82b1bddf` | vorschlag |
 | `audio/schritt-schleichen-verstecker/schritt-schleichen-verstecker-t5.mp3` | `audio.schritt-schleichen-verstecker-t5` | `5f42f6be509e9dfa802d161858c17fbb93c78eb67a3ee3ba97c57fd6f01c2911` | vorschlag |
+
+## Dash-Animation + statisches Steh-Sprite (Felix-Freigabe Playtest 2026-07-11)
+- `characters/zauberschuelerin/dash_start_<richtung>.webp` (8) — Quelle `assets-src/.../ludo_output/dash_start/<richtung>/spritesheet.webp` (Provenienz ludo, Status assets-src bleibt „vorschlag" bis Live-Sichtung). One-Shot-Dash-Animation.
+- `characters/zauberschuelerin/stand_<richtung>.png` (8) — Quelle `assets-src/.../cut/zauberschuelerin_walking_<richtung>.png` (64×96, Provenienz gpt), von mir transparent auf 128×128 gepaddet (Füße auf Sprint-Origin 0.8 ausgerichtet, Offset 32/6) als Drop-in-Steh-Sprite. „Das normale Sprite" für Stillstand (Felix-Entscheid 2026-07-11: statisches Steh-Sprite statt Idle-Animation).
