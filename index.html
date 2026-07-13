@@ -6,6 +6,35 @@
     <title>Hide Seek — Client (Dev)</title>
     <style>
       /*
+       * UI-Theme „Dark Souls trifft Harry Potter" (Übernahme-Manifest §4, Posten R3-1,
+       * Felix-Freigabe 2026-07-12) — Titel-Schriftart Cinzel, LOKAL geladen (Mobile-Tag-1-
+       * Regel 9: kein CDN-Zwang). Derivat `assets/fonts/cinzel-latin.woff2` (woff2,
+       * Latin/Latin-1/Latin-Extended-A/allgemeine-Interpunktion-Subset, Variable-Font-Achse
+       * `wght` 400–900 erhalten) — Master bleibt `assets-src/fonts/cinzel/Cinzel.ttf`
+       * (Asset-Budget-Disziplin Regel 8, Provenienz + Lizenz in `apps/client/public/assets/
+       * HERKUNFT.md`/`.meta.json`-Sidecar, SIL OFL 1.1). **Abnahme des Font-Assets durch
+       * Felix steht noch aus** (Mensch-Gate Regel 8) — Einsatz unten gilt bis zur Sichtung
+       * als Werkstattstand.
+       *
+       * Reines `@font-face` statt einer FontFace-API-Helferfunktion: das gesamte HUD ist
+       * DOM/CSS (kein Phaser-`Text`-Objekt existiert im Client, siehe `config.ts`s
+       * `THEME_FONT_FAMILY_TITLE`-Kommentar) — der Browser lädt/anwendet die Schrift dafür
+       * bereits vollständig über CSS, `font-display: swap` deckt den Ladezustand ab. Ein
+       * JS-Helfer (Muster MVP `uiFont.ts`, „refresh bereits gezeichneter Phaser-Text-Objekte
+       * nach Spätladen") wäre spekulativer Code ohne heutigen Aufrufer (Karpathy-Prinzip 2) —
+       * Upgrade-Pfad, sobald ein erstes Phaser-`Text`-Objekt Cinzel nutzt (Canvas-Text
+       * rendert sonst ggf. mit dem Fallback-Font, falls die Schrift zu diesem Zeitpunkt noch
+       * lädt).
+       */
+      @font-face {
+        font-family: "Cinzel";
+        src: url("/assets/fonts/cinzel-latin.woff2") format("woff2");
+        font-weight: 400 900;
+        font-style: normal;
+        font-display: swap;
+      }
+
+      /*
        * Mobile-Tag-1-Regeln (CLAUDE.md, Übergabe-Aufträge T4a/T4c):
        * - UI-Layout relativ (%, vw/vh), keine festen Pixelkoordinaten (Regel 3).
        * - Safe-Area-Insets ab Tag 1 (Regel 5): ALLE VIER env(safe-area-inset-*) mit
@@ -30,6 +59,26 @@
         --hud-gap: 0.5rem;
         --hud-font-size: 1rem;
         --hud-text-color: #fff;
+        /*
+         * UI-Theme „Dark Souls trifft Harry Potter" (Übernahme-Manifest §4, Posten R3-1,
+         * Felix-Freigabe 2026-07-12) — DOM-Gegenstück zu `apps/client/src/config.ts`s
+         * `THEME_*`-Konstanten (bewusst dupliziert, kein gemeinsamer Import zwischen
+         * Phaser-Canvas und DOM/CSS, siehe Kommentar dort). Palette aus `vault/10-Kanon/
+         * art-style.md`. `--theme-font-title` (Cinzel, `@font-face` oben) NUR für
+         * Überschriften/Labels (hier: `#connection-status`) — NIE für Fließtext, Timer oder
+         * Zahlwerte (bei 375 px unleserlich, Leitplanke des Übergabe-Auftrags), dafür
+         * `--theme-font-body`. `--theme-letter-spacing-title` gibt Cinzels gravierten
+         * Versalien/Petite-Caps zusätzlichen Zeichenabstand (typografische Standardpraxis für
+         * diese Schriftfamilie), NUR zusammen mit `--theme-font-title` gesetzt.
+         */
+        --theme-font-title: "Cinzel", Georgia, "Times New Roman", serif;
+        --theme-font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+        --theme-letter-spacing-title: 0.04em;
+        --theme-color-charcoal: #1c1a17;
+        --theme-color-brass: #b08d57;
+        --theme-color-gold: #d4af37;
+        --theme-color-text-title: var(--theme-color-gold);
+        --theme-color-text-body: #e8e1d3;
         /*
          * Low-Time-Warnfarbe (Übergabe-Auftrag P3c-2, Ziel 6, Critic-Auflage 6): warmes Amber
          * statt Kampf-/Verletzungs-Rot (K1, design-neutral) — reine Darstellung, kein Sound.
@@ -167,14 +216,19 @@
        * Debug-HUD oben, damit der reine Verbindungszustand auf einen Blick sichtbar bleibt.
        * Unten verankert (safe-area-inset-bottom), damit zusammen mit #debug-overlay oben
        * alle vier Insets tatsächlich genutzt werden.
+       *
+       * UI-Theme (R3-1): Cinzel-Titelschrift — die drei möglichen Texte sind kurze
+       * Status-LABELS (keine Sätze/Zahlwerte, Leitplanke des Übergabe-Auftrags), damit ein
+       * legitimer Cinzel-Anwendungsfall (vormals `monospace`).
        */
       #connection-status {
         position: fixed;
         bottom: calc(var(--hud-safe-bottom) + var(--hud-gap));
         left: calc(var(--hud-safe-left) + var(--hud-gap));
         right: calc(var(--hud-safe-right) + var(--hud-gap));
-        color: var(--hud-text-color);
-        font: var(--hud-font-size) / 1.4 monospace;
+        color: var(--theme-color-text-title);
+        font: var(--hud-font-size) / 1.4 var(--theme-font-title);
+        letter-spacing: var(--theme-letter-spacing-title);
         text-align: center;
         text-shadow: 0 0 4px #000;
         pointer-events: none;
@@ -186,6 +240,11 @@
        * Debug-HUD — relatives Layout (Regel 3), pointer-events: none (Regel 1). Ein-/
        * Ausblenden per CSS-Transition über die `.visible`-Klasse, die
        * `scenes/MatchScene.ts` zeitgesteuert (`CATCH_ANNOUNCEMENT_DURATION_MS`) setzt/entfernt.
+       *
+       * UI-Theme (R3-1): Georgia-Fließschrift (die Meldungstexte sind volle Sätze, z. B. „Ein
+       * Verstecker wurde zum Geist" — Leitplanke des Übergabe-Auftrags verbietet Cinzel für
+       * Fließtext), aber mit der Titel-Akzentfarbe (Gold) statt neutralem Weiß — hebt die
+       * Ansage als „großen Moment" hervor, ohne die Lesbarkeit von Cinzels Versalien zu riskieren.
        */
       #catch-announcement {
         position: fixed;
@@ -193,8 +252,8 @@
         left: 50%;
         transform: translate(-50%, -50%);
         width: min(90vw, 32rem);
-        color: var(--hud-text-color);
-        font: calc(var(--hud-font-size) * 1.3) / 1.4 sans-serif;
+        color: var(--theme-color-text-title);
+        font: calc(var(--hud-font-size) * 1.3) / 1.4 var(--theme-font-body);
         text-align: center;
         text-shadow: 0 0 6px #000;
         pointer-events: none;
@@ -217,13 +276,20 @@
        * Playtest-Fix (Felix, 2026-07-11): `top` um `--debug-toggle-button-size` + Gap nach unten
        * verschoben — Platz für den neuen `#debug-toggle-button` oben rechts (Muster: derselbe
        * additive Offset wie `#wins-counter` unter `#match-timer`, nur eine Ebene höher).
+       *
+       * UI-Theme (R3-1): Georgia-Fließschrift statt Cinzel (Leitplanke des Übergabe-Auftrags:
+       * Cinzel NIE für Timer/Zahlwerte — bei 375 px unleserlich), `tabular-nums` hält die
+       * Ziffernbreite beim Sekundenwechsel stabil (kein Zittern der MM:SS-Zeile). Die
+       * `.low-time`-/`.endgame`-Zustandsfarben unten bleiben unverändert (eigene, bereits
+       * K1-geprüfte Warnfarben, kein Teil dieses Themes).
        */
       #match-timer {
         position: fixed;
         top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap));
         right: calc(var(--hud-safe-right) + var(--hud-gap));
-        color: var(--hud-text-color);
-        font: calc(var(--hud-font-size) * 1.4) / 1.4 monospace;
+        color: var(--theme-color-text-body);
+        font: calc(var(--hud-font-size) * 1.4) / 1.4 var(--theme-font-body);
+        font-variant-numeric: tabular-nums;
         text-shadow: 0 0 4px #000;
         pointer-events: none;
       }
@@ -292,6 +358,10 @@
        * `MATCH_END_DELAY_TICKS` sichtbar stehen). Mehrzeiliger Text (`white-space: pre-line`,
        * siehe `scenes/MatchScene.ts`s `renderMatchResultText()`), zentriert, relatives Layout
        * (Regel 3), `pointer-events: none` (Regel 1).
+       *
+       * UI-Theme (R3-1): Georgia-Fließschrift (der Text enthält Zahlwerte — „3/5" etc.,
+       * Leitplanke des Übergabe-Auftrags verbietet Cinzel dafür), Titel-Akzentfarbe (Gold,
+       * Muster `#catch-announcement`) — zweite Hälfte der „Ansagen"-Familie.
        */
       #match-result {
         position: fixed;
@@ -299,8 +369,8 @@
         left: 50%;
         transform: translate(-50%, -50%);
         width: min(90vw, 32rem);
-        color: var(--hud-text-color);
-        font: calc(var(--hud-font-size) * 1.3) / 1.5 sans-serif;
+        color: var(--theme-color-text-title);
+        font: calc(var(--hud-font-size) * 1.3) / 1.5 var(--theme-font-body);
         text-align: center;
         text-shadow: 0 0 6px #000;
         white-space: pre-line;
@@ -311,6 +381,46 @@
 
       #match-result.visible {
         opacity: 1;
+      }
+
+      /*
+       * Minimap „Marauder's Map" (Übernahme-Manifest §4, Posten R3-2, Felix-Freigabe
+       * 2026-07-12, K2-Referenz `realMiniMap.ts` im read-only MVP-Ordner): Pergament-Panel mit
+       * statischer Wand-/Raum-Geometrie + eigenem Fußspuren-Trail (`hud/minimap.ts`,
+       * `scenes/MatchScene.ts`s `setupMinimapDom()`/`updateMinimapHud()`). Reines DOM-
+       * `<canvas>`-Overlay (Muster `#sound-compass`/`#reveal-markers`), Safe-Area-bereinigt
+       * (Mobile-Regel 5). `pointer-events: none` (Regel 1) — reine Anzeige, stört den
+       * Whole-Canvas-Joystick nie. **Bewusst als ERSTES Kind von `#game-container` platziert**
+       * (siehe Markup unten): alle anderen `position: fixed`-HUD-Elemente (Timer, Wins-Zähler,
+       * Debug-Toggle-Button …) stapeln sich per Default-DOM-Reihenfolge sichtbar DARÜBER —
+       * „eigene Ebene über der Welt, unter dem DOM-HUD" ist damit strukturell erfüllt, kein
+       * `z-index` nötig. Zeichenfläche in FESTER Pixelgröße (kein Zoom-Bezug, anders als die
+       * Phaser-Kamera — DOM-Layout ist zoom-unabhängig), berechnet über `hud/minimap.ts`s
+       * `computeMinimapLayout()` (siehe `setupMinimapDom()`).
+       *
+       * **ESP-Leitplanke (Kanon §7/Interest-Management, load-bearing):** zeigt AUSSCHLIESSLICH
+       * die EIGENE Position (Trail) + statische Geometrie — NIEMALS fremde Spieler, NIEMALS den
+       * Live-Türzustand (siehe `updateMinimapHud()`-Dokumentation in `MatchScene.ts`).
+       *
+       * **Position oben LINKS (R3-Nachzug, Felix-Freigabe 2026-07-12, vormals oben rechts):**
+       * `left` statt `right` verankert (Safe-Area-Inset links, Mobile-Regel 5). `top` um `2em`
+       * zusätzlich verschoben — GENAU dasselbe Muster wie `#debug-overlay`s Offset weiter unten
+       * (Kommentar dort: „damit die IMMER sichtbare `#players-count`-Zeile darüber Platz hat,
+       * ohne zu überlappen") —, denn `#players-count` sitzt in DERSELBEN oben-links-Ecke und
+       * bleibt IMMER sichtbar (siehe dort). Ohne diesen Offset würde das ~150×150px-Panel
+       * (`MINIMAP_PANEL_MAX_WIDTH_PX`/`_HEIGHT_PX`, `config.ts`) die „Players: N"-Zeile
+       * überdecken.
+       */
+      #minimap-panel {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + 2em);
+        left: calc(var(--hud-safe-left) + var(--hud-gap));
+        pointer-events: none;
+      }
+
+      #minimap-canvas {
+        display: block;
+        border-radius: 2px;
       }
 
       /*
@@ -479,6 +589,22 @@
       }
 
       /*
+       * Mobile Zauber-Cast-Button (A2, Übergabe-Auftrag „Zauber „Minenspur"", erste echte
+       * Belegung von `castSpell`): DRITTER runder Button im selben Stil/derselben Größe wie
+       * Schleichen/Dash (`.mobile-move-mode-button`, Mobile-Tag-1-Regel 4: ≥48px), aber
+       * BODEN-MITTIG statt links/rechts verankert (Regel 3/5: relativ zu den Safe-Area-Insets,
+       * kein fester Bildschirm-Pixelwert) — Schleichen/Dash bleiben unangetastet an ihren
+       * Positionen. Default `display: none` — NUR `scenes/MatchScene.ts`s
+       * `updateCastButtonVisual()` schaltet ihn für eine Verstecker-Rolle sichtbar (Design-
+       * Vorgabe „nur für die Verstecker-Rolle sichtbar/aktiv").
+       */
+      #mobile-cast-button {
+        display: none;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      /*
        * Versteckt-Hinweis (P3e, Entscheidung m): dauerhafter Hinweis „Du bist versteckt — E zum
        * Verlassen", solange die eigene Figur `isHidden` ist — ANDERS als `#catch-announcement`
        * KEIN Zeit-Ausblenden (Muster `#audio-unlock-hint`), `scenes/MatchScene.ts`s
@@ -499,14 +625,271 @@
         transition: opacity 300ms ease;
       }
 
+      /*
+       * Cooldown-Anzeige (A2, einfachste Form laut Auftrag): ausgegraut, solange
+       * `spellCooldownTicksRemaining > 0` (`updateCastButtonVisual()`) — der Button bleibt
+       * tippbar (Server ignoriert einen Cast-Versuch während des Cooldowns ohnehin, Kandidaten-
+       * Gate), reine visuelle Rückmeldung, kein zusätzliches Client-Gate.
+       */
+      #mobile-cast-button.on-cooldown {
+        opacity: 0.4;
+      }
+
+      /*
+       * K10-Effekt-Balken (A2, Pflicht-AK, `scenes/MatchScene.ts`s `updateEffectBar()`): EINE
+       * gemeinsame Restdauer-Leiste für JEDEN zeitbasierten Effekt (K10-Invariante) — schlicht,
+       * relatives Layout (Regel 3), `pointer-events: none` (Regel 1, reine Anzeige). Oben
+       * zentriert unter der Statuszeile-Ebene, unabhängig vom `#match-timer`
+       * (überlappungsfrei: Timer ist rechts verankert, dieser Balken zentriert). Sichtbar GENAU
+       * solange ein Effekt aktiv ist (`.visible`-Klasse, Muster `#catch-announcement`).
+       */
+      #effect-bar {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(60vw, 16rem);
+        height: 0.5rem;
+        border: 1px solid var(--hud-text-color);
+        border-radius: 0.25rem;
+        background: rgba(0, 0, 0, 0.35);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 200ms ease;
+        overflow: hidden;
+      }
+
+      #effect-bar.visible {
+        opacity: 1;
+      }
+
+      /* Füllstand (0–100 %) wird ausschließlich per Inline-`width`-Style aus `updateEffectBar()` gesetzt — keine Transition auf `width` selbst (Restdauer tickt 30x/s, eine CSS-Transition würde hinterherhinken). */
+      #effect-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--hud-low-time-color);
+      }
+
+      /*
+       * Hinweis (Merge-Doktrin `vollmerge`, Audio = ours-Implementierung): der `tweak-konsole`-
+       * Zweig kannte an dieser Stelle noch einen ÄLTEREN, seither ersetzten Kompass-/Stumm-
+       * Hinweis-Stand (`#compass-overlay`/`.compass-indicator--*`/`#mute-hint`, gebunden an die
+       * inzwischen verworfene Audio-API `SoundEventQuantized`/`SoundDampingStage`/
+       * `SoundDistanceStage`, siehe `hud/compass.ts`) — bewusst NICHT übernommen, ERSETZT durch
+       * den bereits vorhandenen, aktuellen Stand oben im Dokument (`#sound-compass`/
+       * `.sound-compass-indicator--*`, `#reveal-markers`, `#audio-unlock-hint`), der auf der
+       * kanonischen `packages/shared/src/sound.ts`-API (`DAMPENING_STAGE_*`, `DISTANCE_STAGE_*`)
+       * aufsetzt. Kein UI-Element geht dadurch verloren — dieselbe Funktion (Kompass-Indikatoren,
+       * „Tippen für Ton"-Hinweis) existiert bereits unter dem aktuellen Namen.
+       */
+
       #hidden-hint.visible {
         opacity: 1;
       }
+
+      /*
+       * Tweak-Konsole & Parameter-Registry, Bündel 3/Scheibe 5 (Dev-Overlay, `vault/20-
+       * Architektur/tweak-konsole-konzept.md` §5): `#tweak-console` ist NUR der statische
+       * Container — die gesamte Aufbau-/Interaktionslogik (Gruppen/Suche/Filter/Zeilen/Export)
+       * lebt in `src/tweak/tweakConsole.ts` und wird NUR im Dev-Build montiert (`import.meta.env
+       * .DEV`-Gate + dynamischer `import()` in `scenes/MatchScene.ts`, siehe dort). Dieser CSS-
+       * Block selbst ist KEIN Cheat-Vektor (nur Layout, kein Simulationszugriff) und bleibt
+       * deshalb bewusst unbedingt im Markup — analog zu jedem anderen HUD-Container hier.
+       *
+       * Default `display: none` (nicht nur `pointer-events: none`): ein geschlossenes Panel
+       * nimmt dadurch StrukturELL keinen Klickbereich ein, das Spiel bleibt uneingeschränkt
+       * bedienbar (Mobile-Tag-1-Regel 1). Erst `.tweak-console--open` schaltet es sichtbar +
+       * interaktiv.
+       *
+       * Layout: relativ zu den Safe-Area-Insets verankert (Regel 3/5), Breite `min(92vw, 26rem)`
+       * (kein fester Pixelwert, läuft auf 375px nicht über den Rand), eigener scrollbarer
+       * Body (`overflow-y: auto; overflow-x: hidden` — kein horizontaler Überlauf). Alle
+       * interaktiven Kindelemente bekommen ihre 48px-Mindestgröße über die jeweiligen
+       * `.tweak-*`-Klassen unten (Regel 4).
+       */
+      #tweak-console {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap));
+        width: min(92vw, 26rem);
+        max-width: 100vw;
+        box-sizing: border-box;
+        display: none;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background: rgba(10, 10, 16, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: var(--hud-text-color);
+        font: 0.85rem / 1.3 sans-serif;
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      #tweak-console.tweak-console--open {
+        display: flex;
+        pointer-events: auto;
+      }
+
+      .tweak-console__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .tweak-console__search {
+        flex: 1 1 8rem;
+        min-width: 0;
+        min-height: 48px;
+        box-sizing: border-box;
+      }
+
+      .tweak-console__only-changed {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        min-height: 48px;
+      }
+
+      .tweak-console__export {
+        min-height: 48px;
+        min-width: 48px;
+      }
+
+      .tweak-console__export-feedback {
+        font-size: 0.75rem;
+        opacity: 0.8;
+      }
+
+      .tweak-console__body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .tweak-group__header {
+        width: 100%;
+        min-height: 48px;
+        text-align: left;
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        color: inherit;
+        font: inherit;
+        font-weight: 600;
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.3rem;
+      }
+
+      .tweak-group__body {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        padding-left: 0.25rem;
+      }
+
+      .tweak-group__body--collapsed,
+      .tweak-group[hidden],
+      .tweak-row[hidden] {
+        display: none;
+      }
+
+      .tweak-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+        padding: 0.4rem 0.5rem;
+        border-radius: 0.3rem;
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .tweak-row__labels {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .tweak-row__key {
+        font-family: monospace;
+        font-size: 0.7rem;
+        opacity: 0.6;
+      }
+
+      .tweak-row__scope-badge {
+        font-size: 0.7rem;
+        padding: 0.1rem 0.4rem;
+        border-radius: 0.6rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+
+      /* Scope-Farben (Konzept §4): rein informativ, keine neue Kategoriefarbe (Art-Style bleibt unberührt — dieses Panel ist ein Dev-Werkzeug, kein In-Game-Asset). */
+      .tweak-row__scope-badge--server-sim {
+        color: #38bdf8;
+      }
+
+      .tweak-row__scope-badge--client-render {
+        color: #4ade80;
+      }
+
+      .tweak-row__scope-badge--gesperrt {
+        color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Constraint-Warnindikator (Konzept §6): dieselbe Warnfarbe wie die Low-Time-HUD-Warnung (`--hud-low-time-color`) — konsistente Warn-Sprache statt einer neuen, unbegründeten Farbe. */
+      .tweak-row__warning {
+        font-size: 0.7rem;
+        color: var(--hud-low-time-color);
+        border: 1px solid var(--hud-low-time-color);
+        border-radius: 0.6rem;
+        padding: 0.1rem 0.4rem;
+      }
+
+      .tweak-row__controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+      }
+
+      .tweak-row__slider {
+        flex: 1 1 8rem;
+        min-height: 48px;
+      }
+
+      .tweak-row__number {
+        width: 5rem;
+        min-height: 48px;
+        box-sizing: border-box;
+      }
+
+      .tweak-row__unit {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        min-width: 2.5rem;
+      }
+
+      .tweak-row__default {
+        font-size: 0.7rem;
+        opacity: 0.6;
+      }
+
+      .tweak-row__reset {
+        min-height: 48px;
+        min-width: 48px;
+      }
     </style>
-    <script type="module" crossorigin src="./assets/index-ByPRrgKC.js"></script>
+    <script type="module" crossorigin src="/assets/index-DBGV_jZJ.js"></script>
   </head>
   <body>
     <div id="game-container">
+      <div id="minimap-panel"><canvas id="minimap-canvas"></canvas></div>
       <div id="debug-overlay"></div>
       <div id="players-count">Players: 0</div>
       <div id="debug-toggle-button">DBG</div>
@@ -519,9 +902,12 @@
       <div id="reveal-markers"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
       <div id="hidden-hint">Du bist versteckt — E zum Verlassen</div>
+      <div id="effect-bar"><div id="effect-bar-fill"></div></div>
       <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
       <div id="mobile-dash-button" class="mobile-move-mode-button">Dash</div>
       <div id="mobile-interact-button" class="mobile-move-mode-button">Interagieren</div>
+      <div id="mobile-cast-button" class="mobile-move-mode-button">Minenspur</div>
+      <div id="tweak-console"></div>
     </div>
   </body>
 </html>

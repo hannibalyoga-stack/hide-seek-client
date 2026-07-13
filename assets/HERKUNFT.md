@@ -53,6 +53,27 @@ Round-Robin-Pool im Client, nicht als Einzel-Endabnahme jedes Takes).
 | `audio/schritt-schleichen-verstecker/schritt-schleichen-verstecker-t4.mp3` | `audio.schritt-schleichen-verstecker-t4` | `b04ea5585d78e48469a0e8b8f35a63edbf8dbaf3466ff447d76479eb82b1bddf` | vorschlag |
 | `audio/schritt-schleichen-verstecker/schritt-schleichen-verstecker-t5.mp3` | `audio.schritt-schleichen-verstecker-t5` | `5f42f6be509e9dfa802d161858c17fbb93c78eb67a3ee3ba97c57fd6f01c2911` | vorschlag |
 
+## UI-Theme: Titel-Schriftart Cinzel (Übernahme-Manifest R3-1, Felix-Freigabe 2026-07-12)
+
+Andere Quelle als die übrigen Einträge dieser Datei: `assets-src/fonts/cinzel/Cinzel.ttf`
+(Variable Font, Achse `wght` 400–900, Copyright 2020 The Cinzel Project Authors, Designer
+Natanael Gama, SIL Open Font License 1.1 — Lizenz-Metadaten direkt aus der TTF-`name`-Table
+ausgelesen, siehe `.meta.json`-Sidecar am Quellpfad; auch auf Google Fonts verfügbar), selbst
+kopiert aus dem **read-only MVP-Ordner** `/Users/felixhannibal/Verstecken Spiel/assets/fonts/
+Cinzel.ttf` (Übernahme-Manifest §4, Posten R3-1). Abgeleitetes Derivat (Asset-Budget-Disziplin
+Regel 8 — das Spiel lädt NIE die Master-Datei): `fonts/cinzel-latin.woff2`, erzeugt mit
+`fonttools`s `pyftsubset` (Subset auf Basic Latin + Latin-1 Supplement + Latin Extended-A +
+allgemeine Interpunktion `U+0000-00FF, U+0100-017F, U+2000-206F`, `--flavor=woff2`,
+Variable-Font-Achse erhalten) — `125.468` Byte Master → `41.608` Byte Derivat.
+
+**Abnahme-Status: von Felix abgenommen 2026-07-12** (Felix-Mensch-Gate, Regel 8). `status` im
+`.meta.json`-Sidecar am Quellpfad steht jetzt auf `"abgenommen"` (`abgenommen_am: "2026-07-12"`) —
+Einsatz im Client ist verdrahtet (`apps/client/index.html`, `@font-face`).
+
+| Datei | Asset-ID | sha256 | Quell-Status |
+|---|---|---|---|
+| `fonts/cinzel-latin.woff2` | `fonts.cinzel` (Derivat) | `5ed9f580d5621b350182e473be350bad07f91d1c8037fc1d40aac36f1a9f0c9c` | abgenommen |
+
 ## Dash-Animation + statisches Steh-Sprite (Felix-Freigabe Playtest 2026-07-11)
 - `characters/zauberschuelerin/dash_start_<richtung>.webp` (8) — Quelle `assets-src/.../ludo_output/dash_start/<richtung>/spritesheet.webp` (Provenienz ludo, Status assets-src bleibt „vorschlag" bis Live-Sichtung). One-Shot-Dash-Animation.
 - `characters/zauberschuelerin/stand_<richtung>.png` (8) — Quelle `assets-src/.../cut/zauberschuelerin_walking_<richtung>.png` (64×96, Provenienz gpt), von mir transparent auf 128×128 gepaddet (Füße auf Sprint-Origin 0.8 ausgerichtet, Offset 32/6) als Drop-in-Steh-Sprite. „Das normale Sprite" für Stillstand (Felix-Entscheid 2026-07-11: statisches Steh-Sprite statt Idle-Animation).
