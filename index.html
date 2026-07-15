@@ -213,6 +213,41 @@
       }
 
       /*
+       * NetLog-Export-Button (Netcode-Messstand, Auftrag `vault/20-Architektur/auftraege/
+       * 2026-07-15-netcode-messstand.md`, Baustein A): startet AUSGEBLENDET (`display: none`
+       * Default, Muster `#debug-overlay`) — `scenes/MatchScene.ts`s `setupNetLog()` schaltet die
+       * `.visible`-Klasse NUR bei aktivem `?netlog`-URL-Parameter frei (kein Button, kein
+       * `pointer-events`-Ziel im Normalbetrieb). Direkt links neben `#debug-toggle-button`
+       * verankert (derselbe Größen-/Safe-Area-/Pointer-Only-Rahmen, Mobile-Tag-1-Regeln 1/3/4/5).
+       */
+      #netlog-export-button {
+        display: none;
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        right: calc(var(--hud-safe-right) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap));
+        width: var(--debug-toggle-button-size);
+        height: var(--debug-toggle-button-size);
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--hud-text-color);
+        background: rgba(0, 0, 0, 0.35);
+        color: var(--hud-text-color);
+        font: 0.65rem / 1.2 sans-serif;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      #netlog-export-button.visible {
+        display: flex;
+      }
+
+      /*
        * Statuszeile (Übergabe-Auftrag T4c, Felix-Default E-T4c-4): eigenständiges,
        * nicht-interaktives Element für den dreiwertigen Verbindungsstatus ("verbunden" /
        * "reconnecte…" / "Verbindung verloren") — bewusst getrennt vom technischen
@@ -868,7 +903,7 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-rn9Ij-Eg.js"></script>
+    <script type="module" crossorigin src="./assets/index-DOWvHg00.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -876,6 +911,7 @@
       <div id="debug-overlay"></div>
       <div id="players-count">Players: 0</div>
       <div id="debug-toggle-button">DBG</div>
+      <div id="netlog-export-button">LOG</div>
       <div id="connection-status"></div>
       <div id="catch-announcement"></div>
       <div id="match-timer"></div>
