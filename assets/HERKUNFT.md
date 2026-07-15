@@ -77,3 +77,38 @@ Einsatz im Client ist verdrahtet (`apps/client/index.html`, `@font-face`).
 ## Dash-Animation + statisches Steh-Sprite (Felix-Freigabe Playtest 2026-07-11)
 - `characters/zauberschuelerin/dash_start_<richtung>.webp` (8) — Quelle `assets-src/.../ludo_output/dash_start/<richtung>/spritesheet.webp` (Provenienz ludo, Status assets-src bleibt „vorschlag" bis Live-Sichtung). One-Shot-Dash-Animation.
 - `characters/zauberschuelerin/stand_<richtung>.png` (8) — Quelle `assets-src/.../cut/zauberschuelerin_walking_<richtung>.png` (64×96, Provenienz gpt), von mir transparent auf 128×128 gepaddet (Füße auf Sprint-Origin 0.8 ausgerichtet, Offset 32/6) als Drop-in-Steh-Sprite. „Das normale Sprite" für Stillstand (Felix-Entscheid 2026-07-11: statisches Steh-Sprite statt Idle-Animation).
+
+## Audio: Dash-Schritt-Burst (Verstecker, One-Shot beim Dash-Start, Felix-Auftrag 2026-07-13)
+
+- `audio/schritt-dash-verstecker/schritt-dash-verstecker.m4a` — Quelle `assets-src/audio/schritt-dash-verstecker/schritt-dash-verstecker.mp3` (ElevenLabs, Original-Download `FEETHmn-Quick_tactical_foots-Elevenlabs.mp3`), 1,5-s-Clip einer kurzen, schnellen Schrittfolge. Mono-AAC-Derivat (`afconvert -f m4af -d aac -b 96000 -c 1 <master>`, Stereo-Master → Mono für positionalen SFX, Regel 8), ~17 KB. Ersetzt das vormalige Provisorium (Dash teilte sich den Laufen-Pool mit erhöhter Playback-Rate + Gain): der Server emittiert seither pro Dash-Phase genau EIN positionales Sound-Event (`advanceDashSoundCycle`, `MatchRoom.ts`), die Pro-Fußtritt-Schrittkadenz ruht während des Dash.
+
+**Freigabe Einsatz im Spiel: Felix-Auftrag 2026-07-13** („diesen Sound beim Dash abspielen"). Status in `assets-src` bleibt `vorschlag` bis zur Live-Hörprobe/Endabnahme — die Freigabe gilt für den Einsatz im Client, nicht als Einzel-Endabnahme des Audio-Assets.
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `audio/schritt-dash-verstecker/schritt-dash-verstecker.m4a` | `audio.schritt-dash-verstecker` | `039619b23038991b7b5b20695e09cfa17ef0904d6a7b677ce9f9391a7977c81f` | `13b4d17abd5db94064e0ae801888333789f927ea60ed19bdca37c86159dd74fc` | vorschlag |
+
+## Portal-Endgame: Sounds + Vortex-Animation (Felix-Auftrag 2026-07-13)
+
+Alle drei von Felix extern erzeugt (ElevenLabs / ludo.ai), Status in `assets-src` bleibt `vorschlag`
+bis zur Live-Sichtung/Hörprobe. **Freigabe Einsatz im Spiel: Felix-Auftrag 2026-07-13.**
+
+- **Summen** (`audio/portal-summen/portal-summen.m4a`, ElevenLabs, Original `a_buzzing_magical_po_#2…mp3`):
+  Dauer-Summen-Loop (16 s), das jedes aktive Flucht-Portal positional in einem Radius **über einen
+  Raum hinaus** (`PORTAL_SOUND_RADIUS_UNITS = 20`) abgibt. Mono-AAC (`afconvert -f m4af -d aac -b 96000 -c 1`,
+  Stereo-Master → Mono für positionalen Sound), ~195 KB.
+- **Wirbel** (`audio/portal-wirbel-aktivierung/portal-wirbel-aktivierung.m4a`, ElevenLabs, Original
+  `Swirling_vortex_of_i_#4…mp3`): One-Shot beim erfolgreichen Escape (Portal-Aktivierung), positional
+  für alle in Reichweite; löst das Verstummen des Summen-Loops aus. Mono-AAC, ~36 KB.
+- **Vortex-Animation** (`effects/portal-vortex/portal-vortex.webp`, ludo.ai, Original
+  `sprite-max-px-frames-16-rows-4-cols-4`): dauerhaft laufende Portal-Darstellung (ersetzt den
+  Platzhalter-Ring). Master-Sheet 1184×2088 (16 Frames 296×522, 232 ms/Frame ≈ 3,7 s Loop). Derivat
+  aus den 16 EINZEL-Frames gebaut (Pillow, LANCZOS — kein Frame-Bleed): je auf 96×168 skaliert, als
+  uniformes 4×4-Atlas (384×672) gepackt, **verlustfreies WebP VP8L** (~379 KB, budget-konform,
+  projektüblich). Effekt-Budget dafür von 128 auf 512 KB angehoben (siehe `asset-budgets.json`).
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `audio/portal-summen/portal-summen.m4a` | `audio.portal-summen` | `47674043c0d3efb96df6e4a02cab236e3ab0d6f4ab0a3a4168c0ab1b6878a869` | `8f02d9425f35faa7633eb724abfd91f4a480b26df3b0e9c438663683890bd380` | vorschlag |
+| `audio/portal-wirbel-aktivierung/portal-wirbel-aktivierung.m4a` | `audio.portal-wirbel-aktivierung` | `92ae0d82dc754482071fb5bc5de8586fff7c3696b6b56ccec0b05dbe74cf10ea` | `e1109f0d0b7881ceb35fa32f9694e02a62ac24342182d86f563847616066e891` | vorschlag |
+| `effects/portal-vortex/portal-vortex.webp` | `effects.portal-vortex` | `4cc7156ad793dc92a446bd27992217acb929aaa6816dd692054ed914c33fb32d` | `3f240a40b9c3798734403a3b19cf69a579993e6f7ec42c3660f941c375b8a3c2` | vorschlag |
