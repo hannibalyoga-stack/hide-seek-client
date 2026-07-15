@@ -131,7 +131,10 @@
       #game-container {
         position: relative;
         width: 100vw;
+        /* dvh: boden-verankerte Buttons liegen nie hinter der ein-/ausklappenden Mobile-
+           Browserleiste; 100vh als Fallback für ältere Browser (Felix-Playtest 2026-07-13). */
         height: 100vh;
+        height: 100dvh;
       }
 
       /*
@@ -581,27 +584,51 @@
        * `setupInteractControls()`, Zustand in `net/interactInput.ts`s `MobileInteractState`.
        * Teilt sich die Basis-Optik mit den Bewegungsmodus-Buttons (`.mobile-move-mode-button`,
        * Größe/Form/Touch-Verhalten identisch, Mobile-Tag-1-Regel 4) — bekommt hier NUR eine
-       * eigene Position: unten MITTIG, zwischen Schleichen (links) und Dash (rechts) verankert.
+       * eigene Position (s. u.).
        */
       #mobile-interact-button {
-        left: 50%;
-        transform: translateX(-50%);
+        /* Haupt-Aktion (Tür/Verstecken) in die gut erreichbare rechte Daumenzone, gestapelt
+           ÜBER dem Dash-Button — raus aus der untersten Bildschirm-Mitte, laut Touch-UX-Research
+           der am schlechtesten erreichbare Bereich (Felix-Playtest 2026-07-13). */
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap));
       }
 
       /*
-       * Mobile Zauber-Cast-Button (A2, Übergabe-Auftrag „Zauber „Minenspur"", erste echte
-       * Belegung von `castSpell`): DRITTER runder Button im selben Stil/derselben Größe wie
-       * Schleichen/Dash (`.mobile-move-mode-button`, Mobile-Tag-1-Regel 4: ≥48px), aber
-       * BODEN-MITTIG statt links/rechts verankert (Regel 3/5: relativ zu den Safe-Area-Insets,
-       * kein fester Bildschirm-Pixelwert) — Schleichen/Dash bleiben unangetastet an ihren
-       * Positionen. Default `display: none` — NUR `scenes/MatchScene.ts`s
-       * `updateCastButtonVisual()` schaltet ihn für eine Verstecker-Rolle sichtbar (Design-
-       * Vorgabe „nur für die Verstecker-Rolle sichtbar/aktiv").
+       * Sichtbarer floating Joystick (Felix-Playtest 2026-07-13 „Mobile-UI deutlich
+       * nutzerfreundlicher" + Touch-UX-Best-Practice „dynamic/floating stick"): rein visuelles
+       * DOM-Overlay (`pointer-events: none` — der Whole-Canvas-Joystick UNTER dem Canvas fängt die
+       * Eingabe, `scenes/MatchScene.ts`s `setupPointerInput()`). Erscheint am Aufsetzpunkt: Basis-
+       * Ring (Durchmesser = 2 × `JOYSTICK_MAX_RADIUS_PX` = 128px), Knauf folgt der Auslenkung
+       * (`showJoystickVisual()`). Zentrierung per negativem Margin, damit `left`/`top` den
+       * MITTELPUNKT setzen. DOM-früh platziert → die Aktions-Buttons stapeln sichtbar darüber.
+       * Graublau/hell, halbtransparent (HUD-Stil, Muster MVP-Joystick).
        */
-      #mobile-cast-button {
+      #joystick-base,
+      #joystick-knob {
+        position: fixed;
+        border-radius: 50%;
+        pointer-events: none;
         display: none;
-        left: 50%;
-        transform: translateX(-50%);
+      }
+      #joystick-base.visible,
+      #joystick-knob.visible {
+        display: block;
+      }
+      #joystick-base {
+        width: 128px;
+        height: 128px;
+        margin-left: -64px;
+        margin-top: -64px;
+        border: 2px solid rgba(138, 147, 166, 0.7);
+        background: rgba(17, 20, 28, 0.3);
+      }
+      #joystick-knob {
+        width: 52px;
+        height: 52px;
+        margin-left: -26px;
+        margin-top: -26px;
+        background: rgba(232, 238, 247, 0.85);
       }
 
       /*
@@ -613,7 +640,8 @@
        */
       #hidden-hint {
         position: fixed;
-        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap));
+        /* über BEIDEN Button-Reihen verankert (Interact sitzt jetzt über Dash rechts). */
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + 2 * (var(--move-mode-button-size) + var(--hud-gap)));
         left: 50%;
         transform: translateX(-50%);
         color: var(--hud-text-color);
@@ -623,51 +651,6 @@
         pointer-events: none;
         opacity: 0;
         transition: opacity 300ms ease;
-      }
-
-      /*
-       * Cooldown-Anzeige (A2, einfachste Form laut Auftrag): ausgegraut, solange
-       * `spellCooldownTicksRemaining > 0` (`updateCastButtonVisual()`) — der Button bleibt
-       * tippbar (Server ignoriert einen Cast-Versuch während des Cooldowns ohnehin, Kandidaten-
-       * Gate), reine visuelle Rückmeldung, kein zusätzliches Client-Gate.
-       */
-      #mobile-cast-button.on-cooldown {
-        opacity: 0.4;
-      }
-
-      /*
-       * K10-Effekt-Balken (A2, Pflicht-AK, `scenes/MatchScene.ts`s `updateEffectBar()`): EINE
-       * gemeinsame Restdauer-Leiste für JEDEN zeitbasierten Effekt (K10-Invariante) — schlicht,
-       * relatives Layout (Regel 3), `pointer-events: none` (Regel 1, reine Anzeige). Oben
-       * zentriert unter der Statuszeile-Ebene, unabhängig vom `#match-timer`
-       * (überlappungsfrei: Timer ist rechts verankert, dieser Balken zentriert). Sichtbar GENAU
-       * solange ein Effekt aktiv ist (`.visible`-Klasse, Muster `#catch-announcement`).
-       */
-      #effect-bar {
-        position: fixed;
-        top: calc(var(--hud-safe-top) + var(--hud-gap));
-        left: 50%;
-        transform: translateX(-50%);
-        width: min(60vw, 16rem);
-        height: 0.5rem;
-        border: 1px solid var(--hud-text-color);
-        border-radius: 0.25rem;
-        background: rgba(0, 0, 0, 0.35);
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 200ms ease;
-        overflow: hidden;
-      }
-
-      #effect-bar.visible {
-        opacity: 1;
-      }
-
-      /* Füllstand (0–100 %) wird ausschließlich per Inline-`width`-Style aus `updateEffectBar()` gesetzt — keine Transition auf `width` selbst (Restdauer tickt 30x/s, eine CSS-Transition würde hinterherhinken). */
-      #effect-bar-fill {
-        height: 100%;
-        width: 0%;
-        background: var(--hud-low-time-color);
       }
 
       /*
@@ -885,7 +868,7 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BVAex3M6.js"></script>
+    <script type="module" crossorigin src="./assets/index-Xv6ycm3e.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -900,13 +883,13 @@
       <div id="match-result"></div>
       <div id="sound-compass"></div>
       <div id="reveal-markers"></div>
+      <div id="joystick-base"></div>
+      <div id="joystick-knob"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
       <div id="hidden-hint">Du bist versteckt — E zum Verlassen</div>
-      <div id="effect-bar"><div id="effect-bar-fill"></div></div>
       <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
       <div id="mobile-dash-button" class="mobile-move-mode-button">Dash</div>
       <div id="mobile-interact-button" class="mobile-move-mode-button">Interagieren</div>
-      <div id="mobile-cast-button" class="mobile-move-mode-button">Minenspur</div>
       <div id="tweak-console"></div>
     </div>
   </body>
