@@ -102,6 +102,29 @@
         /* Randmarker-Kantenlänge in Pixeln (`REVEAL_MARKER_SIZE_PX`, `apps/client/src/config.ts`). */
         --reveal-marker-size: 20px;
         /*
+         * Rumpel-HUD-Balken (Versteck-Rumpeln, Anti-Camper §5, Client-/Sound-Scheibe R1c,
+         * Felix-Feel-Vorgabe „1:1 aus dem MVP"): feste Bildschirm-Pixelgröße (Muster
+         * `--reveal-marker-size`/`--move-mode-button-size` — HUD-Chrome-Größe, nicht
+         * Welt-Geometrie, deshalb bewusst px statt einer Welt-Einheiten-Umrechnung). Grüne
+         * Trefferzone (`#37d67a`) + Marker (Weiß `#ffffff`, im Grün Gold `#ffd166`) exakt nach
+         * Auftragsvorgabe.
+         */
+        --rumble-bar-width: 240px;
+        --rumble-bar-height: 16px;
+        --rumble-bar-marker-width: 6px;
+        --rumble-zone-color: #37d67a;
+        --rumble-marker-color: #ffffff;
+        --rumble-marker-color-hit: #ffd166;
+        /*
+         * Ausgang-Feedback-Blitz (Felix-Entscheid „nur Blitz", 2026-07-16, `#rumble-bar.result-hit`/
+         * `.result-miss` unten): Erfolgs-Blitz nutzt `--rumble-zone-color` direkt wieder (dieselbe
+         * Trefferzonen-Farbe, kein zweites Grün). `--rumble-result-miss-color` dupliziert bewusst
+         * den Wert von `apps/client/src/config.ts`s `RUMBLE_RESULT_MISS_COLOR` (Muster
+         * `--hud-endgame-color`/`PORTAL_COLOR`: kein CSS-Import aus TypeScript möglich, beide
+         * Stellen MÜSSEN bei einer Änderung von Hand synchron gehalten werden).
+         */
+        --rumble-result-miss-color: #ef4444;
+        /*
          * Mobile Bewegungsmodus-Buttons (P3d, Übergabe-Auftrag „Bewegungsmodi (Schleichen/
          * Gehen/Dash)"): 3,5rem ≈ 56px bei Standard-Root-Schriftgröße — komfortabel über der
          * Mobile-Tag-1-Mindestgröße von 48px (Regel 4), relativ zur Root-Schriftgröße (nicht
@@ -630,6 +653,29 @@
       }
 
       /*
+       * Mobile Rumpeln-Tap-Button (Versteck-Rumpeln, Anti-Camper §5, Client-/Sound-Scheibe R1c):
+       * dediziertes EIN-Tap-Element (KEIN Vollbild-Tap) — nur sichtbar, solange die eigene Figur
+       * `rumbleActive` ist (`scenes/MatchScene.ts`s `updateRumbleHud()` schaltet die
+       * `.visible`-Klasse PRO FRAME, Muster `#netlog-export-button`: `display: none` Default,
+       * damit ein verstecktes Element strukturell KEINEN Klickbereich einnimmt — anders als die
+       * opacity-basierten Hinweistexte, hier ist ein hartes An/Aus korrekt, weil der Button sonst
+       * unsichtbar, aber tappbar bliebe). Teilt sich die Basis-Optik mit den übrigen
+       * Aktions-Buttons (`.mobile-move-mode-button`, Größe/Pointer-only-Verhalten identisch,
+       * Mobile-Tag-1-Regel 4) — Position LINKS über dem Schleichen-Button (Muster
+       * `#mobile-interact-button` rechts über Dash), symmetrisch, kollidiert nicht mit dem
+       * dauerhaften `#hidden-hint`-Text.
+       */
+      #mobile-rumble-button {
+        display: none;
+        left: calc(var(--hud-safe-left) + var(--hud-gap));
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap));
+      }
+
+      #mobile-rumble-button.visible {
+        display: flex;
+      }
+
+      /*
        * Sichtbarer floating Joystick (Felix-Playtest 2026-07-13 „Mobile-UI deutlich
        * nutzerfreundlicher" + Touch-UX-Best-Practice „dynamic/floating stick"): rein visuelles
        * DOM-Overlay (`pointer-events: none` — der Whole-Canvas-Joystick UNTER dem Canvas fängt die
@@ -703,6 +749,98 @@
 
       #hidden-hint.visible {
         opacity: 1;
+      }
+
+      /*
+       * Rumpel-HUD-Balken (Versteck-Rumpeln, Anti-Camper §5, Client-/Sound-Scheibe R1c,
+       * Felix-Feel-Vorgabe „1:1 aus dem MVP"): dediziertes Bildschirm-HUD für die EIGENE
+       * Balken-Challenge — NICHT über dem Kopf (das wäre ein Welt-/Sprite-Element wie die
+       * Channel-Fortschrittsbalken, `CHANNEL_PROGRESS_BAR_*`), sondern ein fixes DOM-HUD (Muster
+       * `#debug-overlay`: harter `display`-Toggle statt Opacity-Fade — die Challenge ist ein
+       * Reflex-Test, eine Übergangsphase würde die exakte Marker-Position beim Erscheinen
+       * verfälscht wirken lassen). Nur sichtbar, solange die eigene Figur `rumbleActive` ist
+       * (`scenes/MatchScene.ts`s `updateRumbleHud()`, PRO FRAME, Muster
+       * `updateChannelProgressBar()`/`updateMinimapHud()` — SELF-Werte). Über BEIDEN
+       * Button-Reihen UND dem `#hidden-hint`-Text verankert (Muster `#hidden-hint`s eigenem
+       * Offset über beiden Button-Reihen), damit sich keines der gleichzeitig sichtbaren
+       * Elemente überlappt — ein versteckter Spieler mit laufender Challenge sieht IMMER beide
+       * zugleich (`rumbleActive` setzt strukturell `isHidden` voraus).
+       *
+       * Marker/Zone werden per Inline-`style` PRO FRAME neu gesetzt (`updateRumbleHud()`):
+       * `#rumble-bar-zone`s `width` = `rumbleGreenZoneFraction` (live tunbar), zentriert per
+       * `left: 50%` + `transform: translateX(-50%)`; `#rumble-bar-marker`s `left` = Marker-
+       * Fraktion `[0,1]` als Prozent, ebenfalls per `translateX(-50%)` auf den Fraktionspunkt
+       * zentriert (Muster `.sound-compass-indicator`s `translate(-50%, -50%)`-Zentrierungstrick)
+       * — der Marker darf dadurch an den Rändern (Fraktion 0/1) leicht über den Balkenrand
+       * hinausragen (halbe Marker-Breite), exakt wie im MVP-Vorbild.
+       */
+      #rumble-bar {
+        display: none;
+        position: fixed;
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + 3 * (var(--move-mode-button-size) + var(--hud-gap))
+        );
+        left: 50%;
+        transform: translateX(-50%);
+        width: var(--rumble-bar-width);
+        height: var(--rumble-bar-height);
+        background: rgba(0, 0, 0, 0.7);
+        border-radius: 2px;
+        overflow: hidden;
+        pointer-events: none;
+      }
+
+      #rumble-bar.visible {
+        display: block;
+      }
+
+      #rumble-bar-zone {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        height: 100%;
+        background: var(--rumble-zone-color);
+        transform: translateX(-50%);
+      }
+
+      #rumble-bar-marker {
+        position: absolute;
+        top: 0;
+        left: 0%;
+        width: var(--rumble-bar-marker-width);
+        height: 100%;
+        background: var(--rumble-marker-color);
+        transform: translateX(-50%);
+      }
+
+      #rumble-bar-marker.in-zone {
+        background: var(--rumble-marker-color-hit);
+      }
+
+      /*
+       * Ausgang-Feedback-Blitz (Felix-Entscheid „nur Blitz", 2026-07-16, `scenes/MatchScene.ts`s
+       * `updateRumbleHud()`/`handleRumbleResult()`): sobald ein `"rumbleResult"`-Ereignis eintrifft,
+       * bleibt `#rumble-bar` für `RUMBLE_RESULT_FLASH_DURATION_MS` (`src/config.ts`) SICHTBAR und
+       * übermalt sich komplett grün/rot, statt sofort bei `rumbleActive → false` zu verschwinden —
+       * Marker/Zone werden für die Blitz-Dauer ausgeblendet (`display: none`), das Balken-
+       * `background` selbst trägt die Blitz-Farbe. Erfolg (`.result-hit`) nutzt dieselbe Farbe wie
+       * die Trefferzone (`--rumble-zone-color`, EIN Grün, kein zweiter Ton); Fehlschlag
+       * (`.result-miss`) nutzt das eigene Warnrot (`--rumble-result-miss-color` oben). KEIN eigener
+       * Ton (der Server-Verrats-Ton an Dritte bleibt unverändert).
+       */
+      #rumble-bar.result-hit {
+        background: var(--rumble-zone-color);
+      }
+
+      #rumble-bar.result-miss {
+        background: var(--rumble-result-miss-color);
+      }
+
+      #rumble-bar.result-hit #rumble-bar-zone,
+      #rumble-bar.result-hit #rumble-bar-marker,
+      #rumble-bar.result-miss #rumble-bar-zone,
+      #rumble-bar.result-miss #rumble-bar-marker {
+        display: none;
       }
 
       /*
@@ -903,7 +1041,7 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CxgyCIHA.js"></script>
+    <script type="module" crossorigin src="./assets/index-C2_lvluc.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -923,9 +1061,11 @@
       <div id="joystick-knob"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
       <div id="hidden-hint">Du bist versteckt — E zum Verlassen</div>
+      <div id="rumble-bar"><div id="rumble-bar-zone"></div><div id="rumble-bar-marker"></div></div>
       <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
       <div id="mobile-dash-button" class="mobile-move-mode-button">Dash</div>
       <div id="mobile-interact-button" class="mobile-move-mode-button">Interagieren</div>
+      <div id="mobile-rumble-button" class="mobile-move-mode-button">JETZT!</div>
       <div id="tweak-console"></div>
     </div>
   </body>
