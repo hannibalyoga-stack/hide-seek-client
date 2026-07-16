@@ -116,12 +116,15 @@
         --rumble-marker-color: #ffffff;
         --rumble-marker-color-hit: #ffd166;
         /*
-         * Ausgang-Feedback-Blitz (Felix-Entscheid „nur Blitz", 2026-07-16, `#rumble-bar.result-hit`/
-         * `.result-miss` unten): Erfolgs-Blitz nutzt `--rumble-zone-color` direkt wieder (dieselbe
-         * Trefferzonen-Farbe, kein zweites Grün). `--rumble-result-miss-color` dupliziert bewusst
-         * den Wert von `apps/client/src/config.ts`s `RUMBLE_RESULT_MISS_COLOR` (Muster
-         * `--hud-endgame-color`/`PORTAL_COLOR`: kein CSS-Import aus TypeScript möglich, beide
-         * Stellen MÜSSEN bei einer Änderung von Hand synchron gehalten werden).
+         * Ausgang-Feedback-Blitz (`#rumble-bar.result-hit`/`.result-miss` unten): Erfolgs-Blitz
+         * nutzt `--rumble-zone-color` direkt wieder (dieselbe Trefferzonen-Farbe, kein zweites
+         * Grün). `--rumble-result-miss-color` dupliziert bewusst den Wert von
+         * `apps/client/src/config.ts`s `RUMBLE_RESULT_MISS_COLOR` (Muster `--hud-endgame-color`/
+         * `PORTAL_COLOR`: kein CSS-Import aus TypeScript möglich, beide Stellen MÜSSEN bei einer
+         * Änderung von Hand synchron gehalten werden) — `RUMBLE_RESULT_MISS_COLOR` färbt seit der
+         * Feel-Optimierung (Felix-Auftrag 2026-07-16) zusätzlich die Füllung des „!"-Weltsymbols
+         * (`scenes/MatchScene.ts`s `triggerWorldBetraySighted()`, Feature B, Umbau Aufgabe 0 — EIN
+         * Warnrot statt eines zweiten).
          */
         --rumble-result-miss-color: #ef4444;
         /*
@@ -818,22 +821,55 @@
       }
 
       /*
-       * Ausgang-Feedback-Blitz (Felix-Entscheid „nur Blitz", 2026-07-16, `scenes/MatchScene.ts`s
-       * `updateRumbleHud()`/`handleRumbleResult()`): sobald ein `"rumbleResult"`-Ereignis eintrifft,
-       * bleibt `#rumble-bar` für `RUMBLE_RESULT_FLASH_DURATION_MS` (`src/config.ts`) SICHTBAR und
-       * übermalt sich komplett grün/rot, statt sofort bei `rumbleActive → false` zu verschwinden —
-       * Marker/Zone werden für die Blitz-Dauer ausgeblendet (`display: none`), das Balken-
-       * `background` selbst trägt die Blitz-Farbe. Erfolg (`.result-hit`) nutzt dieselbe Farbe wie
-       * die Trefferzone (`--rumble-zone-color`, EIN Grün, kein zweiter Ton); Fehlschlag
-       * (`.result-miss`) nutzt das eigene Warnrot (`--rumble-result-miss-color` oben). KEIN eigener
-       * Ton (der Server-Verrats-Ton an Dritte bleibt unverändert).
+       * Ausgang-Feedback-Blitz (`scenes/MatchScene.ts`s `updateRumbleHud()`/`handleRumbleResult()`):
+       * sobald ein `"rumbleResult"`-Ereignis eintrifft, bleibt `#rumble-bar` für
+       * `RUMBLE_RESULT_FLASH_DURATION_MS` (`src/config.ts`) SICHTBAR und übermalt sich komplett
+       * grün/rot, statt sofort bei `rumbleActive → false` zu verschwinden — Marker/Zone werden für
+       * die Blitz-Dauer ausgeblendet (`display: none`), das Balken-`background` selbst trägt die
+       * Blitz-Farbe. Erfolg (`.result-hit`) nutzt dieselbe Farbe wie die Trefferzone
+       * (`--rumble-zone-color`, EIN Grün, kein zweiter Ton); Fehlschlag (`.result-miss`) nutzt das
+       * eigene Warnrot (`--rumble-result-miss-color` oben). Zusätzliches Audio-Feedback (dezenter
+       * Erfolgs-Ton / eigener Verrats-Ton bei Fehlschlag) läuft rein clientseitig über
+       * `SoundPlayer`, unabhängig von diesem DOM-Blitz hier. Das „!"-Weltsymbol bei Fehlschlag
+       * (Feature B, `triggerWorldBetraySighted()`) hängt seit dem Umbau (Aufgabe 0) NICHT MEHR an
+       * diesem self-only `"rumbleResult"`-Ereignis, sondern am eigenständigen, server-gegateten
+       * `"rumbleBetraySighted"`-Ereignis (siehe `net/connection.ts`).
+       *
+       * **Deutlicherer Blitz (Feel-Optimierung, Felix-Auftrag 2026-07-16: „250 ms wurde beim
+       * Playtest übersehen"):** `RUMBLE_RESULT_FLASH_DURATION_MS` auf `550` ms verlängert (siehe
+       * dortige Dokumentation) UND ein kurzer Glow-Puls (`@keyframes rumble-result-pulse`,
+       * `box-shadow` in derselben Blitz-Farbe via `currentColor`) ergänzt — dezent (keine
+       * Skalierung, kein Layout-Sprung, reine Leuchtkraft-Betonung um den ohnehin fest
+       * positionierten Balken). `animation-duration` dupliziert bewusst denselben Millisekunden-
+       * Wert wie `RUMBLE_RESULT_FLASH_DURATION_MS` (Muster `--rumble-result-miss-color`/
+       * `RUMBLE_RESULT_MISS_COLOR`: kein CSS-Import aus TypeScript möglich, beide Stellen MÜSSEN
+       * bei einer künftigen Änderung von Hand synchron gehalten werden).
        */
+      @keyframes rumble-result-pulse {
+        0% {
+          box-shadow: 0 0 0 0 currentColor;
+        }
+        35% {
+          box-shadow: 0 0 12px 3px currentColor;
+        }
+        100% {
+          box-shadow: 0 0 0 0 currentColor;
+        }
+      }
+
+      #rumble-bar.result-hit,
+      #rumble-bar.result-miss {
+        animation: rumble-result-pulse 550ms ease-out;
+      }
+
       #rumble-bar.result-hit {
         background: var(--rumble-zone-color);
+        color: var(--rumble-zone-color);
       }
 
       #rumble-bar.result-miss {
         background: var(--rumble-result-miss-color);
+        color: var(--rumble-result-miss-color);
       }
 
       #rumble-bar.result-hit #rumble-bar-zone,
@@ -1041,7 +1077,7 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-C2_lvluc.js"></script>
+    <script type="module" crossorigin src="./assets/index-wJ8rtOyk.js"></script>
   </head>
   <body>
     <div id="game-container">
