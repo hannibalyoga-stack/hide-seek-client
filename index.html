@@ -102,19 +102,43 @@
         /* Randmarker-Kantenlänge in Pixeln (`REVEAL_MARKER_SIZE_PX`, `apps/client/src/config.ts`). */
         --reveal-marker-size: 20px;
         /*
-         * Rumpel-HUD-Balken (Versteck-Rumpeln, Anti-Camper §5, Client-/Sound-Scheibe R1c,
-         * Felix-Feel-Vorgabe „1:1 aus dem MVP"): feste Bildschirm-Pixelgröße (Muster
-         * `--reveal-marker-size`/`--move-mode-button-size` — HUD-Chrome-Größe, nicht
-         * Welt-Geometrie, deshalb bewusst px statt einer Welt-Einheiten-Umrechnung). Grüne
-         * Trefferzone (`#37d67a`) + Marker (Weiß `#ffffff`, im Grün Gold `#ffd166`) exakt nach
-         * Auftragsvorgabe.
+         * Rumpel-HUD-Balken (Versteck-Rumpeln, Anti-Camper §5, ursprünglich Client-/Sound-
+         * Scheibe R1c, Felix-Feel-Vorgabe „1:1 aus dem MVP"). **Mobile-Redesign „der Balken ist
+         * selbst das Tap-Ziel" (Übergabe-Auftrag `2026-07-16-rumpel-balken-tap-redesign.md`,
+         * Felix-Konzeptrunde 2026-07-16):** löst den separaten „JETZT!"-Button ab (Split-
+         * Attention-Problem — Auge folgt dem Marker, Daumen musste einen räumlich getrennten
+         * Button treffen). Breite jetzt `min(72vw, 420px)` (Mobile-Regel 3: relativ zur
+         * Bildschirmbreite, nicht fest, mit fester Obergrenze für große Bildschirme), Höhe
+         * **60 px** (Felix-Entscheid 1) statt vormals 16 px — der Balken selbst ist jetzt groß
+         * genug, um ein komfortables Tap-Ziel zu sein, ZUSÄTZLICH umschlossen von der
+         * unsichtbaren `--rumble-bar-hit-halo`-Polsterung des `#rumble-bar-hit`-Wrappers unten
+         * (E1). Grüne Trefferzone (`#37d67a`) + Marker (Weiß `#ffffff`, im Grün Gold `#ffd166`)
+         * unverändert exakt nach ursprünglicher Auftragsvorgabe — Marker-Breite `6px → 10px`
+         * (Mobile-Redesign, sichtbar breiter auf der größeren Fläche).
          */
-        --rumble-bar-width: 240px;
-        --rumble-bar-height: 16px;
-        --rumble-bar-marker-width: 6px;
+        --rumble-bar-width: min(72vw, 420px);
+        --rumble-bar-height: 60px;
+        --rumble-bar-marker-width: 10px;
         --rumble-zone-color: #37d67a;
         --rumble-marker-color: #ffffff;
         --rumble-marker-color-hit: #ffd166;
+        /*
+         * Mobile-Redesign (s. o.): sichtbarer Rahmen + abgerundete Ecken als Affordance „das ist
+         * ein Bedienelement" (der Balken war vorher `pointer-events: none`, reine Anzeige — jetzt
+         * ist er selbst das Tap-Ziel, s. `#rumble-bar-hit` unten). `--rumble-bar-hit-halo` ist die
+         * UNSICHTBARE Polsterung des Wrapper-Elements `#rumble-bar-hit` (E1: Trefferfläche größer
+         * als die sichtbare Balkenfläche, ohne die Marker-/Zonen-Prozent-Formel zu berühren) —
+         * effektive Trefferhöhe damit `60px + 2 × 12px = 84px`, weit über der Mobile-Tag-1-
+         * Mindestgröße von 48 px (Regel 4). `--rumble-bar-appear-pop-scale-start` ist der
+         * Start-Skalierungsfaktor des Erscheinen-Pops (`@keyframes rumble-bar-appear-pop` unten,
+         * Dauer `RUMBLE_BAR_APPEAR_POP_DURATION_MS` aus `src/config.ts`, bewusste Duplikation,
+         * kein CSS-Import aus TypeScript möglich, Muster `--rumble-result-miss-color`).
+         */
+        --rumble-bar-radius: 14px;
+        --rumble-bar-border-width: 1.5px;
+        --rumble-bar-border-color: rgba(255, 255, 255, 0.45);
+        --rumble-bar-hit-halo: 12px;
+        --rumble-bar-appear-pop-scale-start: 0.92;
         /*
          * Ausgang-Feedback-Blitz (`#rumble-bar.result-hit`/`.result-miss` unten): Erfolgs-Blitz
          * nutzt `--rumble-zone-color` direkt wieder (dieselbe Trefferzonen-Farbe, kein zweites
@@ -656,29 +680,6 @@
       }
 
       /*
-       * Mobile Rumpeln-Tap-Button (Versteck-Rumpeln, Anti-Camper §5, Client-/Sound-Scheibe R1c):
-       * dediziertes EIN-Tap-Element (KEIN Vollbild-Tap) — nur sichtbar, solange die eigene Figur
-       * `rumbleActive` ist (`scenes/MatchScene.ts`s `updateRumbleHud()` schaltet die
-       * `.visible`-Klasse PRO FRAME, Muster `#netlog-export-button`: `display: none` Default,
-       * damit ein verstecktes Element strukturell KEINEN Klickbereich einnimmt — anders als die
-       * opacity-basierten Hinweistexte, hier ist ein hartes An/Aus korrekt, weil der Button sonst
-       * unsichtbar, aber tappbar bliebe). Teilt sich die Basis-Optik mit den übrigen
-       * Aktions-Buttons (`.mobile-move-mode-button`, Größe/Pointer-only-Verhalten identisch,
-       * Mobile-Tag-1-Regel 4) — Position LINKS über dem Schleichen-Button (Muster
-       * `#mobile-interact-button` rechts über Dash), symmetrisch, kollidiert nicht mit dem
-       * dauerhaften `#hidden-hint`-Text.
-       */
-      #mobile-rumble-button {
-        display: none;
-        left: calc(var(--hud-safe-left) + var(--hud-gap));
-        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap));
-      }
-
-      #mobile-rumble-button.visible {
-        display: flex;
-      }
-
-      /*
        * Sichtbarer floating Joystick (Felix-Playtest 2026-07-13 „Mobile-UI deutlich
        * nutzerfreundlicher" + Touch-UX-Best-Practice „dynamic/floating stick"): rein visuelles
        * DOM-Overlay (`pointer-events: none` — der Whole-Canvas-Joystick UNTER dem Canvas fängt die
@@ -755,19 +756,45 @@
       }
 
       /*
-       * Rumpel-HUD-Balken (Versteck-Rumpeln, Anti-Camper §5, Client-/Sound-Scheibe R1c,
-       * Felix-Feel-Vorgabe „1:1 aus dem MVP"): dediziertes Bildschirm-HUD für die EIGENE
-       * Balken-Challenge — NICHT über dem Kopf (das wäre ein Welt-/Sprite-Element wie die
-       * Channel-Fortschrittsbalken, `CHANNEL_PROGRESS_BAR_*`), sondern ein fixes DOM-HUD (Muster
-       * `#debug-overlay`: harter `display`-Toggle statt Opacity-Fade — die Challenge ist ein
-       * Reflex-Test, eine Übergangsphase würde die exakte Marker-Position beim Erscheinen
-       * verfälscht wirken lassen). Nur sichtbar, solange die eigene Figur `rumbleActive` ist
-       * (`scenes/MatchScene.ts`s `updateRumbleHud()`, PRO FRAME, Muster
-       * `updateChannelProgressBar()`/`updateMinimapHud()` — SELF-Werte). Über BEIDEN
+       * Rumpel-HUD-Balken (Versteck-Rumpeln, Anti-Camper §5, ursprünglich Client-/Sound-Scheibe
+       * R1c, Felix-Feel-Vorgabe „1:1 aus dem MVP"). **Mobile-Redesign „der Balken ist selbst das
+       * Tap-Ziel" (Übergabe-Auftrag `2026-07-16-rumpel-balken-tap-redesign.md`):** dediziertes
+       * Bildschirm-HUD für die EIGENE Balken-Challenge — NICHT über dem Kopf (das wäre ein
+       * Welt-/Sprite-Element wie die Channel-Fortschrittsbalken, `CHANNEL_PROGRESS_BAR_*`),
+       * sondern ein fixes DOM-HUD (Muster `#debug-overlay`: harter `display`-Toggle statt
+       * Opacity-Fade — die Challenge ist ein Reflex-Test, eine Übergangsphase würde die exakte
+       * Marker-Position beim Erscheinen verfälscht wirken lassen). Nur sichtbar, solange die
+       * eigene Figur `rumbleActive` ist (`scenes/MatchScene.ts`s `updateRumbleHud()`, PRO FRAME,
+       * Muster `updateChannelProgressBar()`/`updateMinimapHud()` — SELF-Werte). Über BEIDEN
        * Button-Reihen UND dem `#hidden-hint`-Text verankert (Muster `#hidden-hint`s eigenem
-       * Offset über beiden Button-Reihen), damit sich keines der gleichzeitig sichtbaren
-       * Elemente überlappt — ein versteckter Spieler mit laufender Challenge sieht IMMER beide
-       * zugleich (`rumbleActive` setzt strukturell `isHidden` voraus).
+       * Offset über beiden Button-Reihen) — die `bottom`-Formel selbst bleibt unverändert
+       * (Redesign-Spezifikation §4: „Position unverändert"); da der Balken jetzt DEUTLICH höher
+       * ist (60 px statt vormals 16 px) und nach OBEN wächst, vergrößert sich der Abstand zu
+       * `#hidden-hint` dadurch nur zusätzlich (geprüft: keine Überlappung bei irgendeiner
+       * Viewport-Breite, kein Offset-Nachzug an `#hidden-hint` nötig).
+       *
+       * **Zwei-Ebenen-Struktur (E1 — der Balken IST das Tap-Ziel, keine Positionsauswertung):**
+       * `#rumble-bar-hit` ist der ÄUSSERE, unsichtbare Wrapper — `position: fixed`, trägt die
+       * `bottom`-Formel + Zentrierung, seine Größe (`--rumble-bar-width`/`-height` PLUS je
+       * `2 × --rumble-bar-hit-halo`) ist die tatsächliche Pointer-Trefferfläche
+       * (`pointer-events: auto` NUR während `.visible`, Pointer-Wiring in
+       * `setupRumbleTapControls()`, `MatchScene.ts`). `#rumble-bar` ist der INNERE, SICHTBARE
+       * Balken (Hintergrund/Rahmen/Radius) — `position: absolute` innerhalb des Wrappers, um
+       * exakt `--rumble-bar-hit-halo` von dessen Rand eingerückt (die unsichtbare Halo liegt
+       * dadurch symmetrisch außen herum). Marker/Zone bleiben ausschließlich Kinder von
+       * `#rumble-bar` und referenzieren dadurch weiterhin exakt die SICHTBARE Balkenfläche, exakt
+       * wie vor dem Redesign — die Halo verändert ihre Prozent-Formel an keiner Stelle. Beide
+       * Ebenen werden synchron von `updateRumbleHud()` auf `.visible` geschaltet (dieselbe
+       * Bedingung `rumbleActive || Ausgang-Feedback-Blitz aktiv`, siehe unten).
+       *
+       * **Scale-Pop beim Erscheinen** (`@keyframes rumble-bar-appear-pop`, Dauer
+       * `RUMBLE_BAR_APPEAR_POP_DURATION_MS` aus `src/config.ts`, bewusste Duplikation dort
+       * dokumentiert): läuft NUR auf `#rumble-bar` (dem sichtbaren Container) — eine reine
+       * Skalierung um dessen eigenes Zentrum, verfälscht die relative Marker-/Zonen-Position
+       * dadurch an keiner Stelle (beide bleiben Prozentwerte relativ zur unskalierten Layout-Box
+       * des Containers, die CSS-`transform: scale()` rein visuell mitskaliert). Läuft
+       * automatisch bei jeder false→true-Flanke von `.visible` erneut an (kein JS-Trigger nötig
+       * — dieselbe Selektor-Neu-Zuordnung wie beim bestehenden `display: none → block`-Toggle).
        *
        * Marker/Zone werden per Inline-`style` PRO FRAME neu gesetzt (`updateRumbleHud()`):
        * `#rumble-bar-zone`s `width` = `rumbleGreenZoneFraction` (live tunbar), zentriert per
@@ -777,7 +804,7 @@
        * — der Marker darf dadurch an den Rändern (Fraktion 0/1) leicht über den Balkenrand
        * hinausragen (halbe Marker-Breite), exakt wie im MVP-Vorbild.
        */
-      #rumble-bar {
+      #rumble-bar-hit {
         display: none;
         position: fixed;
         bottom: calc(
@@ -785,16 +812,46 @@
         );
         left: 50%;
         transform: translateX(-50%);
+        width: calc(var(--rumble-bar-width) + 2 * var(--rumble-bar-hit-halo));
+        height: calc(var(--rumble-bar-height) + 2 * var(--rumble-bar-hit-halo));
+        pointer-events: none;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      #rumble-bar-hit.visible {
+        display: block;
+        pointer-events: auto;
+      }
+
+      @keyframes rumble-bar-appear-pop {
+        0% {
+          transform: scale(var(--rumble-bar-appear-pop-scale-start));
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      #rumble-bar {
+        display: none;
+        position: absolute;
+        top: var(--rumble-bar-hit-halo);
+        left: var(--rumble-bar-hit-halo);
         width: var(--rumble-bar-width);
         height: var(--rumble-bar-height);
         background: rgba(0, 0, 0, 0.7);
-        border-radius: 2px;
+        border-radius: var(--rumble-bar-radius);
+        border: var(--rumble-bar-border-width) solid var(--rumble-bar-border-color);
+        box-sizing: border-box;
         overflow: hidden;
         pointer-events: none;
       }
 
       #rumble-bar.visible {
         display: block;
+        animation: rumble-bar-appear-pop 130ms ease-out;
       }
 
       #rumble-bar-zone {
@@ -821,6 +878,37 @@
       }
 
       /*
+       * Hinweistext „Tipp, wenn der Marker im Grün ist" (Mobile-Redesign, Übergabe-Auftrag
+       * `2026-07-16-rumpel-balken-tap-redesign.md`, Felix-Entscheid 3): direkt ÜBER dem Balken
+       * verankert (`bottom`-Formel = dieselbe wie `#rumble-bar-hit` PLUS dessen volle Höhe PLUS
+       * einen `--hud-gap`-Abstand), Stil-Muster `#hidden-hint` (Opacity-Fade über `.visible`,
+       * `pointer-events: none`, Text-Shadow). Sichtbarkeit wird AUSSCHLIESSLICH von
+       * `updateRumbleHud()` über die reine `hud/rumbleHintVisibility.ts`s
+       * `computeRumbleHintVisibility()` gesteuert (erste `RUMBLE_HINT_MAX_WAVES` Wellen der
+       * Session, s. dort) — dieses CSS-Element selbst kennt keine Wellen-Zählung.
+       */
+      #rumble-hint {
+        position: fixed;
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + 3 * (var(--move-mode-button-size) + var(--hud-gap)) +
+            var(--rumble-bar-height) + 2 * var(--rumble-bar-hit-halo) + var(--hud-gap)
+        );
+        left: 50%;
+        transform: translateX(-50%);
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 sans-serif;
+        text-align: center;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 300ms ease;
+      }
+
+      #rumble-hint.visible {
+        opacity: 1;
+      }
+
+      /*
        * Ausgang-Feedback-Blitz (`scenes/MatchScene.ts`s `updateRumbleHud()`/`handleRumbleResult()`):
        * sobald ein `"rumbleResult"`-Ereignis eintrifft, bleibt `#rumble-bar` für
        * `RUMBLE_RESULT_FLASH_DURATION_MS` (`src/config.ts`) SICHTBAR und übermalt sich komplett
@@ -843,7 +931,11 @@
        * positionierten Balken). `animation-duration` dupliziert bewusst denselben Millisekunden-
        * Wert wie `RUMBLE_RESULT_FLASH_DURATION_MS` (Muster `--rumble-result-miss-color`/
        * `RUMBLE_RESULT_MISS_COLOR`: kein CSS-Import aus TypeScript möglich, beide Stellen MÜSSEN
-       * bei einer künftigen Änderung von Hand synchron gehalten werden).
+       * bei einer künftigen Änderung von Hand synchron gehalten werden). Überschreibt die
+       * `animation`-Kurzschrift bewusst den `rumble-bar-appear-pop`-Wert der `.visible`-Regel
+       * (höhere Deklarationsreihenfolge/Spezifität) — Konflikt praktisch ausgeschlossen, da der
+       * Pop längst (130 ms) abgeschlossen ist, bevor ein Ergebnis-Ereignis eintreffen kann (die
+       * kürzeste Welle dauert ein Vielfaches davon).
        */
       @keyframes rumble-result-pulse {
         0% {
@@ -1077,7 +1169,7 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-wJ8rtOyk.js"></script>
+    <script type="module" crossorigin src="./assets/index-B20tuyYf.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -1097,11 +1189,13 @@
       <div id="joystick-knob"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
       <div id="hidden-hint">Du bist versteckt — E zum Verlassen</div>
-      <div id="rumble-bar"><div id="rumble-bar-zone"></div><div id="rumble-bar-marker"></div></div>
+      <div id="rumble-hint">Tipp, wenn der Marker im Grün ist</div>
+      <div id="rumble-bar-hit">
+        <div id="rumble-bar"><div id="rumble-bar-zone"></div><div id="rumble-bar-marker"></div></div>
+      </div>
       <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
       <div id="mobile-dash-button" class="mobile-move-mode-button">Dash</div>
       <div id="mobile-interact-button" class="mobile-move-mode-button">Interagieren</div>
-      <div id="mobile-rumble-button" class="mobile-move-mode-button">JETZT!</div>
       <div id="tweak-console"></div>
     </div>
   </body>
