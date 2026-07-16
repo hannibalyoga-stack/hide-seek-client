@@ -2,7 +2,18 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!--
+      maximum-scale=1 + user-scalable=no (Rotations-Fix, Felix-Befund 2026-07-16): iOS Safari
+      zoomt Seiten bei Geräte-Rotation gelegentlich selbstständig (Auto-Zoom-Quirk) — der
+      sichtbare Seitenausschnitt „klebt" dann falsch und zieht nicht mit. Für ein
+      Vollbild-Canvas-Spiel mit eigenem Kamera-Zoom ist das Abschalten des Seiten-Zooms
+      Standardpraxis (der Pinch-Zoom der SEITE ist hier nie gewollt; Spiel-Zoom regelt
+      `applyWorldZoom()` in `src/scenes/MatchScene.ts`).
+    -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+    />
     <title>Hide Seek — Client (Dev)</title>
     <style>
       /*
@@ -1169,7 +1180,7 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-Cd4dy47U.js"></script>
+    <script type="module" crossorigin src="./assets/index-M8lhnYlH.js"></script>
   </head>
   <body>
     <div id="game-container">
