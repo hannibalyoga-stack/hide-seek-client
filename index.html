@@ -482,6 +482,29 @@
       }
 
       /*
+       * Item-Ladungs-Pips (Auftrag „Besen als erstes Item + minimales Item-Nutzungs-Fundament
+       * (Runde 1)"): eigene, self-only Zeile UNTER `#wins-counter` (Muster dortiger Positionierung,
+       * `2em` weiterer Zeilenabstand) — `●`/`○`-Zeichen als einfache, lesbare Pips (AK-7), gefüllt
+       * durch `scenes/MatchScene.ts`s `updateItemHud()`. `display: none` Default (nur sichtbar,
+       * solange ein Item im Slot liegt), `.visible` schaltet frame-genau um (Muster
+       * `#netlog-export-button`).
+       */
+      #item-charges-hud {
+        display: none;
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap) + 4em);
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 monospace;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+      }
+
+      #item-charges-hud.visible {
+        display: block;
+      }
+
+      /*
        * Ergebnis-Overlay (Übergabe-Auftrag P3c-2, Entwurfs-Entscheidung g): eigenständiges
        * DOM-Element — NICHT `#catch-announcement` wiederverwendet (das blendet nach
        * `CATCH_ANNOUNCEMENT_DURATION_MS` aus; das Ergebnis muss die vollen
@@ -854,6 +877,30 @@
       /* Tap-Feedback nur für tatsächlich bediente Slots (heute: Dash). */
       .item-slot.is-actionable:active {
         transform: translateY(1px) scale(0.96);
+      }
+
+      /*
+       * Mobile Item-Nutzungs-Button (Auftrag „Besen als erstes Item + minimales Item-Nutzungs-
+       * Fundament (Runde 1)"): EIN Tap-Button (kein Halten), Verdrahtung in `scenes/MatchScene.ts`s
+       * `setupUseItemControls()`, Zustand in `net/useItemInput.ts`s `MobileUseItemState`. Teilt
+       * sich die Basis-Optik mit den Bewegungsmodus-/Interaktions-Buttons
+       * (`.mobile-move-mode-button`, Größe/Form/Touch-Verhalten identisch — Touch-Target ≥ 48 px,
+       * Mobile-Tag-1-Regel 4), ist aber ANDERS als jene NICHT dauerhaft sichtbar (AK-7: „nur
+       * sichtbar, wenn nutzbar" — Item im Slot ODER aktiver Flug): `display: none` als
+       * ID-spezifischer Default überschreibt die Klassen-Vorgabe `display: flex`, `.visible`
+       * (`updateItemHud()`, `MatchScene.ts`) schaltet ihn frame-genau wieder ein (Muster
+       * `#netlog-export-button`).
+       */
+      #mobile-broom-button {
+        display: none;
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + 2 * (var(--move-mode-button-size) + var(--hud-gap))
+        );
+      }
+
+      #mobile-broom-button.visible {
+        display: flex;
       }
 
       /*
@@ -1346,7 +1393,7 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-DieLRmVI.js"></script>
+    <script type="module" crossorigin src="./assets/index-Cg-lReRI.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -1359,6 +1406,7 @@
       <div id="catch-announcement"></div>
       <div id="match-timer"></div>
       <div id="wins-counter">Wins: 0</div>
+      <div id="item-charges-hud"></div>
       <div id="match-result"></div>
       <div id="sound-compass"></div>
       <div id="reveal-markers"></div>
@@ -1372,14 +1420,19 @@
       </div>
       <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
       <div id="mobile-interact-button" class="mobile-move-mode-button">Interagieren</div>
+      <div id="mobile-broom-button" class="mobile-move-mode-button">Besen</div>
 
       <!--
         Item-Bar (Felix-Auftrag 2026-07-17): Übernahme der MVP-Aktionsleiste, unten in der
-        rechten Daumenzone. Gruppe 1 = Dash (funktional, ersetzt den früheren Eck-Button) +
-        Zauber (Platzhalter, Zauber-System noch ungemergt); Gruppe 2 = 3 Item-Slots (leer, wie
-        MVP bei leerem Inventar; Item-System noch ungemergt). Styles im <style>-Block oben,
-        Verdrahtung `scenes/MatchScene.ts`s `setupItemBar()`. Jeder Slot: Panel < Cooldown-Wipe
-        < Steinrahmen, Icon im Panel (Schichtung 1:1 MVP `hudShared.ts`).
+        rechten Daumenzone. Gruppe 1 = Dash (funktional, ersetzt den früheren Eck-Button,
+        zusätzlich Boost-Halte-Ziel im Besen-Flug, siehe `setupItemBar()`) + Zauber (funktional,
+        Merge feature/besen-item ⊕ feature/zauber-fundament 2026-07-17: Tap sendet die
+        payload-lose `castSpell`-Message); Gruppe 2 = 3 Item-Slots (leer, wie MVP bei leerem
+        Inventar — generisches Mehr-Item-Inventar existiert noch nicht, reine Optik-Platzhalter).
+        Der Besen-eigene `#mobile-broom-button` oben bleibt bewusst EIGENSTÄNDIG NEBEN der
+        Item-Bar (kein Item-Bar-Slot dafür in dieser Runde, offener Folge-Punkt). Styles im
+        <style>-Block oben, Verdrahtung `scenes/MatchScene.ts`s `setupItemBar()`. Jeder Slot:
+        Panel < Cooldown-Wipe < Steinrahmen, Icon im Panel (Schichtung 1:1 MVP `hudShared.ts`).
       -->
       <div id="item-bar">
         <div class="item-bar__group">
