@@ -171,6 +171,15 @@
          */
         --move-mode-button-size: 3.5rem;
         /*
+         * Haupt-Aktionsbutton Interagieren (Felix-Auftrag 2026-07-17, Mobile-Layout-Umbau
+         * Richtung Wild-Rift-Muster: die PRIMÄRE Aktion sitzt als GRÖSSTER Button in der
+         * rechten unteren Ecke, sekundäre Aktionen kleiner daneben — MVP-Vorbild identisch:
+         * Aktions-Button R=46 > Sneak R=40): 4,5rem = 72px bei Standard-Root, deutlich über
+         * der Mindestgröße (Regel 4), relativ zur Root-Schriftgröße (Muster
+         * `--move-mode-button-size`).
+         */
+        --interact-button-size: 4.5rem;
+        /*
          * Debug-HUD-Toggle-Button (Playtest-Fix, Felix 2026-07-11): 3,25rem = 52px bei
          * Standard-Root-Schriftgröße — über der Mobile-Tag-1-Mindestgröße von 48px (Regel 4),
          * `min-width`/`min-height: 48px` unten als harte Untergrenze zusätzlich (Muster
@@ -349,11 +358,15 @@
        */
       #connection-status {
         position: fixed;
-        /* Eine Etage über die Item-Bar gehoben (Felix-Auftrag 2026-07-17): die zentrierte
-           Statuszeile lag vormals ganz unten (safe+gap) und überlappte die rechtsbündige
-           Item-Bar — jetzt auf derselben Etage wie Schleichen/Interagieren, weiterhin
-           bottom-/safe-area-verankert (Inset bleibt im calc erhalten). */
-        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap));
+        /* Über den KOMPLETTEN rechten Daumen-Cluster gehoben (Wild-Rift-Umbau 2026-07-17):
+           auf der Button-Etage kollidierte die zentrierte Statuszeile bei 375px mit dem
+           dorthin gezogenen Schleichen-Toggle. Formel = `#hidden-hint`-Anker + eine Zeile
+           Abstand (1.8em), damit sich beide zentrierten Texte auch gleichzeitig nie
+           überlappen (der Versteckt-Hinweis steht direkt darunter). */
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
+            var(--interact-button-size) + var(--hud-gap) + 1.8em
+        );
         left: calc(var(--hud-safe-left) + var(--hud-gap));
         right: calc(var(--hud-safe-right) + var(--hud-gap));
         color: var(--theme-color-text-title);
@@ -568,12 +581,63 @@
         position: fixed;
         top: calc(var(--hud-safe-top) + var(--hud-gap) + 2em);
         left: calc(var(--hud-safe-left) + var(--hud-gap));
-        pointer-events: none;
+        /*
+         * Tap-Toggle (Felix-Auftrag 2026-07-17, Mobile-Layout-Umbau): das Panel ist seither
+         * SELBST ein Tap-/Klick-Ziel (ein Tap klappt die Karte auf den kleinen Karten-Knopf
+         * `#minimap-restore-button` zusammen, ein weiterer klappt sie wieder auf) — deshalb
+         * `pointer-events: auto` statt des früheren `none`. Dasselbe Pointer-only-Muster wie
+         * `.mobile-move-mode-button` (EIN Eingabepfad für Maus UND Touch, `touch-action: none`
+         * gegen Doppel-Tap-Zoom, `stopPropagation()` im Handler in `scenes/MatchScene.ts`s
+         * `setupMinimapDom()` — strukturell erreicht ein Panel-Tap den Whole-Canvas-Joystick
+         * ohnehin nie, das Panel ist DOM-Geschwister des Phaser-Canvas). Das aufgeklappte Panel
+         * (~150×110px, `MINIMAP_PANEL_MAX_*_PX`) und der zusammengeklappte Knopf (≥48px, s. u.)
+         * liegen beide über der Mobile-Tag-1-Mindestgröße (Regel 4).
+         */
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        cursor: pointer;
       }
 
       #minimap-canvas {
         display: block;
         border-radius: 2px;
+      }
+
+      /*
+       * Zusammengeklappter Minimap-Zustand (`.minimap-panel--minimized`, geschaltet in
+       * `scenes/MatchScene.ts`s `setupMinimapDom()`-Tap-Handler): Canvas weg, stattdessen ein
+       * kleiner runder Karten-Knopf an derselben Stelle (Optik-Muster `#debug-toggle-button`,
+       * Größe ≥48px, Regel 4) — die Karte verschwindet nie „spurlos", der Weg zurück bleibt
+       * sichtbar an Ort und Stelle.
+       */
+      #minimap-restore-button {
+        display: none;
+        width: var(--debug-toggle-button-size);
+        height: var(--debug-toggle-button-size);
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--hud-text-color);
+        background: rgba(0, 0, 0, 0.35);
+        color: var(--hud-text-color);
+        align-items: center;
+        justify-content: center;
+      }
+
+      #minimap-restore-button svg {
+        width: 1.6rem;
+        height: 1.6rem;
+        display: block;
+      }
+
+      #minimap-panel.minimap-panel--minimized #minimap-canvas {
+        display: none;
+      }
+
+      #minimap-panel.minimap-panel--minimized #minimap-restore-button {
+        display: flex;
       }
 
       /*
@@ -716,15 +780,23 @@
       }
 
       /*
-       * Schleichen-Toggle: seit Einführung der Item-Bar (Felix-Auftrag 2026-07-17) eine Etage
-       * ANGEHOBEN (`bottom` + `--item-bar-height` + Gap) — die unterste Zeile gehört jetzt der
-       * rechtsbündigen Item-Bar; ohne das Anheben überlappt der linke Button bei 375px mit dem
-       * linken Ende der Bar. Links verankert (Safe-Area, Regel 5), Gegenstück zum
-       * `#mobile-interact-button` rechts auf gleicher Höhe.
+       * Schleichen-Toggle: seit dem Mobile-Layout-Umbau (Felix-Auftrag 2026-07-17,
+       * Wild-Rift-Muster) RECHTS im Daumen-Cluster, direkt links neben dem großen
+       * `#mobile-interact-button` — vormals links unten, wo er mitten in der Zone des
+       * floating Joysticks stand (Felix-Playtest-Befund: „steht voll im Weg"). Die linke
+       * Bildschirmhälfte gehört jetzt wieder KOMPLETT dem Joystick (exakt das MVP-Vorbild:
+       * Sneak-Button „LEISE" saß dort bei X=728 rechts neben dem Aktions-Button, die
+       * Joystick-Zone war die linke Bildhälfte). Gleiche Etage wie Interagieren (über der
+       * Item-Bar), `right`-Verankerung = Safe-Area + Interact-Breite + Gap (Regel 3/5).
+       * `bottom` zusätzlich um die halbe Größendifferenz zum großen Interact-Button angehoben,
+       * damit beide Kreise auf einer MITTELLINIE liegen (Wild-Rift-Cluster-Optik).
        */
       #mobile-sneak-button {
-        left: calc(var(--hud-safe-left) + var(--hud-gap));
-        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap));
+        right: calc(var(--hud-safe-right) + var(--hud-gap) + var(--interact-button-size) + var(--hud-gap));
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
+            (var(--interact-button-size) - var(--move-mode-button-size)) / 2
+        );
       }
 
       /* Aktiv-Zustand des Schleichen-Toggles (`scenes/MatchScene.ts`) — reine Darstellung. */
@@ -749,9 +821,27 @@
       #mobile-interact-button {
         /* Haupt-Aktion (Tür/Verstecken) in die gut erreichbare rechte Daumenzone, gestapelt
            ÜBER der Item-Bar (vormals über dem Dash-Button — der Dash ist jetzt ein Bar-Slot).
-           Höhe an `--item-bar-height` gekoppelt, gleiche Etage wie `#mobile-sneak-button`. */
+           Höhe an `--item-bar-height` gekoppelt. Seit dem Wild-Rift-Umbau (Felix-Auftrag
+           2026-07-17) der GRÖSSTE Button des Clusters (`--interact-button-size`, s. Kommentar
+           an der Variable) — der Schleichen-Toggle sitzt kleiner links daneben. */
         right: calc(var(--hud-safe-right) + var(--hud-gap));
         bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap));
+        width: var(--interact-button-size);
+        height: var(--interact-button-size);
+      }
+
+      /*
+       * Button-Icons (Wild-Rift-Umbau, Felix-Auftrag 2026-07-17): Piktogramme statt der
+       * vormaligen Wort-Labels „Schleichen"/„Interagieren" (10+ Zeichen Fließtext in einem
+       * 56px-Kreis — bei 375px praktisch unlesbar, Mobile-Unfreundlichkeit aus dem
+       * Felix-Playtest). Inline-SVG im Markup, Stil-Muster der Item-Bar-Icons
+       * (`.item-slot__icon svg`: currentColor + drop-shadow, KEIN neues Asset/keine Dependency).
+       */
+      .mobile-move-mode-button svg {
+        width: 55%;
+        height: 55%;
+        display: block;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
       }
 
       /* =====================================================================
@@ -893,9 +983,14 @@
        */
       #mobile-broom-button {
         display: none;
+        /* Wild-Rift-Umbau (Felix-Auftrag 2026-07-17): stapelt in der Ecken-Spalte direkt ÜBER
+           dem vergrößerten Haupt-Aktionsbutton (`--interact-button-size`) — dieselben Summanden
+           wie dessen `bottom`-Formel PLUS dessen Höhe + Gap (vormals `2 × move-mode-size`,
+           das kollidierte mit dem größeren Interact-Button). */
         right: calc(var(--hud-safe-right) + var(--hud-gap));
         bottom: calc(
-          var(--hud-safe-bottom) + var(--hud-gap) + 2 * (var(--move-mode-button-size) + var(--hud-gap))
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
+            var(--interact-button-size) + var(--hud-gap)
         );
       }
 
@@ -949,8 +1044,13 @@
        */
       #hidden-hint {
         position: fixed;
-        /* über BEIDEN Button-Reihen verankert (Interact sitzt jetzt über Dash rechts). */
-        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + 2 * (var(--move-mode-button-size) + var(--hud-gap)));
+        /* über dem kompletten rechten Daumen-Cluster verankert (Item-Bar-Etage + großer
+           Interact-Button, Wild-Rift-Umbau 2026-07-17) — exakt dieselben Summanden wie die
+           `bottom`-Formel von `#mobile-interact-button` PLUS dessen Höhe + Gap. */
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
+            var(--interact-button-size) + var(--hud-gap)
+        );
         left: 50%;
         transform: translateX(-50%);
         color: var(--hud-text-color);
@@ -1393,11 +1493,20 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-KFlhMzPq.js"></script>
+    <script type="module" crossorigin src="./assets/index-BXpOgFh6.js"></script>
   </head>
   <body>
     <div id="game-container">
-      <div id="minimap-panel"><canvas id="minimap-canvas"></canvas></div>
+      <div id="minimap-panel">
+        <canvas id="minimap-canvas"></canvas>
+        <!-- Zusammengeklappter Zustand (Tap-Toggle, s. CSS oben): Karten-Symbol als Wieder-Aufklapp-Knopf. -->
+        <div id="minimap-restore-button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 4L3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4z" />
+            <path d="M9 4v14M15 6v14" />
+          </svg>
+        </div>
+      </div>
       <div id="debug-overlay"></div>
       <div id="players-count">Players: 0</div>
       <div id="debug-toggle-button">DBG</div>
@@ -1418,9 +1527,33 @@
       <div id="rumble-bar-hit">
         <div id="rumble-bar"><div id="rumble-bar-zone"></div><div id="rumble-bar-marker"></div></div>
       </div>
-      <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
-      <div id="mobile-interact-button" class="mobile-move-mode-button">Interagieren</div>
-      <div id="mobile-broom-button" class="mobile-move-mode-button">Besen</div>
+      <!--
+        Rechter Daumen-Cluster (Wild-Rift-Umbau, Felix-Auftrag 2026-07-17): Schleichen-Toggle
+        (durchgestrichenes Auge = „nicht gesehen werden") klein links neben dem großen
+        Haupt-Aktionsbutton Interagieren (Tür = Türen/Verstecke bedienen); der kontextuelle
+        Besen-Button (Besen-Piktogramm, nur sichtbar wenn nutzbar, s. dessen CSS-Kommentar)
+        stapelt in der Ecken-Spalte DARÜBER. Icons statt Wort-Labels, s.
+        `.mobile-move-mode-button svg`-Kommentar oben.
+      -->
+      <div id="mobile-sneak-button" class="mobile-move-mode-button" aria-label="Schleichen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2.5 12s3.5-5.5 9.5-5.5S21.5 12 21.5 12s-3.5 5.5-9.5 5.5S2.5 12 2.5 12z" />
+          <circle cx="12" cy="12" r="2.4" />
+          <path d="M4.5 19.5l15-15" />
+        </svg>
+      </div>
+      <div id="mobile-interact-button" class="mobile-move-mode-button" aria-label="Interagieren">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="6.5" y="3.5" width="11" height="17" rx="1.2" />
+          <circle cx="14.6" cy="12" r="1.1" fill="currentColor" stroke="none" />
+        </svg>
+      </div>
+      <div id="mobile-broom-button" class="mobile-move-mode-button" aria-label="Besen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20.5 3.5L11.5 12.5" />
+          <path d="M11.5 12.5l-6 2.6L3 21l5.9-2.5 2.6-6z" />
+        </svg>
+      </div>
 
       <!--
         Item-Bar (Felix-Auftrag 2026-07-17): Übernahme der MVP-Aktionsleiste, unten in der
