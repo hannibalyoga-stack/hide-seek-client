@@ -212,6 +212,21 @@
         --item-slot-accent-empty: #555a66;
         --item-slot-accent-dash: #8fd0ff;
         --item-slot-accent-spell: var(--hud-endgame-color);
+        /*
+         * Licht-Zauber-Trio (`vault/20-Architektur/auftraege/2026-07-17-licht-zauber.md`,
+         * Schritt 17): dynamische Zauber-Slots bekommen eine DISTINKTE Akzentfarbe je Wirkungs-
+         * Kategorie (kosmetisch, `spell.category`) statt der einen bisherigen Violett-Farbe —
+         * Tür-Zauber bleiben violett (`--item-slot-accent-spell`, unverändert), Licht-Zauber
+         * bekommen ein warmes Bernstein/Gold (thematisch „Licht").
+         */
+        --item-slot-accent-spell-door: var(--hud-endgame-color);
+        --item-slot-accent-spell-light: #f5c451;
+        /*
+         * Runen-Falle (`vault/20-Architektur/auftraege/2026-07-17-runen-falle.md`, Schritt 12):
+         * vierter Zauber, eigene Kategorie „rune" — Smaragd/Grün, abgegrenzt von Tür-Violett und
+         * Licht-Gelb (kosmetisch, `scenes/MatchScene.ts`s `renderSpellSlots()`).
+         */
+        --item-slot-accent-spell-rune: #2ecc71;
         --item-slot-cooldown-color: rgba(0, 0, 0, 0.55);
       }
 
@@ -955,6 +970,23 @@
       .item-slot--spell {
         --slot-accent: var(--item-slot-accent-spell);
       }
+      /* Licht-Zauber-Trio (Schritt 17): distinkte Akzentfarbe je Kategorie (kosmetisch). */
+      .item-slot--spell-door {
+        --slot-accent: var(--item-slot-accent-spell-door);
+      }
+      .item-slot--spell-light {
+        --slot-accent: var(--item-slot-accent-spell-light);
+      }
+      /* Runen-Falle (Schritt 12): eigene Akzentfarbe für die Kategorie „rune". */
+      .item-slot--spell-rune {
+        --slot-accent: var(--item-slot-accent-spell-rune);
+      }
+      /* Zauber-Slot-Icon (Emoji-Platzhalter, Schritt 17) — Größe/Zentrierung analog `.item-slot__icon svg`. */
+      .item-slot__icon--emoji {
+        font-size: var(--item-slot-icon-size);
+        line-height: 1;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+      }
 
       /* Cooldown aktiv (Dash): Icon dimmt (MVP Icon-Alpha 0.45), Akzentrand wird grau. */
       .item-slot.is-cooldown {
@@ -1493,7 +1525,7 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BXpOgFh6.js"></script>
+    <script type="module" crossorigin src="./assets/index-WSphjNCr.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -1556,16 +1588,20 @@
       </div>
 
       <!--
-        Item-Bar (Felix-Auftrag 2026-07-17): Übernahme der MVP-Aktionsleiste, unten in der
-        rechten Daumenzone. Gruppe 1 = Dash (funktional, ersetzt den früheren Eck-Button,
-        zusätzlich Boost-Halte-Ziel im Besen-Flug, siehe `setupItemBar()`) + Zauber (funktional,
-        Merge feature/besen-item ⊕ feature/zauber-fundament 2026-07-17: Tap sendet die
-        payload-lose `castSpell`-Message); Gruppe 2 = 3 Item-Slots (leer, wie MVP bei leerem
-        Inventar — generisches Mehr-Item-Inventar existiert noch nicht, reine Optik-Platzhalter).
+        Item-Bar (Felix-Auftrag 2026-07-17, Übernahme der MVP-Aktionsleiste; Licht-Zauber-Trio,
+        `vault/20-Architektur/auftraege/2026-07-17-licht-zauber.md`, Schritt 17): unten in der
+        rechten Daumenzone. Gruppe 1 = Dash (statisch, ersetzt den früheren Eck-Button,
+        zusätzlich Boost-Halte-Ziel im Besen-Flug, siehe `setupItemBar()`). Gruppe 2
+        (`#item-bar-spell-group`) = DYNAMISCHE Zauber-Slots, EIN Slot je Eintrag aus
+        `getSpellsForRole(ownRole)` (Fänger 2/Verstecker 3) — zur Ladezeit LEER, erst befüllt,
+        sobald die eigene Rolle bekannt ist (`renderSpellSlots()`, `scenes/MatchScene.ts`). Die
+        vormals 3 statischen, nie befüllten Item-Platzhalter-Slots sind gemäß Mobile-Slot-Budget-
+        Empfehlung des Auftrags ERSATZLOS entfernt (375-px-Breite, kein generisches
+        Mehr-Item-Inventar vorhanden — Coding-Agent-Entscheidung innerhalb der Auftragsgrenzen).
         Der Besen-eigene `#mobile-broom-button` oben bleibt bewusst EIGENSTÄNDIG NEBEN der
-        Item-Bar (kein Item-Bar-Slot dafür in dieser Runde, offener Folge-Punkt). Styles im
-        <style>-Block oben, Verdrahtung `scenes/MatchScene.ts`s `setupItemBar()`. Jeder Slot:
-        Panel < Cooldown-Wipe < Steinrahmen, Icon im Panel (Schichtung 1:1 MVP `hudShared.ts`).
+        Item-Bar. Styles im <style>-Block oben, Verdrahtung `scenes/MatchScene.ts`s
+        `setupItemBar()`/`renderSpellSlots()`. Jeder Slot: Panel < Cooldown-Wipe < Steinrahmen,
+        Icon im Panel (Schichtung 1:1 MVP `hudShared.ts`).
       -->
       <div id="item-bar">
         <div class="item-bar__group">
@@ -1579,39 +1615,8 @@
             <div class="item-slot__cooldown"></div>
             <div class="item-slot__frame"></div>
           </div>
-          <div class="item-slot item-slot--spell is-actionable" id="item-slot-spell">
-            <div class="item-slot__panel"></div>
-            <div class="item-slot__icon">
-              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 2.5l1.7 5.3 5.3 1.7-5.3 1.7L12 16.5l-1.7-5.3L5 9.5l5.3-1.7z" />
-                <circle cx="18.6" cy="17.4" r="1.3" />
-                <circle cx="5.8" cy="16.2" r="0.9" />
-              </svg>
-            </div>
-            <div class="item-slot__cooldown"></div>
-            <div class="item-slot__frame"></div>
-          </div>
         </div>
-        <div class="item-bar__group">
-          <div class="item-slot item-slot--item" id="item-slot-item-0">
-            <div class="item-slot__panel"></div>
-            <div class="item-slot__icon"></div>
-            <div class="item-slot__cooldown"></div>
-            <div class="item-slot__frame"></div>
-          </div>
-          <div class="item-slot item-slot--item" id="item-slot-item-1">
-            <div class="item-slot__panel"></div>
-            <div class="item-slot__icon"></div>
-            <div class="item-slot__cooldown"></div>
-            <div class="item-slot__frame"></div>
-          </div>
-          <div class="item-slot item-slot--item" id="item-slot-item-2">
-            <div class="item-slot__panel"></div>
-            <div class="item-slot__icon"></div>
-            <div class="item-slot__cooldown"></div>
-            <div class="item-slot__frame"></div>
-          </div>
-        </div>
+        <div class="item-bar__group" id="item-bar-spell-group"></div>
       </div>
       <div id="tweak-console"></div>
     </div>
