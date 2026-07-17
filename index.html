@@ -1605,8 +1605,28 @@
       html.touch-ui #netlog-export-button.visible ~ #wins-counter {
         top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap) + 2em);
       }
+
+      /* =====================================================================
+       * Controller-Steuerung (Felix-Auftrag „Controller-Steuerung für PS5 einbauen und
+       * deployen")
+       * =====================================================================
+       * Sobald ein Gamepad aktiv ist (`html.gamepad-active`, gesetzt in `scenes/MatchScene.ts`s
+       * `updateGamepadActiveClass()` über `input/gamepadInput.ts`s `hasActiveGamepad()`-Polling)
+       * blenden die REINEN Touch-Affordanzen aus: die drei `.mobile-move-mode-button`
+       * (Schleichen/Interagieren/Besen) UND der floating Joystick-Visual
+       * (`#joystick-base`/`#joystick-knob`) — der Controller bedient dieselben Aktionen über
+       * Buttons/Stick, die Touch-Knöpfe wären nur noch visuelles Rauschen. Item-Bar (Cooldown-/
+       * Zauber-Info), Minimap und Timer bleiben SICHTBAR (Info-Displays, mit Controller weiter
+       * nützlich) — dieselbe Darstellungs-Weiche wie `html.touch-ui` oben, KEIN zweiter
+       * Eingabepfad (Mobile-Tag-1-Regel 1 unberührt).
+       */
+      html.gamepad-active .mobile-move-mode-button,
+      html.gamepad-active #joystick-base,
+      html.gamepad-active #joystick-knob {
+        display: none;
+      }
     </style>
-    <script type="module" crossorigin src="./assets/index-ByxAQfMM.js"></script>
+    <script type="module" crossorigin src="./assets/index-3l8tQixY.js"></script>
   </head>
   <body>
     <div id="game-container">
