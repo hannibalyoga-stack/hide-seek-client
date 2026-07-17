@@ -134,3 +134,26 @@ CSS-`background-image` der `.item-slot`-Kacheln.
 | Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
 |---|---|---|---|---|
 | `ui/slot-item-frame.png` | `ui.slot-item-frame` | `c9f25ea80a684681d82d89f4cb43154cfee726d8ced56e37ef8bd6205e048f8b` | `7c9078208a0f5469055c13526c60c51e999a74c403244796d5437a5bb469ab69` | vorschlag |
+
+## Objekte: Runen-Falle — Boden-Rune (Felix-Auftrag 2026-07-17, MVP-Asset-Einbau)
+
+Flaches, verblasstes Runensymbol (top-down, keine leuchtende Magie) als Darstellung der platzierten
+Stun-Falle (vierter Zauber, `vault/30-Systeme/runen-falle.md`). Selbst kopiert aus dem
+**read-only MVP-Ordner** `/Users/felixhannibal/Verstecken Spiel/assets/objects/alraune_rune.png`
+(Provenienz gpt/gpt-image-2, voller Prompt im mitkopierten MVP-Sidecar `alraune_rune.png.mvp-
+meta.json`, Master 1024×1024). Mündliche Felix-Freigabe 2026-07-17 (Chat: Runenzauber bauen, „im
+MVP bereits ein schönes Asset, was wir verwenden können"), Einbau selbst per Felix-Nachbesserungs-
+auftrag 2026-07-17 („statt Platzhalter-Glyphe") — der Einbauauftrag GILT als Abnahme. Abgeleitetes
+Derivat (Asset-Budget-Disziplin Regel 8 — das Spiel lädt NIE die Master-Datei): `objects/runen-
+falle.png`, erzeugt mit `sips -z 512 512 -s format png` (512 px = großzügiger Puffer für die am
+live-tunbaren Trigger-Radius gekoppelte ~120-px-Anzeige inkl. Zoom) — `485.444` Byte Master →
+`170.360` Byte Derivat (Budget-Kategorie „objects" ≤ 512 KB, neu angelegt, teilt die Größenordnung
+des ui-Budgets, siehe `tools/pipeline/asset-budgets.json`).
+
+**Abnahme-Status: von Felix abgenommen 2026-07-17** (Felix-Mensch-Gate, Regel 8 — der Einbauauftrag
+selbst ist die Abnahme). `status` im `.meta.json`-Sidecar am Quellpfad steht auf `"abgenommen"`.
+Einsatz im Client: `apps/client/src/scenes/MatchScene.ts`s `handleRuneAdd()` (`RUNE_TEXTURE_KEY`).
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `objects/runen-falle.png` | `objects.runen-falle` | `424f25a088248ecf2f1e589e62daf2b32a737c1603601d1367568bc5f7e790c9` | `e406815fdc65ce124983e5ab2780c186c57922f7d54a29ef93abea1fb78aa453` | abgenommen |
