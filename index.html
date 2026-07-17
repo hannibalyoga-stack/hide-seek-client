@@ -177,6 +177,33 @@
          * `--move-mode-button-size`).
          */
         --debug-toggle-button-size: 3.25rem;
+        /*
+         * Item-Bar (Felix-Auftrag 2026-07-17, Übernahme der MVP-Aktionsleiste „Verstecken
+         * Spiel"): unten in der rechten Daumenzone, Reihenfolge Dash · Zauber — Abstand — 3
+         * Items. Werte 1:1 aus dem MVP portiert (dort `balance.ts` SLOT_SIZE/SLOT_GAP/…), nur
+         * px→rem umgesetzt (Regel 3: relativ zur Root-Schriftgröße, skaliert mit
+         * Nutzer-Textgröße, nicht auf einen festen Bildschirm-Pixelwert verdrahtet).
+         *
+         * `--item-slot-size: 3.375rem` = 54px bei Standard-Root — exakt der MVP-Wert, komfortabel
+         * über der Mobile-Tag-1-Mindestgröße von 48px (Regel 4), `min-*: 48px` unten als harte
+         * Untergrenze zusätzlich. Farb-/Cooldown-Werte spiegeln die MVP-Zeichenkonstanten
+         * (`hudShared.ts`: Panel 0x12141c@0.72, Cooldown-Wipe 0x000000@0.55, leerer Slot 0x555a66,
+         * Dash-Akzent 0x8fd0ff). Zauber-Akzent = Portal/Endgame-Violett (`--hud-endgame-color`),
+         * bewusst wiederverwendet für den „immer vorhandenen" Zauber (Platzhalter bis das
+         * Zauber-System gemergt ist).
+         */
+        --item-slot-size: 3.375rem;
+        --item-slot-icon-size: 1.875rem;
+        --item-slot-radius: 10px;
+        --item-slot-inner-inset: 5px;
+        --item-slot-gap: 0.4rem;
+        --item-bar-group-gap: 1.25rem;
+        --item-bar-height: var(--item-slot-size);
+        --item-slot-panel-bg: rgba(18, 20, 28, 0.72);
+        --item-slot-accent-empty: #555a66;
+        --item-slot-accent-dash: #8fd0ff;
+        --item-slot-accent-spell: var(--hud-endgame-color);
+        --item-slot-cooldown-color: rgba(0, 0, 0, 0.55);
       }
 
       html,
@@ -322,7 +349,11 @@
        */
       #connection-status {
         position: fixed;
-        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap));
+        /* Eine Etage über die Item-Bar gehoben (Felix-Auftrag 2026-07-17): die zentrierte
+           Statuszeile lag vormals ganz unten (safe+gap) und überlappte die rechtsbündige
+           Item-Bar — jetzt auf derselben Etage wie Schleichen/Interagieren, weiterhin
+           bottom-/safe-area-verankert (Inset bleibt im calc erhalten). */
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap));
         left: calc(var(--hud-safe-left) + var(--hud-gap));
         right: calc(var(--hud-safe-right) + var(--hud-gap));
         color: var(--theme-color-text-title);
@@ -661,8 +692,16 @@
         user-select: none;
       }
 
+      /*
+       * Schleichen-Toggle: seit Einführung der Item-Bar (Felix-Auftrag 2026-07-17) eine Etage
+       * ANGEHOBEN (`bottom` + `--item-bar-height` + Gap) — die unterste Zeile gehört jetzt der
+       * rechtsbündigen Item-Bar; ohne das Anheben überlappt der linke Button bei 375px mit dem
+       * linken Ende der Bar. Links verankert (Safe-Area, Regel 5), Gegenstück zum
+       * `#mobile-interact-button` rechts auf gleicher Höhe.
+       */
       #mobile-sneak-button {
         left: calc(var(--hud-safe-left) + var(--hud-gap));
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap));
       }
 
       /* Aktiv-Zustand des Schleichen-Toggles (`scenes/MatchScene.ts`) — reine Darstellung. */
@@ -670,9 +709,11 @@
         background: rgba(255, 255, 255, 0.35);
       }
 
-      #mobile-dash-button {
-        right: calc(var(--hud-safe-right) + var(--hud-gap));
-      }
+      /*
+       * Der frühere `#mobile-dash-button` (Dash-Tap unten rechts) ist mit Einführung der
+       * Item-Bar ENTFALLEN — der Dash lebt jetzt als erster Slot der Item-Bar
+       * (`#item-slot-dash`, Verdrahtung `setupItemBar()`), kein separater Eck-Button mehr.
+       */
 
       /*
        * Mobile Interaktions-Button (P3e, Übergabe-Auftrag „Verstecken in Objekten (§5), Stufe
@@ -684,10 +725,135 @@
        */
       #mobile-interact-button {
         /* Haupt-Aktion (Tür/Verstecken) in die gut erreichbare rechte Daumenzone, gestapelt
-           ÜBER dem Dash-Button — raus aus der untersten Bildschirm-Mitte, laut Touch-UX-Research
-           der am schlechtesten erreichbare Bereich (Felix-Playtest 2026-07-13). */
+           ÜBER der Item-Bar (vormals über dem Dash-Button — der Dash ist jetzt ein Bar-Slot).
+           Höhe an `--item-bar-height` gekoppelt, gleiche Etage wie `#mobile-sneak-button`. */
         right: calc(var(--hud-safe-right) + var(--hud-gap));
-        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap));
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap));
+      }
+
+      /* =====================================================================
+       * Item-Bar (Felix-Auftrag 2026-07-17) — Übernahme der MVP-Aktionsleiste
+       * =====================================================================
+       * Unten in der rechten Daumenzone, `right`/`bottom` an der Safe-Area verankert (Regel 5),
+       * rechtsbündig (`justify-content: flex-end`) — die am häufigsten getippten Slots sitzen
+       * rechts in bester Daumenreichweite (Felix-Playtest: untere Mitte am schlechtesten
+       * erreichbar). Zwei Gruppen (Dash · Zauber | 3 Items) mit größerem Zwischenabstand
+       * (`--item-bar-group-gap`, MVP DASH_GROUP_GAP). Container `pointer-events: none`, nur die
+       * `.item-slot`-Kacheln setzen `auto` — die Zwischenräume schlucken keine Joystick-Touches
+       * (Regel 1). `max-width` deckelt Überlauf auf sehr schmalen Geräten. */
+      #item-bar {
+        position: fixed;
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap));
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        max-width: calc(100vw - var(--hud-safe-left) - var(--hud-safe-right) - 2 * var(--hud-gap));
+        display: flex;
+        justify-content: flex-end;
+        align-items: flex-end;
+        gap: var(--item-bar-group-gap);
+        pointer-events: none;
+      }
+
+      .item-bar__group {
+        display: flex;
+        gap: var(--item-slot-gap);
+      }
+
+      /*
+       * Eine Slot-Kachel: Steinrahmen (Bild-Asset `ui/slot-item-frame.png`, oberste Ebene, immer
+       * scharf, transparente Mitte) über einem dunklen Panel mit farbigem Akzentrand. Schichtung
+       * 1:1 aus dem MVP (`hudShared.ts`): Panel < Cooldown-Wipe < Steinrahmen, das Icon im Panel.
+       * `pointer-events: auto` — die Kachel IST das Tap-Ziel (Mobile-Tag-1-Regel 1: EIN
+       * Pointer-Eingabepfad, kein Joystick-Ursprung, `stopPropagation` zusätzlich im Handler).
+       * `--slot-accent`/`--slot-cooldown` sind die pro-Slot-Stellschrauben (Zustandsklassen bzw.
+       * `scenes/MatchScene.ts` pro Frame). */
+      .item-slot {
+        position: relative;
+        width: var(--item-slot-size);
+        height: var(--item-slot-size);
+        min-width: 48px;
+        min-height: 48px;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        --slot-accent: var(--item-slot-accent-empty);
+        --slot-cooldown: 0;
+      }
+
+      /* Panel + Akzentrand, unter den Steinrahmen zurückgesetzt (MVP SLOT_ACCENT_INSET). */
+      .item-slot__panel {
+        position: absolute;
+        inset: var(--item-slot-inner-inset);
+        border-radius: calc(var(--item-slot-radius) - var(--item-slot-inner-inset));
+        background: var(--item-slot-panel-bg);
+        box-shadow: inset 0 0 0 2px var(--slot-accent);
+      }
+
+      /* Icon zentriert im Panel, eingefärbt in der Slot-Akzentfarbe (monochrom, gedämpfter Look). */
+      .item-slot__icon {
+        position: absolute;
+        inset: var(--item-slot-inner-inset);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--slot-accent);
+        z-index: 1;
+      }
+
+      .item-slot__icon svg {
+        width: var(--item-slot-icon-size);
+        height: var(--item-slot-icon-size);
+        display: block;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+      }
+
+      /*
+       * Cooldown-Wipe (MVP: dunkler Radial-Sweep von 12 Uhr im Uhrzeigersinn, schrumpft beim
+       * Abkühlen). `--slot-cooldown` (0…1, = verbleibende Cooldown-Ratio) setzt
+       * `scenes/MatchScene.ts` pro Frame; der conic-gradient deckt genau diesen Anteil des Kreises
+       * dunkel ab. Bei 0 hat der Farbstop Breite 0 → nichts verdunkelt. */
+      .item-slot__cooldown {
+        position: absolute;
+        inset: var(--item-slot-inner-inset);
+        border-radius: calc(var(--item-slot-radius) - var(--item-slot-inner-inset));
+        background: conic-gradient(
+          var(--item-slot-cooldown-color) calc(var(--slot-cooldown) * 1turn),
+          transparent 0
+        );
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      /* Steinrahmen (Bild-Derivat, transparente Mitte) — oberste Ebene, bleibt immer scharf. */
+      .item-slot__frame {
+        position: absolute;
+        inset: 0;
+        background-image: url("assets/ui/slot-item-frame.png");
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        z-index: 3;
+        pointer-events: none;
+      }
+
+      /* Zustandsfarben (Akzentrand + Icon). Leer = grau (Default oben), Dash = blau, Zauber = Violett. */
+      .item-slot--dash {
+        --slot-accent: var(--item-slot-accent-dash);
+      }
+      .item-slot--spell {
+        --slot-accent: var(--item-slot-accent-spell);
+      }
+
+      /* Cooldown aktiv (Dash): Icon dimmt (MVP Icon-Alpha 0.45), Akzentrand wird grau. */
+      .item-slot.is-cooldown {
+        --slot-accent: var(--item-slot-accent-empty);
+      }
+      .item-slot.is-cooldown .item-slot__icon {
+        opacity: 0.45;
+      }
+
+      /* Tap-Feedback nur für tatsächlich bediente Slots (heute: Dash). */
+      .item-slot.is-actionable:active {
+        transform: translateY(1px) scale(0.96);
       }
 
       /*
@@ -1180,7 +1346,7 @@
         min-width: 48px;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-DPMqf0pc.js"></script>
+    <script type="module" crossorigin src="./assets/index-CZxdyaBK.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -1205,8 +1371,62 @@
         <div id="rumble-bar"><div id="rumble-bar-zone"></div><div id="rumble-bar-marker"></div></div>
       </div>
       <div id="mobile-sneak-button" class="mobile-move-mode-button">Schleichen</div>
-      <div id="mobile-dash-button" class="mobile-move-mode-button">Dash</div>
       <div id="mobile-interact-button" class="mobile-move-mode-button">Interagieren</div>
+
+      <!--
+        Item-Bar (Felix-Auftrag 2026-07-17): Übernahme der MVP-Aktionsleiste, unten in der
+        rechten Daumenzone. Gruppe 1 = Dash (funktional, ersetzt den früheren Eck-Button) +
+        Zauber (Platzhalter, Zauber-System noch ungemergt); Gruppe 2 = 3 Item-Slots (leer, wie
+        MVP bei leerem Inventar; Item-System noch ungemergt). Styles im <style>-Block oben,
+        Verdrahtung `scenes/MatchScene.ts`s `setupItemBar()`. Jeder Slot: Panel < Cooldown-Wipe
+        < Steinrahmen, Icon im Panel (Schichtung 1:1 MVP `hudShared.ts`).
+      -->
+      <div id="item-bar">
+        <div class="item-bar__group">
+          <div class="item-slot item-slot--dash is-actionable" id="item-slot-dash">
+            <div class="item-slot__panel"></div>
+            <div class="item-slot__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 5l7 7-7 7M13 5l7 7-7 7" />
+              </svg>
+            </div>
+            <div class="item-slot__cooldown"></div>
+            <div class="item-slot__frame"></div>
+          </div>
+          <div class="item-slot item-slot--spell" id="item-slot-spell">
+            <div class="item-slot__panel"></div>
+            <div class="item-slot__icon">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2.5l1.7 5.3 5.3 1.7-5.3 1.7L12 16.5l-1.7-5.3L5 9.5l5.3-1.7z" />
+                <circle cx="18.6" cy="17.4" r="1.3" />
+                <circle cx="5.8" cy="16.2" r="0.9" />
+              </svg>
+            </div>
+            <div class="item-slot__cooldown"></div>
+            <div class="item-slot__frame"></div>
+          </div>
+        </div>
+        <div class="item-bar__group">
+          <div class="item-slot item-slot--item" id="item-slot-item-0">
+            <div class="item-slot__panel"></div>
+            <div class="item-slot__icon"></div>
+            <div class="item-slot__cooldown"></div>
+            <div class="item-slot__frame"></div>
+          </div>
+          <div class="item-slot item-slot--item" id="item-slot-item-1">
+            <div class="item-slot__panel"></div>
+            <div class="item-slot__icon"></div>
+            <div class="item-slot__cooldown"></div>
+            <div class="item-slot__frame"></div>
+          </div>
+          <div class="item-slot item-slot--item" id="item-slot-item-2">
+            <div class="item-slot__panel"></div>
+            <div class="item-slot__icon"></div>
+            <div class="item-slot__cooldown"></div>
+            <div class="item-slot__frame"></div>
+          </div>
+        </div>
+      </div>
       <div id="tweak-console"></div>
     </div>
   </body>
