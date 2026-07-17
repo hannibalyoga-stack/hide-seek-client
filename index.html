@@ -360,6 +360,46 @@
       }
 
       /*
+       * Dev-Reset-Werkzeug (`vault/30-Systeme/dev-reset-werkzeug.md`, Felix-Auftrag „Raum leeren
+       * & neu starten"): startet AUSGEBLENDET (`display: none` Default, Muster
+       * `#netlog-export-button`) — `scenes/MatchScene.ts`s `setupDevResetButton()` schaltet die
+       * `.visible`-Klasse NUR frei, wenn dasselbe Dev-Gate wie die Tweak-Konsole aktiv ist
+       * (`tweak/devGate.ts`s `isDevGateActive()`). Bewusst NICHT in der `html.touch-ui`-Ausblend-
+       * Liste weiter unten (anders als `#debug-toggle-button`/`#tweak-console-toggle`) — dieser
+       * Button muss AUCH auf Touch erreichbar bleiben, die Tweak-Konsole ist dort sonst gar nicht
+       * mehr auslösbar. Unten LINKS verankert (Safe-Area, Regel 3/5) — der komplett freie
+       * Gegenpol zum rechten Daumen-Cluster (Item-Leiste/Interact/Move-Mode-Buttons) UND zur
+       * oberen Ecken-Belegung (Minimap links, Debug/NetLog rechts), damit ein Fehl-Tap im
+       * hitzigen Spielgeschehen unwahrscheinlich bleibt.
+       */
+      #dev-reset-button {
+        display: none;
+        position: fixed;
+        bottom: calc(var(--hud-safe-bottom) + var(--hud-gap));
+        left: calc(var(--hud-safe-left) + var(--hud-gap));
+        width: var(--debug-toggle-button-size);
+        height: var(--debug-toggle-button-size);
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--hud-text-color);
+        background: rgba(0, 0, 0, 0.35);
+        color: var(--hud-text-color);
+        font: 1.3rem / 1.2 sans-serif;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      #dev-reset-button.visible {
+        display: flex;
+      }
+
+      /*
        * Statuszeile (Übergabe-Auftrag T4c, Felix-Default E-T4c-4): eigenständiges,
        * nicht-interaktives Element für den dreiwertigen Verbindungsstatus ("verbunden" /
        * "reconnecte…" / "Verbindung verloren") — bewusst getrennt vom technischen
@@ -1566,7 +1606,7 @@
         top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap) + 2em);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BpM3Jh2K.js"></script>
+    <script type="module" crossorigin src="./assets/index-DeJaDmW3.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -1584,6 +1624,7 @@
       <div id="players-count">Players: 0</div>
       <div id="debug-toggle-button">DBG</div>
       <div id="netlog-export-button">LOG</div>
+      <div id="dev-reset-button" title="Dev: Raum leeren &amp; neu starten">⟳</div>
       <div id="connection-status"></div>
       <div id="catch-announcement"></div>
       <div id="match-timer"></div>
