@@ -1524,8 +1524,49 @@
         min-height: 48px;
         min-width: 48px;
       }
+
+      /* =====================================================================
+       * Mobile-Clean-HUD (Felix-Auftrag 2026-07-17 abends)
+       * =====================================================================
+       * Auf Touch-Geräten (`html.touch-ui`, gesetzt in `src/index.ts` über dieselbe
+       * `isTouchLikely()`-Heuristik wie der Kamera-Zoom, `?forceTouch` = Desktop-Escape)
+       * verschwinden die Entwickler-Knöpfe (Debug-Toggle oben rechts, Tweak-Toggle oben
+       * Mitte — Konsole bleibt Desktop-per-Tastatur ^/F2 erreichbar), und Timer/Wins rücken
+       * in die frei gewordene Ecke ganz nach oben — weniger HUD-Etagen, mehr sichtbares
+       * Spielfeld. Der NetLog-Export-Button bleibt bewusst AUCH auf Touch sichtbar (nur mit
+       * explizitem `?netlog`-Opt-in überhaupt vorhanden — Felix' Handy-Messwerkzeug).
+       * Reine Darstellungs-Weiche per CSS-Klasse, KEIN zweiter Eingabepfad (Regel 1).
+       */
+      html.touch-ui #debug-toggle-button,
+      html.touch-ui #tweak-console-toggle {
+        display: none;
+      }
+
+      html.touch-ui #match-timer {
+        top: calc(var(--hud-safe-top) + var(--hud-gap));
+      }
+
+      html.touch-ui #wins-counter {
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + 2em);
+      }
+
+      /* NetLog-Export rückt in die vom Debug-Toggle geräumte Ecke (Formel = dessen alte Position). */
+      html.touch-ui #netlog-export-button {
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+      }
+
+      /* Randfall `?netlog` AUF Touch: der Export-Button belegt dann doch die Ecke — Timer/Wins
+         weichen für diesen Messmodus auf ihre bisherigen Etagen darunter aus
+         (Geschwister-Selektor: `#netlog-export-button` steht im Markup VOR beiden). */
+      html.touch-ui #netlog-export-button.visible ~ #match-timer {
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap));
+      }
+
+      html.touch-ui #netlog-export-button.visible ~ #wins-counter {
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap) + 2em);
+      }
     </style>
-    <script type="module" crossorigin src="./assets/index-WSphjNCr.js"></script>
+    <script type="module" crossorigin src="./assets/index-BpM3Jh2K.js"></script>
   </head>
   <body>
     <div id="game-container">
