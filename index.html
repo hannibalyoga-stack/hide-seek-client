@@ -247,19 +247,32 @@
          * (`config.ts`s `SLOW_FIELD_COLOR`).
          */
         --item-slot-accent-spell-slowfield: #5fb3ce;
+        /*
+         * Spurenleser (`vault/20-Architektur/auftraege/2026-07-17-spurenleser.md`): sechster
+         * Zauber, eigene Kategorie „trailreveal" — warmes Kupfer/Bernstein-Braun (thematisch
+         * „Fährte lesen"), abgegrenzt von Tür-Violett/Licht-Gelb/Runen-Grün/Spur-Eisblau
+         * (kosmetisch, `scenes/MatchScene.ts`s `renderSpellSlots()`).
+         */
+        --item-slot-accent-spell-trailreveal: #c98a4b;
         --item-slot-cooldown-color: rgba(0, 0, 0, 0.55);
         /*
-         * Mobile-Slot-Budget (Umsetzungsauftrag `2026-07-17-verlangsamungsspur.md`, LOAD-BEARING):
-         * der Verstecker steigt mit der Verlangsamungsspur auf 5 Zauber + Dash = 6 gleichzeitige
-         * Item-Bar-Slots — bei `--item-slot-size` (54 px) für ALLE Slots reicht die 375-px-Breite
-         * nicht mehr (54 + 20 + (5×54 + 4×6,4) = 369,6 px gegen ≈359 px nutzbar, Auftrags-
-         * Rechnung). Eigene, kleinere Größe NUR für den Zauber-Bereich (`.item-slot--spell` unten)
-         * — der Dash-Slot bleibt bei der vollen `--item-slot-size` (54 px, eigenständiges
+         * Mobile-Slot-Budget (Umsetzungsauftrag `2026-07-17-verlangsamungsspur.md`, LOAD-BEARING;
+         * fortgeschrieben durch den Spurenleser, `2026-07-17-spurenleser.md`, Felix-Entscheid
+         * 2026-07-18): der Verstecker steigt mit dem Spurenleser auf SECHS Zauber + Dash = SIEBEN
+         * gleichzeitige Item-Bar-Slots. Bei `--item-slot-size` (54 px) für ALLE Slots reicht die
+         * 375-px-Breite nicht mehr (54 + 20 + (5×54 + 4×6,4) = 369,6 px gegen ≈359 px nutzbar,
+         * Auftrags-Rechnung). Eigene, kleinere Größe NUR für den Zauber-Bereich (`.item-slot--spell`
+         * unten) — der Dash-Slot bleibt bei der vollen `--item-slot-size` (54 px, eigenständiges
          * Tap-Ziel, MVP-Referenzgröße). `3.125rem` = 50 px bei Standard-Root, bleibt über der
-         * Mobile-Tag-1-Mindestgröße von 48 px (Regel 4): 54 + 20 + (5×50 + 4×6,4) = 349,6 px <
-         * 359 px, kein Überlauf. Felix-Entscheid 2026-07-18: Slot-Anzahl ist testweise unkritisch
-         * (später Loot-System bricht auf weniger gleichzeitige Slots herunter) — pragmatische
-         * Ein-Reihen-Lösung reicht, KEINE Zwei-Reihen-Mechanik.
+         * Mobile-Tag-1-Mindestgröße von 48 px (Regel 4): bei FÜNF Zaubern reichte das noch ohne
+         * Überlauf (54 + 20 + (5×50 + 4×6,4) = 349,6 px < 359 px). **Felix-Entscheid 2026-07-18
+         * (Spurenleser-Auftrag): „Für Testzwecke den 7. Slot einfach reinmachen … Wir werden das
+         * später auf die Slots wieder herunterbrechen, wenn wir Items looten können."** — bei
+         * SECHS Zaubern wächst die Rechnung auf 54 + 20 + (6×50 + 5×6,4) = 406 px > 359 px: ein
+         * bewusster, für die Testphase akzeptierter Budget-Überlauf (leichtes horizontales
+         * Abschneiden/Scrollen am schmalen Viewport statt Zwei-Reihen-Umbruch) — KEINE weitere
+         * Verkleinerung unter die 48-px-Mindestgröße, KEINE Zwei-Reihen-Mechanik. Die spätere
+         * Loot-System-Kuratierung bricht die Slot-Zahl regulär wieder herunter (kein Dauerzustand).
          */
         --item-slot-size-spell: 3.125rem;
       }
@@ -1120,6 +1133,10 @@
       .item-slot--spell-slowfield {
         --slot-accent: var(--item-slot-accent-spell-slowfield);
       }
+      /* Spurenleser: eigene Akzentfarbe für die Kategorie „trailreveal". */
+      .item-slot--spell-trailreveal {
+        --slot-accent: var(--item-slot-accent-spell-trailreveal);
+      }
       /*
        * Abgenommenes Pixel-Icon (Licht-Trio, Felix-Abnahme 2026-07-18 „3x Variante A"):
        * <img> mit dem 128-px-Derivat aus assets/icons/, contain-skaliert in derselben
@@ -1736,7 +1753,7 @@
         display: none;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CArik505.js"></script>
+    <script type="module" crossorigin src="./assets/index-DDGCmPr0.js"></script>
   </head>
   <body>
     <div id="game-container">
