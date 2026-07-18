@@ -239,7 +239,29 @@
          * Licht-Gelb (kosmetisch, `scenes/MatchScene.ts`s `renderSpellSlots()`).
          */
         --item-slot-accent-spell-rune: #2ecc71;
+        /*
+         * Verlangsamungsspur (`vault/20-Architektur/auftraege/2026-07-17-verlangsamungsspur.md`,
+         * Schritt 16): fünfter Zauber, eigene Kategorie „slowfield" — Eis-Blau, abgegrenzt von
+         * Tür-Violett/Licht-Gelb/Runen-Grün (kosmetisch, `scenes/MatchScene.ts`s
+         * `renderSpellSlots()`), identisch zum prozeduralen Segment-Kreis-Farbton
+         * (`config.ts`s `SLOW_FIELD_COLOR`).
+         */
+        --item-slot-accent-spell-slowfield: #5fb3ce;
         --item-slot-cooldown-color: rgba(0, 0, 0, 0.55);
+        /*
+         * Mobile-Slot-Budget (Umsetzungsauftrag `2026-07-17-verlangsamungsspur.md`, LOAD-BEARING):
+         * der Verstecker steigt mit der Verlangsamungsspur auf 5 Zauber + Dash = 6 gleichzeitige
+         * Item-Bar-Slots — bei `--item-slot-size` (54 px) für ALLE Slots reicht die 375-px-Breite
+         * nicht mehr (54 + 20 + (5×54 + 4×6,4) = 369,6 px gegen ≈359 px nutzbar, Auftrags-
+         * Rechnung). Eigene, kleinere Größe NUR für den Zauber-Bereich (`.item-slot--spell` unten)
+         * — der Dash-Slot bleibt bei der vollen `--item-slot-size` (54 px, eigenständiges
+         * Tap-Ziel, MVP-Referenzgröße). `3.125rem` = 50 px bei Standard-Root, bleibt über der
+         * Mobile-Tag-1-Mindestgröße von 48 px (Regel 4): 54 + 20 + (5×50 + 4×6,4) = 349,6 px <
+         * 359 px, kein Überlauf. Felix-Entscheid 2026-07-18: Slot-Anzahl ist testweise unkritisch
+         * (später Loot-System bricht auf weniger gleichzeitige Slots herunter) — pragmatische
+         * Ein-Reihen-Lösung reicht, KEINE Zwei-Reihen-Mechanik.
+         */
+        --item-slot-size-spell: 3.125rem;
       }
 
       html,
@@ -1073,6 +1095,15 @@
       }
       .item-slot--spell {
         --slot-accent: var(--item-slot-accent-spell);
+        /*
+         * Mobile-Slot-Budget (Verlangsamungsspur, LOAD-BEARING): JEDER Zauber-Slot (unabhängig
+         * von der Kategorie) bekommt die kleinere `--item-slot-size-spell` (50 px statt 54 px) —
+         * der Dash-Slot bleibt unverändert bei `--item-slot-size` (nur `.item-slot--dash`, kein
+         * gemeinsamer Selektor). Gleiche Spezifität wie die Basisregel `.item-slot` oben, spätere
+         * Quellreihenfolge gewinnt (kein `!important` nötig).
+         */
+        width: var(--item-slot-size-spell);
+        height: var(--item-slot-size-spell);
       }
       /* Licht-Zauber-Trio (Schritt 17): distinkte Akzentfarbe je Kategorie (kosmetisch). */
       .item-slot--spell-door {
@@ -1084,6 +1115,21 @@
       /* Runen-Falle (Schritt 12): eigene Akzentfarbe für die Kategorie „rune". */
       .item-slot--spell-rune {
         --slot-accent: var(--item-slot-accent-spell-rune);
+      }
+      /* Verlangsamungsspur (Schritt 16): eigene Akzentfarbe für die Kategorie „slowfield". */
+      .item-slot--spell-slowfield {
+        --slot-accent: var(--item-slot-accent-spell-slowfield);
+      }
+      /*
+       * Abgenommenes Pixel-Icon (Licht-Trio, Felix-Abnahme 2026-07-18 „3x Variante A"):
+       * <img> mit dem 128-px-Derivat aus assets/icons/, contain-skaliert in derselben
+       * Inner-Inset-Fläche wie Emoji/SVG; Padding hält Luft zum Steinrahmen.
+       */
+      .item-slot__icon--image {
+        object-fit: contain;
+        box-sizing: border-box;
+        padding: 10%;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
       }
       /* Zauber-Slot-Icon (Emoji-Platzhalter, Schritt 17) — Größe/Zentrierung analog `.item-slot__icon svg`. */
       .item-slot__icon--emoji {
@@ -1690,7 +1736,7 @@
         display: none;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-DI-Gz4hC.js"></script>
+    <script type="module" crossorigin src="./assets/index-l5C7eFTN.js"></script>
   </head>
   <body>
     <div id="game-container">
