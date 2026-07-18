@@ -1214,6 +1214,38 @@
       }
 
       /*
+       * Fang-Sog-Tap-Button (Felix-Entscheid 2026-07-18, „Tapp-Sog"): die STÄNDIGE Haupt-Aktion
+       * des Fängers — deshalb in Interact-Größe (`--interact-button-size`, Touch-Target ≥ 48 px)
+       * und dauerhaft sichtbar, solange man Fänger ist (`.visible` via
+       * `updateCatchTapButtonVisibility()`, Rollen-Gate statt Item-Gate — Muster
+       * `#mobile-broom-button`). Position: SNEAK-Spalte (dieselbe `right`-Formel wie
+       * `#mobile-sneak-button`), eine Etage ÜBER dem Interact-Boden (dieselben `bottom`-Summanden
+       * wie `#mobile-broom-button`) — kollidiert dadurch strukturell mit KEINEM der beiden
+       * (Besen-Spalte rechts, Sneak-Etage darunter), auch wenn ein Fänger Besen + Sog gleichzeitig
+       * trägt.
+       */
+      #mobile-catch-tap-button {
+        display: none;
+        right: calc(var(--hud-safe-right) + var(--hud-gap) + var(--interact-button-size) + var(--hud-gap));
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
+            var(--interact-button-size) + var(--hud-gap)
+        );
+        width: var(--interact-button-size);
+        height: var(--interact-button-size);
+      }
+
+      #mobile-catch-tap-button.visible {
+        display: flex;
+      }
+
+      /* Tap-Feedback (der Sog lebt vom schnellen Wiederholungs-Tap — ohne sichtbare Quittung
+         fühlt sich Hämmern taub an; reine Darstellung, Muster `#mobile-sneak-button.active`). */
+      #mobile-catch-tap-button:active {
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      /*
        * Sichtbarer floating Joystick (Felix-Playtest 2026-07-13 „Mobile-UI deutlich
        * nutzerfreundlicher" + Touch-UX-Best-Practice „dynamic/floating stick"): rein visuelles
        * DOM-Overlay (`pointer-events: none` — der Whole-Canvas-Joystick UNTER dem Canvas fängt die
@@ -1769,7 +1801,7 @@
         display: none;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-G3vt7hV4.js"></script>
+    <script type="module" crossorigin src="./assets/index-CagBFXT1.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -1829,6 +1861,19 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M20.5 3.5L11.5 12.5" />
           <path d="M11.5 12.5l-6 2.6L3 21l5.9-2.5 2.6-6z" />
+        </svg>
+      </div>
+      <!--
+        Fang-Sog-Tap-Button (Felix-Entscheid 2026-07-18, „Tapp-Sog" — vault/30-Systeme/
+        fang-sog.md): NUR für die Fänger-Rolle sichtbar (`.visible` via
+        `updateCatchTapButtonVisibility()`, Muster `#mobile-broom-button`). Icon = 3/4-Ring +
+        Funke — dieselbe Bogen-Sprache wie der Ladebogen am Ziel (Wiedererkennung statt
+        neuem Symbol-Vokabular). Verdrahtung `setupCatchTapControls()` (`scenes/MatchScene.ts`).
+      -->
+      <div id="mobile-catch-tap-button" class="mobile-move-mode-button" aria-label="Fangen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3a9 9 0 1 1-9 9" />
+          <path d="M12 7.5l1.2 3.3L16.5 12l-3.3 1.2L12 16.5l-1.2-3.3L7.5 12l3.3-1.2z" fill="currentColor" stroke="none" />
         </svg>
       </div>
 
