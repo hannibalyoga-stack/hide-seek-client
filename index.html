@@ -225,6 +225,15 @@
         --item-slot-accent-dash: #8fd0ff;
         --item-slot-accent-spell: var(--hud-endgame-color);
         /*
+         * Item-Slot-Gruppe (Umsetzungsauftrag „Truhen-Öffnen-Sound + 3 Item-Slots + Tempo-Schub
+         * als gehaltenes Item", 2026-07-18, Teil B): warmes Bronze/Gold, passend zur Truhen-
+         * Optik (`CONTAINER_TEXTURE_KEY`) und deutlich von Dash-Blau/Zauber-Akzenten
+         * unterscheidbar. Nur Slot 1 (belegt) trägt diesen Akzent (`.item-slot--item-filled`,
+         * `scenes/MatchScene.ts`s `updateItemBarItemSlotHud()`) — leere Slots (Slot 1 ohne Item
+         * UND die Scaffolding-Slots 2/3) bleiben beim neutralen `--item-slot-accent-empty`.
+         */
+        --item-slot-accent-item: #c9974a;
+        /*
          * Licht-Zauber-Trio (`vault/20-Architektur/auftraege/2026-07-17-licht-zauber.md`,
          * Schritt 17): dynamische Zauber-Slots bekommen eine DISTINKTE Akzentfarbe je Wirkungs-
          * Kategorie (kosmetisch, `spell.category`) statt der einen bisherigen Violett-Farbe —
@@ -1148,6 +1157,28 @@
       .item-slot--spell-catform {
         --slot-accent: var(--item-slot-accent-spell-catform);
       }
+      .item-slot--item {
+        width: var(--item-slot-size-spell);
+        height: var(--item-slot-size-spell);
+      }
+      .item-slot--item-filled {
+        --slot-accent: var(--item-slot-accent-item);
+      }
+      .item-slot--item-empty {
+        pointer-events: none;
+      }
+      .item-slot__item-pips {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 3px;
+        text-align: center;
+        font: 0.6rem/1 monospace;
+        color: var(--slot-accent);
+        text-shadow: 0 0 3px #000;
+        z-index: 1;
+        pointer-events: none;
+      }
       /*
        * Abgenommenes Pixel-Icon (Licht-Trio, Felix-Abnahme 2026-07-18 „3x Variante A"):
        * <img> mit dem 128-px-Derivat aus assets/icons/, contain-skaliert in derselben
@@ -1801,7 +1832,7 @@
         display: none;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-ClTPyuKJ.js"></script>
+    <script type="module" crossorigin src="./assets/index-CmIdEmTQ.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -1907,6 +1938,34 @@
           </div>
         </div>
         <div class="item-bar__group" id="item-bar-spell-group"></div>
+        <!--
+          Gruppe 3 (Umsetzungsauftrag „Truhen-Öffnen-Sound + 3 Item-Slots + Tempo-Schub als
+          gehaltenes Item", 2026-07-18, Teil B): GENAU 3 statische Item-Slots (Felix: „drei Item
+          Slots haben wir"), lösen die vormals ERSATZLOS entfernten Platzhalter-Slots wieder ein.
+          Slot 1 zeigt das SERVER-`heldItemType` (1-Slot-Modell unverändert, `items.ts`), Tap
+          sendet denselben `useItem`-Wunsch wie Taste R/der mobile Besen-Button. Slots 2+3 sind
+          BEWUSST leere, nicht-interaktive Scaffolding-Slots (`.item-slot--item-empty`) — das
+          Mehrfach-Slot-Inventar-Modell ist ein separates Konzept
+          (`vault/40-Backlog/item-slots-wechsel-ui.md`), diese 3-sichtbar/1-belegbar-Schere ist
+          ABSICHTLICH. Verdrahtung `scenes/MatchScene.ts`s `setupItemBar()`/
+          `updateItemBarItemSlotHud()`.
+        -->
+        <div class="item-bar__group" id="item-bar-item-group">
+          <div class="item-slot item-slot--item" id="item-slot-item-1">
+            <div class="item-slot__panel"></div>
+            <div class="item-slot__icon item-slot__icon--emoji" id="item-slot-item-1-icon"></div>
+            <div class="item-slot__item-pips" id="item-slot-item-1-pips"></div>
+            <div class="item-slot__frame"></div>
+          </div>
+          <div class="item-slot item-slot--item item-slot--item-empty" id="item-slot-item-2">
+            <div class="item-slot__panel"></div>
+            <div class="item-slot__frame"></div>
+          </div>
+          <div class="item-slot item-slot--item item-slot--item-empty" id="item-slot-item-3">
+            <div class="item-slot__panel"></div>
+            <div class="item-slot__frame"></div>
+          </div>
+        </div>
       </div>
       <div id="tweak-console"></div>
     </div>
