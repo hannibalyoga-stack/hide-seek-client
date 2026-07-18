@@ -1152,8 +1152,13 @@
        * Abgenommenes Pixel-Icon (Licht-Trio, Felix-Abnahme 2026-07-18 „3x Variante A"):
        * <img> mit dem 128-px-Derivat aus assets/icons/, contain-skaliert in derselben
        * Inner-Inset-Fläche wie Emoji/SVG; Padding hält Luft zum Steinrahmen.
+       * width/height MÜSSEN explizit gesetzt sein: ein <img> ist ein Replaced Element —
+       * `inset` allein streckt es (anders als die Emoji-/SVG-Wrapper-<div>s) NICHT, es
+       * rendert sonst in nativer 128-px-Größe über den ~50-px-Slot hinaus.
        */
       .item-slot__icon--image {
+        width: calc(100% - 2 * var(--item-slot-inner-inset));
+        height: calc(100% - 2 * var(--item-slot-inner-inset));
         object-fit: contain;
         box-sizing: border-box;
         padding: 10%;
