@@ -115,14 +115,15 @@
         /* Randmarker-Kantenlänge in Pixeln (`REVEAL_MARKER_SIZE_PX`, `apps/client/src/config.ts`). */
         --reveal-marker-size: 20px;
         /*
-         * Mobile-Einzug für Kompass-/Reveal-Marker-Pfeile (Felix-Anweisung 2026-07-18,
-         * verbindlich, nach Sichtung): auf einem kleinen Touch-Bildschirm sitzen die Pfeile an
-         * der reinen Safe-Area-Kante zu nah am physischen Rand (Daumen/Gehäuse verdecken sie
-         * leicht) — auf Desktop ist „von oben kommen" dagegen erwünscht und bleibt unverändert.
-         * Wirkt NUR unter `@media (pointer: coarse)` (s. `#sound-compass`/`#reveal-markers`
-         * unten) — auf `0px` gesetzt bedeutet: kein zusätzlicher Einzug (Desktop-Default).
+         * Rand-Einzug für Kompass-/Reveal-Marker-Pfeile (Felix-Anweisungen 2026-07-18, nach
+         * Sichtung): die Pfeile müssen klar in den Spielausschnitt hineinragen — an der reinen
+         * Safe-Area-Kante sitzen sie zu nah am physischen Rand (Daumen/Gehäuse/Fenster-Kante
+         * verdecken sie leicht). Gilt auf ALLEN Geräten gleichermaßen (zuerst Touch-only,
+         * Felix zog Desktop am selben Tag nach: „auch bei der Desktop-Version reinragen, so
+         * wie bei Mobile"). Wirkt über die Container-Insets von `#sound-compass`/
+         * `#reveal-markers` (s. u.).
          */
-        --kompass-rand-einzug-touch: 24px;
+        --kompass-rand-einzug: 24px;
         /*
          * Rumpel-HUD-Balken (Versteck-Rumpeln, Anti-Camper §5, ursprünglich Client-/Sound-
          * Scheibe R1c, Felix-Feel-Vorgabe „1:1 aus dem MVP"). **Mobile-Redesign „der Balken ist
@@ -799,13 +800,13 @@
       }
 
       /*
-       * Mobile-Einzug für Kompass-/Reveal-Marker-Pfeile (Felix-Anweisung 2026-07-18, verbindlich:
-       * „müssen klar in den Spielausschnitt hineinragen"). `(pointer: coarse)` triff NUR auf
-       * Touch-Eingabegeräte zu (Standard-Feature-Query fürs Grob-Zeigegerät, kein UA-Sniffing) —
-       * Desktop (Maus, `pointer: fine`) bleibt UNVERÄNDERT am reinen Safe-Area-Rand („von oben
-       * kommen" passt dort). `calc(var(--hud-safe-*) + var(--kompass-rand-einzug-touch))`
-       * ADDIERT den Einzug auf die bestehenden Safe-Area-Insets (statt sie zu ersetzen) — ein
-       * Gerät mit echtem Notch bekommt weiterhin BEIDE Abstände.
+       * Rand-Einzug für Kompass-/Reveal-Marker-Pfeile (Felix-Anweisungen 2026-07-18, verbindlich:
+       * „müssen klar in den Spielausschnitt hineinragen" — zunächst Touch-only via
+       * `@media (pointer: coarse)`, am selben Tag von Felix auf ALLE Geräte ausgeweitet:
+       * „auch bei der Desktop-Version reinragen, so wie bei Mobile" → Media-Query entfernt).
+       * `calc(var(--hud-safe-*) + var(--kompass-rand-einzug))` ADDIERT den Einzug auf die
+       * bestehenden Safe-Area-Insets (statt sie zu ersetzen) — ein Gerät mit echtem Notch
+       * bekommt weiterhin BEIDE Abstände.
        *
        * Bewusst über die `top/right/bottom/left`-Insets der FIXEN Container (`#sound-compass`/
        * `#reveal-markers`) gelöst, NICHT über `padding`: `scenes/MatchScene.ts`s
@@ -818,16 +819,14 @@
        * größerer Inset auf `top/right/bottom/left` SCHRUMPFT die Containerfläche dagegen
        * tatsächlich (`fixed`-Positionierung spannt die Fläche zwischen den vier Insets auf) —
        * dieselbe Prozentrechnung landet dadurch automatisch weiter innen, ohne dass
-       * `soundCompass.ts`/`shrinkZoneHud.ts` etwas von „Touch" wissen müssten.
+       * `soundCompass.ts`/`shrinkZoneHud.ts` etwas vom Einzug wissen müssten.
        */
-      @media (pointer: coarse) {
-        #sound-compass,
-        #reveal-markers {
-          top: calc(var(--hud-safe-top) + var(--kompass-rand-einzug-touch));
-          right: calc(var(--hud-safe-right) + var(--kompass-rand-einzug-touch));
-          bottom: calc(var(--hud-safe-bottom) + var(--kompass-rand-einzug-touch));
-          left: calc(var(--hud-safe-left) + var(--kompass-rand-einzug-touch));
-        }
+      #sound-compass,
+      #reveal-markers {
+        top: calc(var(--hud-safe-top) + var(--kompass-rand-einzug));
+        right: calc(var(--hud-safe-right) + var(--kompass-rand-einzug));
+        bottom: calc(var(--hud-safe-bottom) + var(--kompass-rand-einzug));
+        left: calc(var(--hud-safe-left) + var(--kompass-rand-einzug));
       }
 
       /*
