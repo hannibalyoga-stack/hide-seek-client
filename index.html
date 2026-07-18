@@ -254,6 +254,13 @@
          * (kosmetisch, `scenes/MatchScene.ts`s `renderSpellSlots()`).
          */
         --item-slot-accent-spell-trailreveal: #c98a4b;
+        /*
+         * Katzen-Verwandlung (Umsetzungsauftrag 2026-07-18-katzen-verwandlung.md): neunter
+         * Zauber, eigene Kategorie catform - warmes Orange (thematisch Fell/Katze), abgegrenzt
+         * von Tuer-Violett/Licht-Gelb/Runen-Gruen/Spur-Eisblau/Spurenleser-Kupfer (kosmetisch,
+         * scenes/MatchScene.ts renderSpellSlots()).
+         */
+        --item-slot-accent-spell-catform: #e67e22;
         --item-slot-cooldown-color: rgba(0, 0, 0, 0.55);
         /*
          * Mobile-Slot-Budget (Umsetzungsauftrag `2026-07-17-verlangsamungsspur.md`, LOAD-BEARING;
@@ -1137,6 +1144,10 @@
       .item-slot--spell-trailreveal {
         --slot-accent: var(--item-slot-accent-spell-trailreveal);
       }
+      /* Katzen-Verwandlung: eigene Akzentfarbe für die Kategorie „catform". */
+      .item-slot--spell-catform {
+        --slot-accent: var(--item-slot-accent-spell-catform);
+      }
       /*
        * Abgenommenes Pixel-Icon (Licht-Trio, Felix-Abnahme 2026-07-18 „3x Variante A"):
        * <img> mit dem 128-px-Derivat aus assets/icons/, contain-skaliert in derselben
@@ -1753,7 +1764,7 @@
         display: none;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-DDGCmPr0.js"></script>
+    <script type="module" crossorigin src="./assets/index-pgU7XBYB.js"></script>
   </head>
   <body>
     <div id="game-container">
