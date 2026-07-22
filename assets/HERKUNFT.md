@@ -157,3 +157,13 @@ Einsatz im Client: `apps/client/src/scenes/MatchScene.ts`s `handleRuneAdd()` (`R
 | Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
 |---|---|---|---|---|
 | `objects/runen-falle.png` | `objects.runen-falle` | `424f25a088248ecf2f1e589e62daf2b32a737c1603601d1367568bc5f7e790c9` | `e406815fdc65ce124983e5ab2780c186c57922f7d54a29ef93abea1fb78aa453` | abgenommen |
+
+## Audio: Fänger-Durchsuchen-Drone (Felix-Auftrag 2026-07-22)
+
+- `audio/faenger-durchsuchen/faenger-durchsuchen.m4a` — Quelle `assets-src/audio/faenger-durchsuchen/faenger-durchsuchen.mp3` (ElevenLabs, Original-Download `ROBTMisc-Droning_search_sound-Elevenlabs.mp3`), 10-s-Drone. Self-only Feedback-Loop für den Fänger, solange dessen `CHANNEL_TYPE_SEARCH`-Kanal läuft (Durchsuchen eines Verstecks) — nicht-positional (kein Panner-Node, reines Eigen-Feedback), daher Stereo-AAC-Derivat (`afconvert -f m4af -d aac -b 128000 -c 2 <master>`), ~167 KB.
+
+**Freigabe Einsatz im Spiel: Felix-Auftrag 2026-07-22** („diesen Sound beim Untersuchen abspielen, für die Dauer des Untersuchens"). Status in `assets-src` bleibt `vorschlag` bis zur Live-Hörprobe/Endabnahme — die Freigabe gilt für den Einsatz im Client, nicht als Endabnahme des Audio-Assets.
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `audio/faenger-durchsuchen/faenger-durchsuchen.m4a` | `audio.faenger-durchsuchen` | `4763d0d58f067c802ef19d690a76d3852e3ab85f5a13562a9753e2df038cfa9b` | `c2d8740c2b75944335beb31b4e5346381c42f22791240f66fd095bc8f5a36afc` | vorschlag |
