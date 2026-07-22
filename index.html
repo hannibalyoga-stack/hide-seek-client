@@ -115,16 +115,6 @@
         /* Randmarker-Kantenlänge in Pixeln (`REVEAL_MARKER_SIZE_PX`, `apps/client/src/config.ts`). */
         --reveal-marker-size: 20px;
         /*
-         * Rand-Einzug für Kompass-/Reveal-Marker-Pfeile (Felix-Anweisungen 2026-07-18, nach
-         * Sichtung): die Pfeile müssen klar in den Spielausschnitt hineinragen — an der reinen
-         * Safe-Area-Kante sitzen sie zu nah am physischen Rand (Daumen/Gehäuse/Fenster-Kante
-         * verdecken sie leicht). Gilt auf ALLEN Geräten gleichermaßen (zuerst Touch-only,
-         * Felix zog Desktop am selben Tag nach: „auch bei der Desktop-Version reinragen, so
-         * wie bei Mobile"). Wirkt über die Container-Insets von `#sound-compass`/
-         * `#reveal-markers` (s. u.).
-         */
-        --kompass-rand-einzug: 24px;
-        /*
          * Rumpel-HUD-Balken (Versteck-Rumpeln, Anti-Camper §5, ursprünglich Client-/Sound-
          * Scheibe R1c, Felix-Feel-Vorgabe „1:1 aus dem MVP"). **Mobile-Redesign „der Balken ist
          * selbst das Tap-Ziel" (Übergabe-Auftrag `2026-07-16-rumpel-balken-tap-redesign.md`,
@@ -820,16 +810,21 @@
 
       /*
        * Fänger-Randmarker (Übergabe-Auftrag P3g „Shrink-Endgame", Entwurfs-Entscheidung i;
-       * Farbe/Form aktualisiert Kompass-Pfeil-Vereinheitlichung, Felix-Auftrag 2026-07-17):
-       * Container füllt dieselbe Safe-Area-bereinigte Fläche wie `#sound-compass` (Mobile-Regel
-       * 5), fester Element-Pool (`REVEAL_MARKER_MAX_COUNT`, in `setupRevealMarkerDom()` einmalig
-       * angelegt). `pointer-events: none` (Regel 1): darf den Whole-Canvas-Joystick nie stören.
-       * `scenes/MatchScene.ts`s `updateRevealMarkersHud()` setzt Position/Drehung PRO FRAME als
-       * EINEN kombinierten Inline-`transform` (Translate + Rotate) — deshalb bewusst KEIN
-       * `transform` in dieser Regel selbst (würde sonst überschrieben/kollidieren). Die
-       * Pfeil-Form kommt von der gemeinsamen `.kompass-pfeil`-Klasse (s. o.) — nur die Farbe
-       * (`--reveal-marker-color`, Violett, Konzept Q3: Präzisions-Ehrlichkeit gegenüber dem
-       * groben Sound-Kompass) bleibt eigenständig.
+       * Farbe/Form aktualisiert Kompass-Pfeil-Vereinheitlichung, Felix-Auftrag 2026-07-17;
+       * **Ring statt Rand, Felix-Bugfix 2026-07-22**: „der lila Pfeil wird noch außen angezeigt"
+       * — dieser Container dient seit dem Ring-Umzug NUR noch als Koordinatensystem, genau wie
+       * `#sound-compass`, der vormalige Rand-Einzug ist ersatzlos entfallen): fester Element-Pool
+       * (`REVEAL_MARKER_MAX_COUNT`, in `setupRevealMarkerDom()` einmalig angelegt).
+       * `pointer-events: none` (Regel 1): darf den Whole-Canvas-Joystick nie stören.
+       * `scenes/MatchScene.ts`s `updateRevealMarkersHud()` verankert die Pfeile in PIXELN auf
+       * einem Ring um die Bildschirmposition der eigenen Figur (Container-Offset wird dort über
+       * `getBoundingClientRect()` herausgerechnet, Muster `updateSoundCompassHud()`) und setzt
+       * Position/Drehung PRO FRAME als EINEN kombinierten Inline-`transform` (Translate +
+       * Rotate) — deshalb bewusst KEIN `transform` in dieser Regel selbst (würde sonst
+       * überschrieben/kollidieren). Die Pfeil-Form kommt von der gemeinsamen
+       * `.kompass-pfeil`-Klasse (s. o.) — nur die Farbe (`--reveal-marker-color`, Violett,
+       * Konzept Q3: Präzisions-Ehrlichkeit gegenüber dem groben Sound-Kompass) bleibt
+       * eigenständig.
        */
       #reveal-markers {
         position: fixed;
@@ -850,38 +845,6 @@
 
       .reveal-marker.visible {
         display: block;
-      }
-
-      /*
-       * Rand-Einzug für Reveal-Marker-Pfeile (Felix-Anweisungen 2026-07-18, verbindlich:
-       * „müssen klar in den Spielausschnitt hineinragen" — zunächst Touch-only via
-       * `@media (pointer: coarse)`, am selben Tag von Felix auf ALLE Geräte ausgeweitet:
-       * „auch bei der Desktop-Version reinragen, so wie bei Mobile" → Media-Query entfernt).
-       * `calc(var(--hud-safe-*) + var(--kompass-rand-einzug))` ADDIERT den Einzug auf die
-       * bestehenden Safe-Area-Insets (statt sie zu ersetzen) — ein Gerät mit echtem Notch
-       * bekommt weiterhin BEIDE Abstände.
-       *
-       * Bewusst über die `top/right/bottom/left`-Insets des FIXEN Containers gelöst, NICHT über
-       * `padding`: `scenes/MatchScene.ts`s `updateRevealMarkersHud()` positioniert die Pfeile
-       * über `left`/`top` in PROZENT relativ zur TATSÄCHLICHEN Containerfläche
-       * (`container.clientWidth`/`clientHeight`, `computeEdgePositionPercentForAngle`) —
-       * absolut positionierte Kinder ignorieren das Padding eines Elternelements bei der
-       * Prozent-Berechnung (die Basisfläche für `left: X%` bleibt trotz Padding die volle
-       * `content-box + padding`-Breite/-Höhe). Ein größerer Inset auf `top/right/bottom/left`
-       * SCHRUMPFT die Containerfläche dagegen tatsächlich (`fixed`-Positionierung spannt die
-       * Fläche zwischen den vier Insets auf) — dieselbe Prozentrechnung landet dadurch
-       * automatisch weiter innen, ohne dass `shrinkZoneHud.ts` etwas vom Einzug wissen müsste.
-       *
-       * `#sound-compass` bekommt den Einzug seit „Pfeile an der Spielfigur" (Felix-Auftrag
-       * 2026-07-22) NICHT mehr: dessen Pfeile sitzen jetzt auf einem Ring um die eigene Figur
-       * (`updateSoundCompassHud()`, Pixel-Anker statt Rand-Prozent) — ein Rand-Einzug hat dort
-       * keine Bedeutung mehr.
-       */
-      #reveal-markers {
-        top: calc(var(--hud-safe-top) + var(--kompass-rand-einzug));
-        right: calc(var(--hud-safe-right) + var(--kompass-rand-einzug));
-        bottom: calc(var(--hud-safe-bottom) + var(--kompass-rand-einzug));
-        left: calc(var(--hud-safe-left) + var(--kompass-rand-einzug));
       }
 
       /*
@@ -1836,7 +1799,7 @@
         display: none;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BI8Ata_1.js"></script>
+    <script type="module" crossorigin src="./assets/index-1I3Z_8fA.js"></script>
   </head>
   <body>
     <div id="game-container">
