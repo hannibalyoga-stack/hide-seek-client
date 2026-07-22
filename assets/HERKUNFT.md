@@ -179,3 +179,13 @@ Einsatz im Client: `apps/client/src/scenes/MatchScene.ts`s `handleRuneAdd()` (`R
 |---|---|---|---|---|
 | `audio/katze-verwandlung/katze-verwandlung.m4a` | `audio.katze-verwandlung` | `7594bfff8ec841e35eb3f123f1ad0fd9585e0ef55571092e3c0efa17aa0bf28a` | `8821d2cbb5b7d4ec41a990c4c610eb3b9d1e1d6eed8d245d2f2c9b9a7aadfd2e` | vorschlag |
 | `audio/katze-sprung/katze-sprung.m4a` | `audio.katze-sprung` | `c3ce3c9280dd4e2b297313f4fd56aeae520cf45edf366eb0b212270e7ca76426` | `5eb12ea6bb961f477f69590ee1d1eca9674026344e38420abc7ebc6c8d6551c4` | vorschlag |
+
+## Audio: Selbst-Fang-Sting (Felix-Auftrag 2026-07-22, MVP-Übernahme des "You've been caught"-Screens)
+
+- `audio/fang-eigen-sting/fang-eigen-sting.m4a` — Quelle `assets-src/audio/fang-eigen-sting/fang-eigen-sting.mp3` (eigene ElevenLabs-Generierung, Prompt: „Deep ominous single church bell toll, low pitch, dark heavy reverb tail, funereal and final, no melody, cinematic dark fantasy game death stinger", eine von drei generierten Varianten — Alternativen im Sidecar dokumentiert), ~2,2 s. AUSDRÜCKLICH PLATZHALTER (Felix-Direktive) — kein extrahiertes Dark-Souls-Sample (IP-Regel), wird gegen einen anderen Ton ausgetauscht, sobald einer feststeht. Spielt self-only für den soeben gefangenen Spieler beim Übergang zum Geist (Vollbild-Screen "You've been caught"). Nicht-positional (kein Panner-Node, reines Eigen-Feedback) → Stereo-AAC-Derivat (`afconvert -f m4af -d aac -b 128000 -c 2 <master>`), ~34 KB.
+
+**Freigabe Einsatz im Spiel: Felix-Auftrag 2026-07-22** („der Dark-Souls-Sound... das kannst du flaggen als etwas, was wir austauschen müssen"). Status in `assets-src` bleibt `vorschlag` bis zur Live-Hörprobe/Endabnahme UND dem späteren Sound-Austausch — die Freigabe gilt für den Einsatz im Client, nicht als Endabnahme des Audio-Assets.
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `audio/fang-eigen-sting/fang-eigen-sting.m4a` | `audio.fang-eigen-sting` | `b46495221b359ca2d3054dd362d0e027123fc17e7528d039bab942af348e0b2a` | `d1d7de383c56a0db65cae36722ccfb2d7e513fa5539ee0fc1c9312f7bba651b3` | vorschlag |

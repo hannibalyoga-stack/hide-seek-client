@@ -621,6 +621,47 @@
       }
 
       /*
+       * Selbst-Fang-Vollbildschirm (Felix-Auftrag 2026-07-22, MVP-Übernahme des "You've been
+       * caught"-Screens): eigenständiges DOM-Element — NICHT `#catch-announcement`
+       * wiederverwendet (das ist der dezente Nebentext-Ton für ALLE anderen Fang-Fälle, siehe
+       * `scenes/MatchScene.ts`s `handlePlayerCaught()`), sondern der große "Moment" NUR für den
+       * Gefangenen selbst, ausgelöst über die neue `"playerCaught"`-Broadcast-Message
+       * (`net/connection.ts`). Ein-/Ausblenden über dieselbe `.visible`-Klassen-Transition wie
+       * `#catch-announcement`/`#match-result` (`SELF_CAUGHT_SCREEN_DURATION_MS`, `config.ts`).
+       *
+       * Volldeckende Abdunkelung (`background`) statt nur Text — Dark-Souls-Vorbild, betont den
+       * Bruch (Verstecker → Geist) stärker als der bisherige kleine Text-Hinweis. `z-index` über
+       * `#reveal-markers`/`#chase-vignette` (beide `pointer-events: none`, kein Interaktions-
+       * Konflikt möglich, Regel 1) — ein Fang ist der dominante Moment.
+       *
+       * UI-Theme (R3-1): Cinzel-Titelschrift (Muster `#connection-status`) — "You've been
+       * caught" ist ein kurzes LABEL, kein Fließtext-Satz, damit ein legitimer
+       * Cinzel-Anwendungsfall (anders als `#catch-announcement`/`#match-result`, die echte Sätze
+       * zeigen).
+       */
+      #self-caught-screen {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.55);
+        color: var(--theme-color-text-title);
+        font: calc(var(--hud-font-size) * 2.2) / 1.3 var(--theme-font-title);
+        letter-spacing: var(--theme-letter-spacing-title);
+        text-align: center;
+        text-shadow: 0 0 12px #000;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 5;
+        transition: opacity 300ms ease;
+      }
+
+      #self-caught-screen.visible {
+        opacity: 1;
+      }
+
+      /*
        * Timer-HUD (Übergabe-Auftrag P3c-2 „Formales Matchende + Sieg", Ziel 6): dauerhaft
        * sichtbare MM:SS-Zeile, eigenständiges DOM-Element (NICHT Teil des `#debug-overlay`-
        * Textblocks, siehe `scenes/MatchScene.ts`s `updateMatchTimerHud()`-Dokumentation) — oben
@@ -2432,7 +2473,7 @@
         color: var(--theme-color-brass);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-Bk7ieFIz.js"></script>
+    <script type="module" crossorigin src="./assets/index-D_PDce0Q.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -2453,6 +2494,7 @@
       <div id="dev-reset-button" title="Dev: Raum leeren &amp; neu starten">⟳</div>
       <div id="connection-status"></div>
       <div id="catch-announcement"></div>
+      <div id="self-caught-screen"></div>
       <div id="match-timer"></div>
       <div id="wins-counter">Wins: 0</div>
       <div id="item-charges-hud"></div>
