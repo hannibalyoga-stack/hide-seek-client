@@ -167,3 +167,15 @@ Einsatz im Client: `apps/client/src/scenes/MatchScene.ts`s `handleRuneAdd()` (`R
 | Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
 |---|---|---|---|---|
 | `audio/faenger-durchsuchen/faenger-durchsuchen.m4a` | `audio.faenger-durchsuchen` | `4763d0d58f067c802ef19d690a76d3852e3ab85f5a13562a9753e2df038cfa9b` | `c2d8740c2b75944335beb31b4e5346381c42f22791240f66fd095bc8f5a36afc` | vorschlag |
+
+## Audio: Katzen-Verwandlung + Katzensprung (Felix-Auftrag 2026-07-22)
+
+- `audio/katze-verwandlung/katze-verwandlung.m4a` — Quelle `assets-src/audio/katze-verwandlung/katze-verwandlung.mp3` (ElevenLabs, Original-Download `ANMLCat-gentle_short_murmur_-Elevenlabs.mp3`), ~1 s Katzen-Murmeln. Spielt GENAU EINMAL beim Verwandeln IN die Katze (Ein-Flanke der Katzen-Verwandlung, 9. Zauber); die Rückverwandlung bleibt bewusst STUMM (explizite Felix-Vorgabe). Positional für sichtbare fremde Verwandler → Mono-AAC-Derivat (`afconvert -f m4af -d aac -b 96000 -c 1 <master>`), ~15 KB.
+- `audio/katze-sprung/katze-sprung.m4a` — Quelle `assets-src/audio/katze-sprung/katze-sprung.mp3` (ElevenLabs, Original-Download `ANMLCat-“A_sudden,_realistic-Elevenlabs.mp3`), ~0,9 s Katzenlaut. Spielt beim Start des langen committalen Katzensprungs (Leap ersetzt Dash in Katzenform), rein client-lokal aus der Zustands-Flanke getriggert (die Katze ist server-seitig lautlos, es gibt keine Schritt-Sound-Events). Positional → Mono-AAC-Derivat (gleiches Rezept), ~13 KB.
+
+**Freigabe Einsatz im Spiel: Felix-Auftrag 2026-07-22** („wenn man als Katze verwandelt den langen Dash Sprung macht, soll der Sound abgespielt werden … beim verwandeln in eine katze soll der sound abgespielt werden, zurück verwandeln kein sound"). Status in `assets-src` bleibt `vorschlag` bis zur Live-Hörprobe/Endabnahme — die Freigabe gilt für den Einsatz im Client, nicht als Endabnahme der Audio-Assets.
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `audio/katze-verwandlung/katze-verwandlung.m4a` | `audio.katze-verwandlung` | `7594bfff8ec841e35eb3f123f1ad0fd9585e0ef55571092e3c0efa17aa0bf28a` | `8821d2cbb5b7d4ec41a990c4c610eb3b9d1e1d6eed8d245d2f2c9b9a7aadfd2e` | vorschlag |
+| `audio/katze-sprung/katze-sprung.m4a` | `audio.katze-sprung` | `c3ce3c9280dd4e2b297313f4fd56aeae520cf45edf366eb0b212270e7ca76426` | `5eb12ea6bb961f477f69590ee1d1eca9674026344e38420abc7ebc6c8d6551c4` | vorschlag |
