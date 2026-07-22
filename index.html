@@ -39,7 +39,7 @@
        */
       @font-face {
         font-family: "Cinzel";
-        src: url("assets/fonts/cinzel-latin.woff2") format("woff2");
+        src: url("/assets/fonts/cinzel-latin.woff2") format("woff2");
         font-weight: 400 900;
         font-style: normal;
         font-display: swap;
@@ -1207,7 +1207,7 @@
       .item-slot__frame {
         position: absolute;
         inset: 0;
-        background-image: url("assets/ui/slot-item-frame.png");
+        background-image: url("/assets/ui/slot-item-frame.png");
         background-size: 100% 100%;
         background-repeat: no-repeat;
         z-index: 3;
@@ -2257,6 +2257,92 @@
       }
 
       /*
+       * =====================================================================
+       * Klassisches Layout (`html.hud-layout-classic`, Konzept + Felix-Entscheide 2026-07-22
+       * abends, `vault/40-Backlog/hud-layout-umschalter-mobil.md`): DIESELBEN Elemente, nur
+       * anderes CSS-Kleid — die 4 Slots werden rechteckige MVP-Kacheln (Steinrahmen-Optik der
+       * Desktop-Item-Bar, `--item-slot-*`-Konstanten) in einer horizontalen Leiste unten,
+       * darüber rechtsbündig die runde Reihe Interakt → Dash → Schleichen (von außen nach
+       * innen; Interakt am Daumen). Umschaltung: `?hudLayout=classic|wildrift`
+       * (`hud/hudLayoutMode.ts`, Boot in `src/index.ts`). Die komplette JS-Verdrahtung und
+       * alle Feedback-Zustände (Wipe/Countdown/`cooldown-ready`/`press-denied`/`is-pressed`)
+       * bleiben wörtlich identisch — hier stehen NUR Geometrie und Kachel-Optik.
+       *
+       * Herleitung der Positionen (benannte Konstanten unten, keine Magic Numbers):
+       * Kachel-Schritt = Kachelgröße + Kachel-Gap; S3 sitzt am rechten Rand-Anker, S2–S0
+       * je einen Schritt weiter links. Obere Reihe: Interakt-Unterkante = Leisten-Oberkante +
+       * Reihen-Gap; Dash/Schleichen (kleinerer Ø) vertikal auf Interakt-MITTE zentriert
+       * (bottom + halbe Ø-Differenz).
+       */
+      html.hud-layout-classic {
+        --wrc-tile-size: var(--item-slot-size);
+        --wrc-tile-gap: var(--item-slot-gap);
+        --wrc-tile-step: calc(var(--wrc-tile-size) + var(--wrc-tile-gap));
+        /* Rand-Anker = dieselben physischen Abstände wie das WR-Layout (Felix-abgenommen). */
+        --wrc-right-base: 0.898rem;
+        --wrc-bar-bottom: 0.92rem;
+        /* Vertikaler Abstand Leiste ↔ obere Reihe + horizontaler Abstand in der oberen Reihe. */
+        --wrc-row-gap: 0.55rem;
+        --wrc-upper-bottom: calc(var(--wrc-bar-bottom) + var(--wrc-tile-size) + var(--wrc-row-gap));
+        --wrc-upper-small-bottom: calc(var(--wrc-upper-bottom) + (var(--wr-interact-diameter) - var(--wr-slot-diameter)) / 2);
+      }
+
+      /* Kachel-Form + MVP-Schichtung: Panel/Akzent (bestehende data-kind-Regeln) < Wipe < Steinrahmen < Countdown-Zahl. */
+      html.hud-layout-classic .wr-slot {
+        width: var(--wrc-tile-size);
+        height: var(--wrc-tile-size);
+        border-radius: var(--item-slot-radius);
+      }
+
+      html.hud-layout-classic .wr-slot .wr-button__cooldown {
+        border-radius: var(--item-slot-radius);
+      }
+
+      html.hud-layout-classic .wr-slot::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("/assets/ui/slot-item-frame.png");
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        /* Über dem Wipe (Quellreihenfolge), unter der Countdown-Zahl (`.wr-button__time`, z-index 5). */
+        z-index: 4;
+        pointer-events: none;
+      }
+
+      /* Leiste unten: S0 S1 S2 S3 von links nach rechts, S3 am Rand-Anker. */
+      html.hud-layout-classic #wr-slot-3 {
+        right: calc(var(--hud-safe-right) + var(--wrc-right-base));
+        bottom: calc(var(--hud-safe-bottom) + var(--wrc-bar-bottom));
+      }
+      html.hud-layout-classic #wr-slot-2 {
+        right: calc(var(--hud-safe-right) + var(--wrc-right-base) + var(--wrc-tile-step));
+        bottom: calc(var(--hud-safe-bottom) + var(--wrc-bar-bottom));
+      }
+      html.hud-layout-classic #wr-slot-1 {
+        right: calc(var(--hud-safe-right) + var(--wrc-right-base) + 2 * var(--wrc-tile-step));
+        bottom: calc(var(--hud-safe-bottom) + var(--wrc-bar-bottom));
+      }
+      html.hud-layout-classic #wr-slot-0 {
+        right: calc(var(--hud-safe-right) + var(--wrc-right-base) + 3 * var(--wrc-tile-step));
+        bottom: calc(var(--hud-safe-bottom) + var(--wrc-bar-bottom));
+      }
+
+      /* Obere Reihe (alle rund, Formen/Größen unverändert): Interakt rechtsbündig über S3. */
+      html.hud-layout-classic #wr-interact-button {
+        right: calc(var(--hud-safe-right) + var(--wrc-right-base));
+        bottom: calc(var(--hud-safe-bottom) + var(--wrc-upper-bottom));
+      }
+      html.hud-layout-classic #wr-dash-button {
+        right: calc(var(--hud-safe-right) + var(--wrc-right-base) + var(--wr-interact-diameter) + var(--wrc-row-gap));
+        bottom: calc(var(--hud-safe-bottom) + var(--wrc-upper-small-bottom));
+      }
+      html.hud-layout-classic #wr-sneak-button {
+        right: calc(var(--hud-safe-right) + var(--wrc-right-base) + var(--wr-interact-diameter) + var(--wr-slot-diameter) + 2 * var(--wrc-row-gap));
+        bottom: calc(var(--hud-safe-bottom) + var(--wrc-upper-small-bottom));
+      }
+
+      /*
        * Long-Press-Drag-Umsortieren (430 ms, `hud/actionSlotDrag.ts`, 1:1 aus dem abgenommenen
        * Mockup): `.drag-source` markiert den gehaltenen Ursprungs-Slot (halbtransparent, der
        * Inhalt „schwebt" im `.wr-slot-drag-ghost` unter dem Finger), `.drop-target` markiert den
@@ -2346,7 +2432,7 @@
         color: var(--theme-color-brass);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-C90eG-c0.js"></script>
+    <script type="module" crossorigin src="/assets/index-rmH8cjjz.js"></script>
   </head>
   <body>
     <div id="game-container">
