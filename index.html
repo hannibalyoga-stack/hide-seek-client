@@ -306,25 +306,36 @@
          * Prozent-Zentren, kleinere Durchmesser an der Touch-Untergrenze 48px, s. Media-Queries
          * unten): 344-px-Bühne (Slot Ø48/Interakt Ø69) und 320-px-Bühne (Slot Ø48/Interakt Ø64,
          * unterster Slot rutscht auf 87% top, damit er Slot 3 nicht berührt).
+         *
+         * **Felix-Korrektur 2026-07-22 (Live-Foto, echtes Gerät):** auf einem echten Gerät mit
+         * spürbarem `env(safe-area-inset-right)` (Querformat-Kamera-/Rand-Aussparung) addierte
+         * sich der Inset ZUSÄTZLICH zu den `right`-Werten oben — gemessener Rand-Abstand des
+         * Interaktionsknopfs ~16 % der Bildschirmbreite statt der beabsichtigten ~9 % (Mockup-
+         * Vermessung). Alle sieben `right`-Werte hier daher um pauschal `4rem` (64px) reduziert
+         * — eine STARRE Verschiebung des gesamten Clusters nach rechts (Bogen-Form/Abstände
+         * zueinander bleiben exakt erhalten), das `env(safe-area-inset-right)`-Sicherheitspolster
+         * selbst bleibt unangetastet (Mobile-Tag-1-Regel 5, nicht verhandelbar) — nur der
+         * DARÜBER hinausgehende Eigenabstand wird kleiner. `bottom`-Werte unverändert (Felix
+         * bemängelte nur den rechten Rand, nicht die Höhe).
          */
         --wr-slot-diameter: 3.062rem;
         --wr-slot-icon-size: 1.7rem;
         --wr-interact-diameter: 5.062rem;
         --wr-interact-icon-size: 2.2rem;
-        --wr-interact-right: 4.898rem;
+        --wr-interact-right: 0.898rem;
         --wr-interact-bottom: 3.072rem;
         /* Oberster Bogen-Platz = Ult-Platz-Konvention (Zauber-Standardplatz, Mockup-Legende). */
-        --wr-slot-0-right: 6.444rem;
+        --wr-slot-0-right: 2.444rem;
         --wr-slot-0-bottom: 10.705rem;
-        --wr-slot-1-right: 9.612rem;
+        --wr-slot-1-right: 5.612rem;
         --wr-slot-1-bottom: 8.745rem;
-        --wr-slot-2-right: 12.18rem;
+        --wr-slot-2-right: 8.18rem;
         --wr-slot-2-bottom: 5.629rem;
-        --wr-slot-3-right: 12.999rem;
+        --wr-slot-3-right: 8.999rem;
         --wr-slot-3-bottom: 2.112rem;
-        --wr-dash-right: 16.987rem;
+        --wr-dash-right: 12.987rem;
         --wr-dash-bottom: 1.433rem;
-        --wr-sneak-right: 21.357rem;
+        --wr-sneak-right: 17.357rem;
         --wr-sneak-bottom: 1.584rem;
         /*
          * Cluster-Farben: `--wr-slot-accent` = neutraler Standardrand (leerer Slot),
@@ -2224,7 +2235,7 @@
         color: var(--theme-color-brass);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-C871GNEs.js"></script>
+    <script type="module" crossorigin src="./assets/index-D2PNH7an.js"></script>
   </head>
   <body>
     <div id="game-container">
