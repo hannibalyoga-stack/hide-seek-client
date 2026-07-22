@@ -940,6 +940,31 @@
       }
 
       /*
+       * Blutrausch — rote Randvignette (Auftrag `2026-07-21-blutrausch.md`, N2: strikt
+       * randbasiert, Bildschirm-MITTE bleibt frei; nur auf dem Fänger-Bildschirm sichtbar).
+       * Safe-area-bereinigte Fläche wie `#sound-compass`/`#reveal-markers` (Mobile-Regel 5) —
+       * die Vignette respektiert dadurch strukturell die Insets (Notch etc.), statt sie zu
+       * überdecken. `box-shadow: inset` erzeugt einen randbasierten Dunkel-/Rotschimmer OHNE
+       * Framebuffer-/Canvas-Trick (reiner CSS-Vignette-Kniff, klassisches Muster): die
+       * `100vmax`-Ausbreitung sorgt dafür, dass der harte Farbübergang immer WEIT außerhalb des
+       * sichtbaren Bereichs liegt — nur der weiche Blur-Kern erreicht den Rand, die Mitte bleibt
+       * transparent. `opacity` wird PRO FRAME von `scenes/MatchScene.ts`s
+       * `updateChaseVignette()` gesetzt (Deckkraft = geglätteter Meter-Füllstand ×
+       * `chaseVignetteMaxAlpha`, live tunbar über die Tweak-Konsole) — die Grundfarbe selbst
+       * bleibt ein fester, gedämpfter Warnrot-Ton (kein Kampf-/Blut-Rot, K1).
+       */
+      #chase-vignette {
+        position: fixed;
+        top: var(--hud-safe-top);
+        right: var(--hud-safe-right);
+        bottom: var(--hud-safe-bottom);
+        left: var(--hud-safe-left);
+        pointer-events: none;
+        opacity: 0;
+        box-shadow: inset 0 0 12vmin 2vmin rgba(153, 27, 27, 0.9);
+      }
+
+      /*
        * Audio-Unlock-Hinweis (E9, Mobile-Tag-1-Regel 8): dezent, verschwindet nach der ersten
        * Pointer-Geste (Phasers eingebautes Unlock, siehe `scenes/MatchScene.ts`s
        * `setupAudioUnlock()`). Unten zentriert, oberhalb der mobilen Bewegungsmodus-Buttons.
@@ -2235,7 +2260,7 @@
         color: var(--theme-color-brass);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-D2PNH7an.js"></script>
+    <script type="module" crossorigin src="./assets/index-CQNqJ2MU.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -2262,6 +2287,7 @@
       <div id="match-result"></div>
       <div id="sound-compass"></div>
       <div id="reveal-markers"></div>
+      <div id="chase-vignette"></div>
       <div id="joystick-base"></div>
       <div id="joystick-knob"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
