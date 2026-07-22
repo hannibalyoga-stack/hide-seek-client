@@ -39,7 +39,7 @@
        */
       @font-face {
         font-family: "Cinzel";
-        src: url("assets/fonts/cinzel-latin.woff2") format("woff2");
+        src: url("/assets/fonts/cinzel-latin.woff2") format("woff2");
         font-weight: 400 900;
         font-style: normal;
         font-display: swap;
@@ -315,28 +315,42 @@
          * — eine STARRE Verschiebung des gesamten Clusters nach rechts (Bogen-Form/Abstände
          * zueinander bleiben exakt erhalten), das `env(safe-area-inset-right)`-Sicherheitspolster
          * selbst bleibt unangetastet (Mobile-Tag-1-Regel 5, nicht verhandelbar) — nur der
-         * DARÜBER hinausgehende Eigenabstand wird kleiner. `bottom`-Werte unverändert (Felix
-         * bemängelte nur den rechten Rand, nicht die Höhe).
+         * DARÜBER hinausgehende Eigenabstand wird kleiner.
+         *
+         * **Felix-Korrektur 2 (2026-07-22 abends, Live-Foto IMG_2662 + neue Wild-Rift-Referenz
+         * 1920×1080):** „alles rechts weiter nach unten, viel zu viel Abstand zum unteren Rand;
+         * die erste Fertigkeit muss auf Dash-Höhe starten." Die `bottom`-Werte sind daher neu
+         * aus der Wild-Rift-Referenz vermessen (Einheit: Slot-Ø 3,062rem, WR-Ability-Ø 110px):
+         *   Angriffsknopf-Unterkante WR: 1,10 Ø über dem physischen Rand → Interakt 2,12rem
+         *   Flash-Zentrum WR: 1,21 Ø → Dash 0,92rem · Heal-Zentrum 1,26 Ø → Schleichen 1,09rem
+         *   Bogen-Zentren WR („30"/Bombe/Rakete): 4,60 / 4,04 / 2,96 Ø → Slots 0–2 s. unten
+         *   Unterster Slot: FELIX-VORGABE „auf Dash-Höhe" (gleicher Ø ⇒ gleicher bottom-Wert;
+         *   WR-pink läge 0,17 Ø höher — bewusst übersteuert).
+         * Auf dem Gerät addiert sich `env(safe-area-inset-bottom)` (gemessen 20pt im Querformat)
+         * — die Werte hier sind so gewählt, dass Inset + Eigenabstand zusammen die physischen
+         * WR-Abstände ergeben. `right`-Werte unverändert (Felix hat den Rechts-Stand nach
+         * Korrektur 1 abgenommen, heutige Rückmeldung betrifft nur die Höhe).
          */
         --wr-slot-diameter: 3.062rem;
         --wr-slot-icon-size: 1.7rem;
         --wr-interact-diameter: 5.062rem;
         --wr-interact-icon-size: 2.2rem;
         --wr-interact-right: 0.898rem;
-        --wr-interact-bottom: 3.072rem;
+        --wr-interact-bottom: 2.12rem;
         /* Oberster Bogen-Platz = Ult-Platz-Konvention (Zauber-Standardplatz, Mockup-Legende). */
         --wr-slot-0-right: 2.444rem;
-        --wr-slot-0-bottom: 10.705rem;
+        --wr-slot-0-bottom: 11.3rem;
         --wr-slot-1-right: 5.612rem;
-        --wr-slot-1-bottom: 8.745rem;
+        --wr-slot-1-bottom: 9.59rem;
         --wr-slot-2-right: 8.18rem;
-        --wr-slot-2-bottom: 5.629rem;
+        --wr-slot-2-bottom: 6.28rem;
         --wr-slot-3-right: 8.999rem;
-        --wr-slot-3-bottom: 2.112rem;
+        /* Felix-Vorgabe 2026-07-22: unterster Slot startet exakt auf Dash-Höhe (= --wr-dash-bottom). */
+        --wr-slot-3-bottom: 0.92rem;
         --wr-dash-right: 12.987rem;
-        --wr-dash-bottom: 1.433rem;
+        --wr-dash-bottom: 0.92rem;
         --wr-sneak-right: 17.357rem;
-        --wr-sneak-bottom: 1.584rem;
+        --wr-sneak-bottom: 1.09rem;
         /*
          * Cluster-Farben: `--wr-slot-accent` = neutraler Standardrand (leerer Slot),
          * `--wr-slot-accent-spell`/`--wr-slot-accent-item` folgen der Runde-3-Vorgabe „Rahmenfarbe
@@ -370,8 +384,6 @@
         :root {
           --wr-slot-diameter: 48px;
           --wr-interact-diameter: 64px;
-          /* Unterster Slot rutscht auf 87% top (Mockup) — neu berechnet für 48px-Durchmesser/320px-Bühne. */
-          --wr-slot-3-bottom: 1.1rem;
         }
       }
 
@@ -1195,7 +1207,7 @@
       .item-slot__frame {
         position: absolute;
         inset: 0;
-        background-image: url("assets/ui/slot-item-frame.png");
+        background-image: url("/assets/ui/slot-item-frame.png");
         background-size: 100% 100%;
         background-repeat: no-repeat;
         z-index: 3;
@@ -2103,30 +2115,104 @@
       }
 
       /*
-       * Kanal-Fortschrittsring: läuft NUR während ein Kanal läuft sichtbar mit
-       * (`.is-channeling`), `stroke-dashoffset` setzt `updateWrInteractButton()` pro Frame aus
-       * `channelTicksRemaining`/derselben Gesamtdauer-Quelle wie der bestehende Kopf-Balken
-       * (`resolveChannelTotalTicks()`, `scenes/MatchScene.ts`) — nur eine zweite Darstellung
-       * derselben server-autoritativen Zahl, kein zweiter Netzpfad.
+       * Feedback-Paket (Felix-Auftrag 2026-07-22 abends, „deutlich responsivere Version"):
+       * der frühere Kanal-Fortschrittsring am Interaktionsknopf ist auf Felix-Wunsch KOMPLETT
+       * entfernt (die Kanal-Dauer zeigt weiterhin allein der Kopf-Balken über der Figur,
+       * `updateChannelProgressBar()`). Stattdessen vier neue, rein darstellende Zustände —
+       * alle Klassen setzt/räumt `scenes/MatchScene.ts`, Vorbild ist der von Felix abgenommene
+       * Mobile-Controls-Spike (MVP `Maus und Katz`, `mobile-controls.ts`/`.css`, read-only
+       * eingesehen — Verhalten portiert, kein Code kopiert):
+       *
+       * 1. `.wr-button__time` — Cooldown-Countdown-Zahl mittig ÜBER dem Wipe: die letzten
+       *    5 Sekunden ganzzahlig runtergezählt, die letzten 2 Sekunden mit einer Kommastelle
+       *    (Schwellen: `hud/cooldownCountdown.ts`, benannte Konstanten).
+       * 2. `.is-cooldown` — dimmt das Icon während des Cooldowns (Spike-Muster grayscale).
+       * 3. `.cooldown-ready` — 480-ms-Aufleuchten, sobald die Fähigkeit wieder bereit ist
+       *    (Spike-Timing 1:1: Helligkeits-Puls + Glyph-Glow).
+       * 4. `.press-denied` — Schüttel-Feedback beim Tap auf eine noch nicht bereite Fähigkeit
+       *    (ersetzt den Spike-Toast: mitten im Match ist ein Text-Toast zu träge/ablenkend).
+       * 5. `.is-pressed` — sofortige Druck-Reaktion (Scale + Aufhellen) bei JEDEM pointerdown,
+       *    JS-gesetzt statt `:active` (zuverlässig auf allen Touch-Browsern).
        */
-      #wr-interact-button__ring {
+      .wr-button__time {
         position: absolute;
-        inset: -4px;
+        z-index: 5;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -54%);
+        color: var(--hud-text-color);
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 0.95rem;
+        font-weight: 800;
+        text-shadow: 0 1px 4px #000;
         pointer-events: none;
-        opacity: 0;
       }
 
-      #wr-interact-button__ring.is-channeling {
-        opacity: 1;
+      .wr-button.is-cooldown .wr-button__icon,
+      .wr-button.is-cooldown .wr-slot__icon-emoji {
+        filter: grayscale(0.35);
+        opacity: 0.68;
       }
 
-      #wr-interact-button__ring circle {
-        fill: none;
-        stroke: var(--hud-text-color);
-        stroke-width: 4;
-        stroke-linecap: round;
-        transform: rotate(-90deg);
-        transform-origin: center;
+      .wr-button.cooldown-ready {
+        animation: wr-cooldown-ready 0.48s ease-out;
+      }
+
+      .wr-button.cooldown-ready .wr-button__icon,
+      .wr-button.cooldown-ready .wr-slot__icon-emoji {
+        animation: wr-cooldown-glyph-ready 0.48s ease-out;
+      }
+
+      .wr-button.press-denied {
+        animation: wr-press-denied 0.28s ease-in-out;
+      }
+
+      .wr-button.press-denied .wr-button__time {
+        animation: wr-press-denied-time 0.28s ease-out;
+      }
+
+      .wr-button.is-pressed,
+      #wr-interact-button.is-pressed {
+        transform: scale(0.92);
+        filter: brightness(1.25);
+      }
+
+      .wr-button,
+      #wr-interact-button {
+        transition:
+          transform 0.07s ease,
+          filter 0.07s ease;
+      }
+
+      @keyframes wr-cooldown-ready {
+        40% {
+          filter: brightness(1.22) saturate(1.1);
+        }
+      }
+
+      @keyframes wr-cooldown-glyph-ready {
+        40% {
+          filter: brightness(1.28);
+          text-shadow: 0 0 16px currentColor;
+        }
+      }
+
+      @keyframes wr-press-denied {
+        20% {
+          transform: translateX(-3px);
+        }
+        45% {
+          transform: translateX(3px);
+        }
+        70% {
+          transform: translateX(-2px);
+        }
+      }
+
+      @keyframes wr-press-denied-time {
+        40% {
+          transform: translate(-50%, -54%) scale(1.4);
+        }
       }
 
       /*
@@ -2260,7 +2346,7 @@
         color: var(--theme-color-brass);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CRIm7eXh.js"></script>
+    <script type="module" crossorigin src="/assets/index-tMlIsoZy.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -2509,6 +2595,7 @@
         <div id="wr-dash-button" class="wr-button" aria-hidden="true">
           <svg class="wr-button__icon"><use href="#wr-i-dash"></use></svg>
           <div class="wr-button__cooldown"></div>
+          <b class="wr-button__time" aria-live="polite"></b>
         </div>
 
         <div id="wr-slot-0" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
@@ -2516,30 +2603,31 @@
           <span class="wr-slot__icon-emoji"></span>
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
+          <b class="wr-button__time" aria-live="polite"></b>
         </div>
         <div id="wr-slot-1" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
           <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
+          <b class="wr-button__time" aria-live="polite"></b>
         </div>
         <div id="wr-slot-2" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
           <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
+          <b class="wr-button__time" aria-live="polite"></b>
         </div>
         <div id="wr-slot-3" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
           <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
+          <b class="wr-button__time" aria-live="polite"></b>
         </div>
 
         <div id="wr-interact-button" class="is-disabled" aria-hidden="true">
-          <svg id="wr-interact-button__ring" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="46" style="stroke-dasharray: 289.03; stroke-dashoffset: 289.03"></circle>
-          </svg>
           <svg id="wr-interact-button__icon"><use href="#wr-i-interact-none"></use></svg>
         </div>
 
