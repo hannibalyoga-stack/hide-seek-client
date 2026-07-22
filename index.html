@@ -281,6 +281,87 @@
          * Loot-System-Kuratierung bricht die Slot-Zahl regulär wieder herunter (kein Dauerzustand).
          */
         --item-slot-size-spell: 3.125rem;
+        /*
+         * Wild-Rift-Aktionscluster (Felix-Auftrag `vault/20-Architektur/auftraege/
+         * 2026-07-22-mobile-hud-wildrift-umsetzung.md`, Konzept + Maße aus dem von Felix
+         * abgenommenen interaktiven Mockup): löst auf TOUCH-Geräten (`html.touch-ui`) die
+         * Item-Bar UND die runden Schleichen-/Interaktions-Buttons vollständig ab — Desktop
+         * bleibt bei den bestehenden Elementen oben pixel-identisch (Gate weiter unten).
+         *
+         * **Herleitung (Konstanten-Tabelle, keine Magic Numbers):** das Mockup vermisst die
+         * Wild-Rift-Referenz auf einer 874×402-px-Bühne, Kreiszentren in Prozent, Anker unten
+         * rechts (`right`/`bottom`). Da hier — anders als im Mockup — KEIN
+         * `translate(-50%, -50%)` verwendet wird (Muster der bestehenden runden Buttons oben:
+         * `right`/`bottom` positionieren die KANTE der Box, nicht ihr Zentrum), gilt je Achse:
+         *   randAbstand = (100 − zentrumProzent) / 100 × bühnenKante − durchmesser / 2
+         * 402-px-Bühne (Standardhöhe, Referenzwerte aus dem Mockup):
+         *   Interaktion  Ø 81 @ 86,4 / 77,7 % → right 4,898rem · bottom 3,072rem
+         *   Slot oben    Ø 49 @ 85,4 / 51,3 % → right 6,444rem · bottom 10,705rem
+         *   Slot 2       Ø 49 @ 79,6 / 59,1 % → right 9,612rem · bottom 8,745rem
+         *   Slot 3       Ø 49 @ 74,9 / 71,5 % → right 12,18rem  · bottom 5,629rem
+         *   Slot unten   Ø 49 @ 73,4 / 85,5 % → right 12,999rem · bottom 2,112rem
+         *   Dash (Flash) Ø 49 @ 66,1 / 88,2 % → right 16,987rem · bottom 1,433rem
+         *   Schleichen   Ø 49 @ 58,1 / 87,6 % → right 21,357rem · bottom 1,584rem
+         * Kompakthöhen (Mockup „Kompakthöhe ≤ 375" bzw. „Extra-Kompakt ≤ 335", dieselben
+         * Prozent-Zentren, kleinere Durchmesser an der Touch-Untergrenze 48px, s. Media-Queries
+         * unten): 344-px-Bühne (Slot Ø48/Interakt Ø69) und 320-px-Bühne (Slot Ø48/Interakt Ø64,
+         * unterster Slot rutscht auf 87% top, damit er Slot 3 nicht berührt).
+         */
+        --wr-slot-diameter: 3.062rem;
+        --wr-slot-icon-size: 1.7rem;
+        --wr-interact-diameter: 5.062rem;
+        --wr-interact-icon-size: 2.2rem;
+        --wr-interact-right: 4.898rem;
+        --wr-interact-bottom: 3.072rem;
+        /* Oberster Bogen-Platz = Ult-Platz-Konvention (Zauber-Standardplatz, Mockup-Legende). */
+        --wr-slot-0-right: 6.444rem;
+        --wr-slot-0-bottom: 10.705rem;
+        --wr-slot-1-right: 9.612rem;
+        --wr-slot-1-bottom: 8.745rem;
+        --wr-slot-2-right: 12.18rem;
+        --wr-slot-2-bottom: 5.629rem;
+        --wr-slot-3-right: 12.999rem;
+        --wr-slot-3-bottom: 2.112rem;
+        --wr-dash-right: 16.987rem;
+        --wr-dash-bottom: 1.433rem;
+        --wr-sneak-right: 21.357rem;
+        --wr-sneak-bottom: 1.584rem;
+        /*
+         * Cluster-Farben: `--wr-slot-accent` = neutraler Standardrand (leerer Slot),
+         * `--wr-slot-accent-spell`/`--wr-slot-accent-item` folgen der Runde-3-Vorgabe „Rahmenfarbe
+         * folgt dem INHALT, nicht der Position" — Violett/Gold sind dieselben Töne wie die
+         * bestehende Item-Bar (`--item-slot-accent-spell`/`--item-slot-accent-item`, keine neue
+         * Kategoriefarbe). Interaktionsknopf-Töne: neutral = gedämpftes Messing (deaktiviert),
+         * `--wr-interact-tone-hider` = dasselbe Violett (Verstecken/Verlassen, Verstecker-Aktionen),
+         * `--wr-interact-tone-catcher` = eigenes Türkis NUR für „Durchsuchen"/„Öffnen" (Fänger-
+         * Truhen-Aktion visuell unterscheidbar) — einziger neuer Farbwert in diesem Umbau.
+         */
+        --wr-slot-accent: #555a66;
+        --wr-slot-accent-spell: var(--item-slot-accent-spell);
+        --wr-slot-accent-item: var(--item-slot-accent-item);
+        --wr-panel-bg: rgba(18, 20, 28, 0.72);
+        --wr-cooldown-color: rgba(0, 0, 0, 0.55);
+        --wr-interact-tone-neutral: #7a7566;
+        --wr-interact-tone-hider: var(--hud-endgame-color);
+        --wr-interact-tone-catcher: #7fb3c4;
+      }
+
+      /* Kompakthöhen (Mockup-Schwellen „≤ 375" / „≤ 335", echte Landschafts-Viewporthöhe — die
+         Rand-Verankerung selbst ist breitenunabhängig, nur die Höhe entscheidet über die Stufe). */
+      @media (max-height: 375px) {
+        :root {
+          --wr-slot-diameter: 48px;
+          --wr-interact-diameter: 69px;
+        }
+      }
+
+      @media (max-height: 335px) {
+        :root {
+          --wr-slot-diameter: 48px;
+          --wr-interact-diameter: 64px;
+          /* Unterster Slot rutscht auf 87% top (Mockup) — neu berechnet für 48px-Durchmesser/320px-Bühne. */
+          --wr-slot-3-bottom: 1.1rem;
+        }
       }
 
       html,
@@ -1798,8 +1879,352 @@
       html.gamepad-active #joystick-knob {
         display: none;
       }
+
+      /* =====================================================================
+       * Wild-Rift-Aktionscluster (Felix-Auftrag `2026-07-22-mobile-hud-wildrift-umsetzung.md`)
+       * =====================================================================
+       * Löst auf TOUCH-Geräten die Item-Bar UND die runden Schleichen-/Interaktions-Buttons
+       * VOLLSTÄNDIG ab (Desktop bleibt bei jenen Elementen unverändert — reine Anzeige-Weiche,
+       * KEIN zweiter Eingabepfad, Mobile-Tag-1-Regel 1). `#wr-cluster` ist ein reiner
+       * Struktur-Wrapper (`position: static`) — `display: none` auf ihm blendet trotz
+       * `position: fixed` auf den Kindern strukturell ALLE Kinder mit aus (Standard-CSS-
+       * Verhalten), ein einziges Gate reicht damit für den kompletten Cluster.
+       */
+      #wr-cluster {
+        display: none;
+      }
+
+      html.touch-ui #wr-cluster {
+        display: block;
+      }
+
+      html.touch-ui #item-bar,
+      html.touch-ui #mobile-sneak-button,
+      html.touch-ui #mobile-interact-button,
+      html.touch-ui #mobile-broom-button {
+        display: none;
+      }
+
+      /*
+       * Alle kleinen Cluster-Buttons (Slots · Dash · Schleichen) EXAKT gleich groß und
+       * kreisrund (Felix-Direktive „keiner unterschiedlich groß") — nur der Interaktionsknopf
+       * ist größer (Wild-Rift-Angriffsknopf-Proportion, eigene Regel unten). Bewusst
+       * `pointer-events: auto` (sie SIND die Eingabe, Mobile-Tag-1-Regel 1) + `touch-action: none`
+       * + `-webkit-tap-highlight-color: transparent` (unterdrückt Browser-Standardgesten, Muster
+       * `.action-slot-button` andernorts) — eigene DOM-Geschwister außerhalb des Phaser-Canvas,
+       * ein Tap erreicht Phasers Whole-Canvas-Joystick-Listener dadurch strukturell nie.
+       */
+      .wr-button {
+        position: fixed;
+        width: var(--wr-slot-diameter);
+        height: var(--wr-slot-diameter);
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--wr-panel-bg);
+        box-shadow: inset 0 0 0 2px var(--wr-slot-accent);
+        color: var(--wr-slot-accent);
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      .wr-button__icon {
+        width: var(--wr-slot-icon-size);
+        height: var(--wr-slot-icon-size);
+        display: block;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+        pointer-events: none;
+      }
+
+      /*
+       * Emoji-Icon EINES belegten Slots (Zauber/Item, Muster `.item-slot__icon--emoji`) —
+       * standardmäßig leer/unsichtbar (kein Textinhalt), `renderWrActionSlots()`
+       * (`scenes/MatchScene.ts`) setzt `textContent` NUR für `data-kind="spell"`/`"item"`.
+       * `data-kind="empty"` zeigt stattdessen den gestrichelten SVG-Platzhalter
+       * (`.wr-slot__icon-empty`) — beide Icon-Träger sind IMMER im DOM (Muster fester
+       * Element-Pool, kein Neuaufbau pro Frame), nur `display` wechselt.
+       */
+      .wr-slot__icon-emoji {
+        display: none;
+        font-size: var(--wr-slot-icon-size);
+        line-height: 1;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+      }
+
+      .wr-slot[data-kind="spell"] .wr-slot__icon-emoji,
+      .wr-slot[data-kind="item"] .wr-slot__icon-emoji {
+        display: block;
+      }
+
+      .wr-slot[data-kind="spell"] .wr-slot__icon-empty,
+      .wr-slot[data-kind="item"] .wr-slot__icon-empty {
+        display: none;
+      }
+
+      /* Ladungs-Pips EINES Item-Slots (Muster `.item-slot__item-pips`, z. B. Besen "●●○") — leer für Zauber/leere Slots. */
+      .wr-slot__pips {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 2px;
+        text-align: center;
+        font: 0.6rem/1 monospace;
+        color: inherit;
+        text-shadow: 0 0 3px #000;
+        pointer-events: none;
+      }
+
+      #wr-sneak-button {
+        right: calc(var(--hud-safe-right) + var(--wr-sneak-right));
+        bottom: calc(var(--hud-safe-bottom) + var(--wr-sneak-bottom));
+      }
+
+      /* Aktiv-Zustand des Schleichen-Toggles (Muster `#mobile-sneak-button.active`) — reine Darstellung. */
+      #wr-sneak-button.active {
+        box-shadow: inset 0 0 0 2px var(--hud-text-color);
+        background: rgba(255, 255, 255, 0.16);
+        color: var(--hud-text-color);
+      }
+
+      #wr-dash-button {
+        right: calc(var(--hud-safe-right) + var(--wr-dash-right));
+        bottom: calc(var(--hud-safe-bottom) + var(--wr-dash-bottom));
+        --wr-slot-cooldown: 0;
+      }
+
+      /* Cooldown-Wipe (Muster `.item-slot__cooldown`: dunkler Radial-Sweep, schrumpft beim Abkühlen). */
+      .wr-button__cooldown {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: conic-gradient(var(--wr-cooldown-color) calc(var(--wr-slot-cooldown, 0) * 1turn), transparent 0);
+        pointer-events: none;
+      }
+
+      #wr-dash-button.is-cooldown {
+        box-shadow: inset 0 0 0 2px var(--wr-slot-accent);
+        color: var(--wr-slot-accent);
+      }
+      #wr-dash-button:not(.is-cooldown) {
+        box-shadow: inset 0 0 0 2px var(--item-slot-accent-dash);
+        color: var(--item-slot-accent-dash);
+      }
+
+      /*
+       * Dynamischer Interaktionsknopf: EIN Tap-Button, Icon/Ton wechseln pro Frame je nach der
+       * server-autoritativ vorhergesagten Aktion (`hud/interactionButtonState.ts`,
+       * `scenes/MatchScene.ts`s `updateWrInteractButton()`). Verdrahtung des Taps selbst
+       * unverändert (`setupInteractControls()` → `net/interactInput.ts`s `MobileInteractState` →
+       * payload-lose `"interact"`-Nachricht) — nur zusätzlich AK2-gegated (kein Tap-Versand im
+       * `"none"`-Zustand, siehe `interactionButtonState.ts`-Dokumentation).
+       */
+      #wr-interact-button {
+        position: fixed;
+        right: calc(var(--hud-safe-right) + var(--wr-interact-right));
+        bottom: calc(var(--hud-safe-bottom) + var(--wr-interact-bottom));
+        width: var(--wr-interact-diameter);
+        height: var(--wr-interact-diameter);
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 38% 30%, rgba(60, 66, 82, 0.55), rgba(18, 20, 28, 0.72) 70%);
+        box-shadow: inset 0 0 0 2.5px var(--wr-interact-tone-neutral);
+        color: var(--wr-interact-tone-neutral);
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      #wr-interact-button.is-disabled {
+        opacity: 0.55;
+      }
+
+      #wr-interact-button.tone-hider {
+        box-shadow: inset 0 0 0 2.5px var(--wr-interact-tone-hider);
+        color: var(--wr-interact-tone-hider);
+      }
+
+      #wr-interact-button.tone-catcher {
+        box-shadow: inset 0 0 0 2.5px var(--wr-interact-tone-catcher);
+        color: var(--wr-interact-tone-catcher);
+      }
+
+      #wr-interact-button__icon {
+        width: var(--wr-interact-icon-size);
+        height: var(--wr-interact-icon-size);
+        display: block;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+        pointer-events: none;
+      }
+
+      /*
+       * Kanal-Fortschrittsring: läuft NUR während ein Kanal läuft sichtbar mit
+       * (`.is-channeling`), `stroke-dashoffset` setzt `updateWrInteractButton()` pro Frame aus
+       * `channelTicksRemaining`/derselben Gesamtdauer-Quelle wie der bestehende Kopf-Balken
+       * (`resolveChannelTotalTicks()`, `scenes/MatchScene.ts`) — nur eine zweite Darstellung
+       * derselben server-autoritativen Zahl, kein zweiter Netzpfad.
+       */
+      #wr-interact-button__ring {
+        position: absolute;
+        inset: -4px;
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      #wr-interact-button__ring.is-channeling {
+        opacity: 1;
+      }
+
+      #wr-interact-button__ring circle {
+        fill: none;
+        stroke: var(--hud-text-color);
+        stroke-width: 4;
+        stroke-linecap: round;
+        transform: rotate(-90deg);
+        transform-origin: center;
+      }
+
+      /*
+       * Die 4 generischen Zauber-/Item-Slots (harte Kappe `MAX_ACTION_SLOTS`, `hud/
+       * actionSlots.ts`): Bogen-Positionen 1:1 aus dem Mockup vermessen, oberster Platz =
+       * Ult-Konvention (Zauber-Standardplatz). `data-kind` (von `scenes/MatchScene.ts`s
+       * `renderWrActionSlots()` pro Slot gesetzt) steuert die Rahmenfarbe NACH INHALT (Runde 3:
+       * „Rahmenfarbe folgt dem Inhalt, nicht der Position") — `spell` = Violett, `item` = Gold,
+       * `empty` = gedämpftes Grau + gestrichelter Rand (kein echter Inhalt, kein Tap-Ziel).
+       */
+      .wr-slot[data-kind="empty"] {
+        box-shadow: inset 0 0 0 2px rgba(85, 90, 102, 0.5);
+        background: rgba(18, 20, 28, 0.4);
+        border-style: dashed;
+      }
+
+      .wr-slot[data-kind="spell"] {
+        box-shadow: inset 0 0 0 2px var(--wr-slot-accent-spell);
+        color: var(--wr-slot-accent-spell);
+      }
+
+      .wr-slot[data-kind="item"] {
+        box-shadow: inset 0 0 0 2px var(--wr-slot-accent-item);
+        color: var(--wr-slot-accent-item);
+      }
+
+      #wr-slot-0 {
+        right: calc(var(--hud-safe-right) + var(--wr-slot-0-right));
+        bottom: calc(var(--hud-safe-bottom) + var(--wr-slot-0-bottom));
+      }
+      #wr-slot-1 {
+        right: calc(var(--hud-safe-right) + var(--wr-slot-1-right));
+        bottom: calc(var(--hud-safe-bottom) + var(--wr-slot-1-bottom));
+      }
+      #wr-slot-2 {
+        right: calc(var(--hud-safe-right) + var(--wr-slot-2-right));
+        bottom: calc(var(--hud-safe-bottom) + var(--wr-slot-2-bottom));
+      }
+      #wr-slot-3 {
+        right: calc(var(--hud-safe-right) + var(--wr-slot-3-right));
+        bottom: calc(var(--hud-safe-bottom) + var(--wr-slot-3-bottom));
+      }
+
+      /*
+       * Long-Press-Drag-Umsortieren (430 ms, `hud/actionSlotDrag.ts`, 1:1 aus dem abgenommenen
+       * Mockup): `.drag-source` markiert den gehaltenen Ursprungs-Slot (halbtransparent, der
+       * Inhalt „schwebt" im `.wr-slot-drag-ghost` unter dem Finger), `.drop-target` markiert den
+       * Slot, über dem der Finger gerade schwebt (heller Rand). Beide Klassen setzt/räumt
+       * `scenes/MatchScene.ts`s Pointer-Drag-Logik, reine Darstellung.
+       */
+      .wr-slot.drag-source {
+        opacity: 0.35;
+      }
+
+      .wr-slot.drop-target {
+        box-shadow: inset 0 0 0 2px var(--hud-text-color), 0 0 10px rgba(232, 226, 210, 0.5);
+      }
+
+      .wr-slot-drag-ghost {
+        position: fixed;
+        z-index: 20;
+        pointer-events: none;
+        width: var(--wr-slot-diameter);
+        height: var(--wr-slot-diameter);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--wr-panel-bg);
+        box-shadow: inset 0 0 0 2px var(--hud-text-color), 0 6px 16px rgba(0, 0, 0, 0.6);
+        transform: translate(-50%, -50%) scale(1.08);
+      }
+
+      .wr-slot-drag-ghost__icon {
+        width: var(--wr-slot-icon-size);
+        height: var(--wr-slot-icon-size);
+        display: block;
+        pointer-events: none;
+      }
+
+      /*
+       * Detailfenster (Halten OHNE Ziehen, Mockup: kompakt, nichtmodal, kein Backdrop): fest
+       * über dem Cluster verankert (relatives Layout, Regel 3) — `scenes/MatchScene.ts` füllt
+       * Name/Beschreibung/Cooldown-Meta beim Öffnen, `.visible` schaltet Sichtbarkeit.
+       */
+      #wr-detail-card {
+        display: none;
+        position: fixed;
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--wr-interact-bottom) + var(--wr-interact-diameter) + var(--hud-gap)
+        );
+        width: min(60vw, 15rem);
+        background: linear-gradient(180deg, rgba(28, 33, 44, 0.97), rgba(18, 22, 31, 0.97));
+        border: 1px solid var(--theme-color-brass);
+        border-radius: 0.75rem;
+        padding: 0.75rem 0.9rem;
+        box-shadow: 0 14px 34px rgba(0, 0, 0, 0.7);
+        pointer-events: none;
+        z-index: 21;
+      }
+
+      #wr-detail-card.visible {
+        display: block;
+      }
+
+      #wr-detail-card__kind {
+        display: block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--wr-slot-accent-spell);
+        margin-bottom: 0.2rem;
+      }
+
+      #wr-detail-card__kind.item {
+        color: var(--wr-slot-accent-item);
+      }
+
+      #wr-detail-card__name {
+        display: block;
+        font: 1rem / 1.3 var(--theme-font-body);
+        color: var(--theme-color-text-body);
+        margin-bottom: 0.3rem;
+      }
+
+      #wr-detail-card__meta {
+        display: block;
+        font-size: 0.7rem;
+        color: var(--theme-color-brass);
+      }
     </style>
-    <script type="module" crossorigin src="./assets/index-1I3Z_8fA.js"></script>
+    <script type="module" crossorigin src="./assets/index-C871GNEs.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -1934,6 +2359,160 @@
           </div>
         </div>
       </div>
+      <!--
+        Wild-Rift-Aktionscluster (Felix-Auftrag `2026-07-22-mobile-hud-wildrift-umsetzung.md`):
+        EIN dynamischer Interaktionsknopf + Dash + Schleichen + 4 generische Zauber-/Item-Slots
+        (harte Kappe, `hud/actionSlots.ts`). NUR auf Touch sichtbar (`html.touch-ui`, CSS oben) —
+        Desktop bleibt bei `#item-bar`/`#mobile-sneak-button`/`#mobile-interact-button` (Gate s.
+        dort). `#wr-action-icons` ist ein unsichtbares SVG-Symbol-Sheet — jeder Button referenziert
+        sein Icon per `<use href="#i-…">`, `scenes/MatchScene.ts` tauscht nur das `href`-Attribut.
+        Verdrahtung: `setupWrActionCluster()`/`renderWrActionSlots()`/`updateWrInteractButton()`.
+      -->
+      <div id="wr-cluster">
+        <svg id="wr-action-icons" style="display: none" aria-hidden="true">
+          <defs>
+            <!-- Dash — unverändert aus der Item-Bar übernommen. -->
+            <symbol id="wr-i-dash" viewBox="0 0 24 24">
+              <path
+                d="M4 5l7 7-7 7M13 5l7 7-7 7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </symbol>
+            <!-- Schleichen — unverändert aus `#mobile-sneak-button` übernommen. -->
+            <symbol id="wr-i-sneak" viewBox="0 0 24 24">
+              <path
+                d="M2.5 12s3.5-5.5 9.5-5.5S21.5 12 21.5 12s-3.5 5.5-9.5 5.5S2.5 12 2.5 12z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="2" />
+              <path d="M4.5 19.5l15-15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </symbol>
+            <!-- Interaktionsknopf: neutral (nichts in Reichweite). -->
+            <symbol id="wr-i-interact-none" viewBox="0 0 24 24">
+              <path d="M12 3.5 18.5 12 12 20.5 5.5 12Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+            </symbol>
+            <!-- Interaktionsknopf: Tür (Öffnen UND Schließen — der Türzustand selbst ist in der Spielwelt sichtbar). -->
+            <symbol id="wr-i-interact-door" viewBox="0 0 24 24">
+              <path d="M6.5 20.5V10a5.5 5.5 0 0 1 11 0v10.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <path d="M4 20.5h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <circle cx="14.6" cy="13" r="1.1" fill="currentColor" />
+            </symbol>
+            <!-- Interaktionsknopf: Truhe öffnen. -->
+            <symbol id="wr-i-interact-chest" viewBox="0 0 24 24">
+              <rect x="4" y="10.5" width="16" height="8.5" rx="1.4" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <path d="M4 10.5V9a3.4 3.4 0 0 1 3.4-3.4h9.2A3.4 3.4 0 0 1 20 9v1.5" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <rect x="10.8" y="12.4" width="2.4" height="3.6" rx="0.8" fill="currentColor" />
+            </symbol>
+            <!-- Interaktionsknopf: Verstecken (Enter). -->
+            <symbol id="wr-i-interact-hide-enter" viewBox="0 0 24 24">
+              <path
+                d="M3.5 12C6.2 7.8 17.8 7.8 20.5 12 17.8 16.2 6.2 16.2 3.5 12Z"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+              <circle cx="12" cy="12" r="2.1" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <path d="M5.5 18.5 18.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </symbol>
+            <!-- Interaktionsknopf: Verstecken verlassen (Exit). -->
+            <symbol id="wr-i-interact-hide-exit" viewBox="0 0 24 24">
+              <path
+                d="M13.5 4.5H6.5v15h7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M10.5 12h10M17 8.5 20.5 12 17 15.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </symbol>
+            <!-- Interaktionsknopf: Durchsuchen (Fänger). -->
+            <symbol id="wr-i-interact-search" viewBox="0 0 24 24">
+              <circle cx="10.5" cy="10.5" r="5.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+              <path d="M14.8 14.8 20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+            </symbol>
+            <!--
+              Interaktionsknopf: Portal-Flucht (Felix-Entscheid 2026-07-22, Nachtrag — eigener
+              Zustand statt "kein Icon"). Portal-Wirbel: drei konzentrische Ellipsen-Ringe,
+              Muster der bestehenden Portal-Ring-Weltgrafik (`PORTAL_COLOR`-Violett übernimmt
+              der `tone-hider`-Ton, keine eigene Farbe hier nötig).
+            -->
+            <symbol id="wr-i-interact-portal" viewBox="0 0 24 24">
+              <ellipse cx="12" cy="12" rx="9" ry="4.2" fill="none" stroke="currentColor" stroke-width="1.6" />
+              <ellipse cx="12" cy="12" rx="5.6" ry="2.6" fill="none" stroke="currentColor" stroke-width="1.4" />
+              <ellipse cx="12" cy="12" rx="2.4" ry="1.1" fill="currentColor" stroke="none" />
+            </symbol>
+            <!-- Generischer Leerplatz-Umriss (leerer Slot). -->
+            <symbol id="wr-i-slot-empty" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.4 2.8" />
+            </symbol>
+          </defs>
+        </svg>
+
+        <div id="wr-sneak-button" class="wr-button" aria-hidden="true">
+          <svg class="wr-button__icon"><use href="#wr-i-sneak"></use></svg>
+        </div>
+
+        <div id="wr-dash-button" class="wr-button" aria-hidden="true">
+          <svg class="wr-button__icon"><use href="#wr-i-dash"></use></svg>
+          <div class="wr-button__cooldown"></div>
+        </div>
+
+        <div id="wr-slot-0" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
+          <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
+          <span class="wr-slot__icon-emoji"></span>
+          <span class="wr-slot__pips"></span>
+          <div class="wr-button__cooldown"></div>
+        </div>
+        <div id="wr-slot-1" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
+          <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
+          <span class="wr-slot__icon-emoji"></span>
+          <span class="wr-slot__pips"></span>
+          <div class="wr-button__cooldown"></div>
+        </div>
+        <div id="wr-slot-2" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
+          <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
+          <span class="wr-slot__icon-emoji"></span>
+          <span class="wr-slot__pips"></span>
+          <div class="wr-button__cooldown"></div>
+        </div>
+        <div id="wr-slot-3" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
+          <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
+          <span class="wr-slot__icon-emoji"></span>
+          <span class="wr-slot__pips"></span>
+          <div class="wr-button__cooldown"></div>
+        </div>
+
+        <div id="wr-interact-button" class="is-disabled" aria-hidden="true">
+          <svg id="wr-interact-button__ring" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="46" style="stroke-dasharray: 289.03; stroke-dashoffset: 289.03"></circle>
+          </svg>
+          <svg id="wr-interact-button__icon"><use href="#wr-i-interact-none"></use></svg>
+        </div>
+
+        <div id="wr-detail-card">
+          <span id="wr-detail-card__kind">Zauber</span>
+          <span id="wr-detail-card__name"></span>
+          <span id="wr-detail-card__meta"></span>
+        </div>
+      </div>
+
       <div id="tweak-console"></div>
     </div>
   </body>
