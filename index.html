@@ -780,16 +780,18 @@
       }
 
       /*
-       * Sound-Kompass (Übergabe-Auftrag „Spatial Audio Stufe 1", Scheibe B, E10): Container
-       * füllt die Fläche INNERHALB der Safe-Area-Insets (Mobile-Regel 5 — Randindikatoren sind
-       * der klassische Notch-Konflikt) — `scenes/MatchScene.ts`s `computeEdgePositionPercent`
-       * rechnet in Prozent RELATIV zu genau dieser Fläche (`container.clientWidth/Height`,
-       * Mobile-Regel 3: relatives Layout, keine festen Pixelkoordinaten). `pointer-events: none`
-       * (Regel 1): der Kompass darf den Whole-Canvas-Joystick nie stören. Fester Element-Pool
-       * (`KOMPASS_MAX_INDIKATOREN` Stück, in `setupSoundCompassDom()` einmalig angelegt) —
-       * `.visible` schaltet Sichtbarkeit, Position/Größe/Farbe/Rotation kommen als Inline-Styles
-       * pro Frame (`updateSoundCompassHud()`); die Form kommt von `.kompass-pfeil` (immer Pfeil,
-       * keine Formunterscheidung mehr nach Rolle — Kompass-Pfeil-Vereinheitlichung).
+       * Sound-Kompass (Übergabe-Auftrag „Spatial Audio Stufe 1", Scheibe B, E10; „Pfeile an der
+       * Spielfigur", Felix-Auftrag 2026-07-22): Container füllt die Fläche INNERHALB der
+       * Safe-Area-Insets (Mobile-Regel 5) und dient seit dem Figur-Ring-Umbau NUR noch als
+       * Koordinatensystem — `scenes/MatchScene.ts`s `updateSoundCompassHud()` verankert die
+       * Pfeile in PIXELN auf einem Ring um die Bildschirmposition der eigenen Figur
+       * (Container-Offset wird dort über `getBoundingClientRect()` herausgerechnet), nicht mehr
+       * in Rand-Prozenten. `pointer-events: none` (Regel 1): der Kompass darf den
+       * Whole-Canvas-Joystick nie stören. Fester Element-Pool (`KOMPASS_MAX_INDIKATOREN` Stück,
+       * in `setupSoundCompassDom()` einmalig angelegt) — `.visible` schaltet Sichtbarkeit,
+       * Position/Farbe/Rotation kommen als Inline-Styles pro Frame (`updateSoundCompassHud()`);
+       * die Form kommt von `.kompass-pfeil` (immer Pfeil, keine Formunterscheidung mehr nach
+       * Rolle — Kompass-Pfeil-Vereinheitlichung).
        */
       #sound-compass {
         position: fixed;
@@ -851,7 +853,7 @@
       }
 
       /*
-       * Rand-Einzug für Kompass-/Reveal-Marker-Pfeile (Felix-Anweisungen 2026-07-18, verbindlich:
+       * Rand-Einzug für Reveal-Marker-Pfeile (Felix-Anweisungen 2026-07-18, verbindlich:
        * „müssen klar in den Spielausschnitt hineinragen" — zunächst Touch-only via
        * `@media (pointer: coarse)`, am selben Tag von Felix auf ALLE Geräte ausgeweitet:
        * „auch bei der Desktop-Version reinragen, so wie bei Mobile" → Media-Query entfernt).
@@ -859,20 +861,22 @@
        * bestehenden Safe-Area-Insets (statt sie zu ersetzen) — ein Gerät mit echtem Notch
        * bekommt weiterhin BEIDE Abstände.
        *
-       * Bewusst über die `top/right/bottom/left`-Insets der FIXEN Container (`#sound-compass`/
-       * `#reveal-markers`) gelöst, NICHT über `padding`: `scenes/MatchScene.ts`s
-       * `updateSoundCompassHud()`/`updateRevealMarkersHud()` positionieren die Pfeile über
-       * `left`/`top` in PROZENT relativ zur TATSÄCHLICHEN Containerfläche
-       * (`container.clientWidth`/`clientHeight`, `computeEdgePositionPercent`/
-       * `computeEdgePositionPercentForAngle`) — absolut positionierte Kinder ignorieren das
-       * Padding eines Elternelements bei der Prozent-Berechnung (die Basisfläche für
-       * `left: X%` bleibt trotz Padding die volle `content-box + padding`-Breite/-Höhe). Ein
-       * größerer Inset auf `top/right/bottom/left` SCHRUMPFT die Containerfläche dagegen
-       * tatsächlich (`fixed`-Positionierung spannt die Fläche zwischen den vier Insets auf) —
-       * dieselbe Prozentrechnung landet dadurch automatisch weiter innen, ohne dass
-       * `soundCompass.ts`/`shrinkZoneHud.ts` etwas vom Einzug wissen müssten.
+       * Bewusst über die `top/right/bottom/left`-Insets des FIXEN Containers gelöst, NICHT über
+       * `padding`: `scenes/MatchScene.ts`s `updateRevealMarkersHud()` positioniert die Pfeile
+       * über `left`/`top` in PROZENT relativ zur TATSÄCHLICHEN Containerfläche
+       * (`container.clientWidth`/`clientHeight`, `computeEdgePositionPercentForAngle`) —
+       * absolut positionierte Kinder ignorieren das Padding eines Elternelements bei der
+       * Prozent-Berechnung (die Basisfläche für `left: X%` bleibt trotz Padding die volle
+       * `content-box + padding`-Breite/-Höhe). Ein größerer Inset auf `top/right/bottom/left`
+       * SCHRUMPFT die Containerfläche dagegen tatsächlich (`fixed`-Positionierung spannt die
+       * Fläche zwischen den vier Insets auf) — dieselbe Prozentrechnung landet dadurch
+       * automatisch weiter innen, ohne dass `shrinkZoneHud.ts` etwas vom Einzug wissen müsste.
+       *
+       * `#sound-compass` bekommt den Einzug seit „Pfeile an der Spielfigur" (Felix-Auftrag
+       * 2026-07-22) NICHT mehr: dessen Pfeile sitzen jetzt auf einem Ring um die eigene Figur
+       * (`updateSoundCompassHud()`, Pixel-Anker statt Rand-Prozent) — ein Rand-Einzug hat dort
+       * keine Bedeutung mehr.
        */
-      #sound-compass,
       #reveal-markers {
         top: calc(var(--hud-safe-top) + var(--kompass-rand-einzug));
         right: calc(var(--hud-safe-right) + var(--kompass-rand-einzug));
@@ -1832,7 +1836,7 @@
         display: none;
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-DGCtz5Ya.js"></script>
+    <script type="module" crossorigin src="./assets/index-Dvb2LI-H.js"></script>
   </head>
   <body>
     <div id="game-container">
