@@ -2045,6 +2045,21 @@
         filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
       }
 
+      /*
+       * Pixel-Icon EINES belegten Slots (`<img>`, Icon-Batch 2026-07-23) — standardmäßig
+       * versteckt; `applySlotIcon()` (`scenes/MatchScene.ts`) schaltet auf `display: block`, sobald
+       * für den Zauber/das Item ein Icon-Derivat vorliegt, und blendet dann den Emoji-Träger aus.
+       * Etwas größer als das Emoji, damit das Pixel-Icon den runden Slot gut füllt.
+       */
+      .wr-slot__icon-image {
+        display: none;
+        width: calc(var(--wr-slot-icon-size) * 1.4);
+        height: calc(var(--wr-slot-icon-size) * 1.4);
+        object-fit: contain;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+        pointer-events: none;
+      }
+
       .wr-slot[data-kind="spell"] .wr-slot__icon-emoji,
       .wr-slot[data-kind="item"] .wr-slot__icon-emoji {
         display: block;
@@ -2190,7 +2205,8 @@
       }
 
       .wr-button.is-cooldown .wr-button__icon,
-      .wr-button.is-cooldown .wr-slot__icon-emoji {
+      .wr-button.is-cooldown .wr-slot__icon-emoji,
+      .wr-button.is-cooldown .wr-slot__icon-image {
         filter: grayscale(0.35);
         opacity: 0.68;
       }
@@ -2200,7 +2216,8 @@
       }
 
       .wr-button.cooldown-ready .wr-button__icon,
-      .wr-button.cooldown-ready .wr-slot__icon-emoji {
+      .wr-button.cooldown-ready .wr-slot__icon-emoji,
+      .wr-button.cooldown-ready .wr-slot__icon-image {
         animation: wr-cooldown-glyph-ready 0.48s ease-out;
       }
 
@@ -2505,7 +2522,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CGppe3AL.js"></script>
+    <script type="module" crossorigin src="./assets/index-DG0FDH7k.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -2628,18 +2645,21 @@
           <div class="item-slot item-slot--item" id="item-slot-item-1">
             <div class="item-slot__panel"></div>
             <div class="item-slot__icon item-slot__icon--emoji" id="item-slot-item-1-icon"></div>
+            <img class="item-slot__icon item-slot__icon--image" id="item-slot-item-1-image" alt="" draggable="false" style="display: none" />
             <div class="item-slot__item-pips" id="item-slot-item-1-pips"></div>
             <div class="item-slot__frame"></div>
           </div>
           <div class="item-slot item-slot--item" id="item-slot-item-2">
             <div class="item-slot__panel"></div>
             <div class="item-slot__icon item-slot__icon--emoji" id="item-slot-item-2-icon"></div>
+            <img class="item-slot__icon item-slot__icon--image" id="item-slot-item-2-image" alt="" draggable="false" style="display: none" />
             <div class="item-slot__item-pips" id="item-slot-item-2-pips"></div>
             <div class="item-slot__frame"></div>
           </div>
           <div class="item-slot item-slot--item" id="item-slot-item-3">
             <div class="item-slot__panel"></div>
             <div class="item-slot__icon item-slot__icon--emoji" id="item-slot-item-3-icon"></div>
+            <img class="item-slot__icon item-slot__icon--image" id="item-slot-item-3-image" alt="" draggable="false" style="display: none" />
             <div class="item-slot__item-pips" id="item-slot-item-3-pips"></div>
             <div class="item-slot__frame"></div>
           </div>
@@ -2764,6 +2784,7 @@
         <div id="wr-slot-0" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
           <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
+          <img class="wr-slot__icon-image" alt="" draggable="false" />
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
           <b class="wr-button__time" aria-live="polite"></b>
@@ -2771,6 +2792,7 @@
         <div id="wr-slot-1" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
           <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
+          <img class="wr-slot__icon-image" alt="" draggable="false" />
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
           <b class="wr-button__time" aria-live="polite"></b>
@@ -2778,6 +2800,7 @@
         <div id="wr-slot-2" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
           <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
+          <img class="wr-slot__icon-image" alt="" draggable="false" />
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
           <b class="wr-button__time" aria-live="polite"></b>
@@ -2785,6 +2808,7 @@
         <div id="wr-slot-3" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
           <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
+          <img class="wr-slot__icon-image" alt="" draggable="false" />
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
           <b class="wr-button__time" aria-live="polite"></b>
