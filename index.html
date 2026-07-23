@@ -1761,6 +1761,39 @@
       }
 
       /*
+       * Objektverwandlung — „Neu würfeln"-Button (Umsetzungsauftrag `2026-07-23-
+       * objektverwandlung.md`, Teil C, Felix-Entscheid „solange die Form läuft, in ein neues
+       * zufälliges Objekt wechseln … eigener kontextueller HUD-Button, nur in Objektform
+       * sichtbar"): DIESELBE Position wie `#mobile-catch-tap-button` (SNEAK-Spalte, eine Etage
+       * ÜBER dem Interact-Boden) — rollenexklusiv KOLLISIONSFREI, weil Objektverwandlung
+       * Verstecker-only (A1) und der Fang-Sog-Button Fänger-only ist: KEIN Spieler sieht je
+       * beide gleichzeitig. `.visible`-Toggle via `updateWrRerollButtonVisibility()` (Muster
+       * `#mobile-catch-tap-button`s Rollen-Gate, hier ein Effekt-Gate). Touch-Target ≥ 48 px +
+       * Safe-Area-Insets über die geteilte `.mobile-move-mode-button`-Basisklasse (Mobile-Tag-1-
+       * Regeln 3–5), kein Hover-Zwang (`:active`-Feedback statt `:hover`, Regel „kein
+       * Hover-Zwang").
+       */
+      #wr-reroll-button {
+        display: none;
+        right: calc(var(--hud-safe-right) + var(--hud-gap) + var(--interact-button-size) + var(--hud-gap));
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
+            var(--interact-button-size) + var(--hud-gap)
+        );
+        width: var(--interact-button-size);
+        height: var(--interact-button-size);
+      }
+
+      #wr-reroll-button.visible {
+        display: flex;
+      }
+
+      /* Tap-Feedback, Muster `#mobile-catch-tap-button:active` (kein Hover-Zwang). */
+      #wr-reroll-button:active {
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      /*
        * Sichtbarer floating Joystick (Felix-Playtest 2026-07-13 „Mobile-UI deutlich
        * nutzerfreundlicher" + Touch-UX-Best-Practice „dynamic/floating stick"): rein visuelles
        * DOM-Overlay (`pointer-events: none` — der Whole-Canvas-Joystick UNTER dem Canvas fängt die
@@ -2869,7 +2902,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-DK_6abte.js"></script>
+    <script type="module" crossorigin src="./assets/index-C_nqtiDu.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -2998,6 +3031,20 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 3a9 9 0 1 1-9 9" />
           <path d="M12 7.5l1.2 3.3L16.5 12l-3.3 1.2L12 16.5l-1.2-3.3L7.5 12l3.3-1.2z" fill="currentColor" stroke="none" />
+        </svg>
+      </div>
+      <!--
+        Objektverwandlung — „Neu würfeln"-Button (Umsetzungsauftrag `2026-07-23-
+        objektverwandlung.md`, Teil C): NUR sichtbar während der eigenen aktiven Objektform
+        (`.visible` via `updateWrRerollButtonVisibility()`). Icon = Rück-/Ringpfeil (Refresh-
+        Piktogramm, dieselbe Bogen-Sprache wie `#mobile-catch-tap-button`) — „neu würfeln"
+        statt eines Würfel-Symbols, weil ein Würfel bei 24 px kaum als Pip-Muster lesbar wäre.
+        Verdrahtung `setupWrRerollControls()` (`scenes/MatchScene.ts`).
+      -->
+      <div id="wr-reroll-button" class="mobile-move-mode-button" aria-label="Neu würfeln">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 12a8 8 0 0 1 13.66-5.66M20 12a8 8 0 0 1-13.66 5.66" />
+          <path d="M17 3v4h-4M7 21v-4h4" />
         </svg>
       </div>
 
