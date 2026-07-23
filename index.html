@@ -1386,6 +1386,142 @@
       }
 
       /*
+       * Geister-Bodennachrichten-Schreib-Button (Kanon §10, Umsetzungsauftrag „Geister-
+       * Bodennachrichten (Client)"): Basis-Optik/Position-FORMEL 1:1 aus `#mobile-broom-button`
+       * gespiegelt (Touch-Target ≥ 48 px per `.mobile-move-mode-button`, Safe-Area-Verankerung),
+       * aber EINE Etage HÖHER in derselben rechten Spalte gestapelt (`+ var(--move-mode-button-
+       * size) + var(--hud-gap)` zusätzlich zur Besen-Formel) — dadurch KOLLISIONSFREI mit sowohl
+       * `#mobile-broom-button` (eigene Spalte, eine Etage darunter) als auch
+       * `#mobile-catch-tap-button` (andere Spalte). Sichtbarkeit (`.visible`) steuert
+       * AUSSCHLIESSLICH `updateGhostMessageButtonVisibility()` (pro Frame, NUR als Geist —
+       * Muster `#mobile-broom-button`s „nur sichtbar, wenn nutzbar", hier `isGhost`-Gate statt
+       * Item-Gate). Verdrahtung `setupGhostMessageControls()` (`scenes/MatchScene.ts`).
+       */
+      #mobile-ghost-message-button {
+        display: none;
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
+            var(--interact-button-size) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap)
+        );
+      }
+
+      #mobile-ghost-message-button.visible {
+        display: flex;
+      }
+
+      /*
+       * Geister-Bodennachrichten-Phrasen-Picker (Kanon §10, Umsetzungsauftrag „Geister-
+       * Bodennachrichten (Client)"): zentriertes, modales DOM-Overlay — Muster `#tweak-console`
+       * (Default `display: none` + `pointer-events: none`, ERST `.open` schaltet sichtbar +
+       * interaktiv, kein Klickbereich, solange geschlossen, Mobile-Tag-1-Regel 1). Relatives
+       * Layout über Safe-Area-Insets (Regel 3/5), Breite `min(92vw, 22rem)` (kein fester
+       * Pixelwert, läuft auf 375px nicht über den Rand), scrollbarer Body
+       * (`overflow-y: auto` — die 12 Katalog-Phrasen aus `GHOST_MESSAGE_PHRASES` können den
+       * verfügbaren Platz auf kleinen Viewports überschreiten). Aufbau/Verdrahtung
+       * (`setupGhostMessageControls()`/`renderGhostMessagePickerPhrases()`,
+       * `toggleGhostMessagePicker()`) in `scenes/MatchScene.ts` — dieser Block ist NUR Layout.
+       */
+      #ghost-message-picker {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: min(92vw, 22rem);
+        max-width: calc(100vw - var(--hud-safe-left) - var(--hud-safe-right) - 2 * var(--hud-gap));
+        max-height: calc(100vh - var(--hud-safe-top) - var(--hud-safe-bottom) - 2 * var(--hud-gap));
+        box-sizing: border-box;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background: rgba(10, 10, 16, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: var(--hud-text-color);
+        /* Muster `#hidden-hint`/übrige Player-facing HUD-Texte: `--hud-font-size` (1rem = 16px)
+           statt einer kleineren Ad-hoc-Größe (Mobile-First-Review-Selbstcheck: Nebentexte
+           müssen lesbar bleiben, nicht nur Überschriften). */
+        font: var(--hud-font-size) / 1.4 sans-serif;
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      #ghost-message-picker.open {
+        display: flex;
+        pointer-events: auto;
+      }
+
+      #ghost-message-picker__title {
+        flex-shrink: 0;
+        margin: 0 0 0.25rem;
+        font: 1rem / 1.2 var(--theme-font-title);
+        color: var(--theme-color-text-title);
+        text-align: center;
+      }
+
+      /*
+       * Scrollbarer Phrasen-Bereich (die 12 Katalog-Einträge, dynamisch aus
+       * `GHOST_MESSAGE_PHRASES` aufgebaut) — `flex: 1 1 auto` + `min-height: 0` (Muster
+       * `#tweak-console`s `.tweak-console__body`): OHNE `min-height: 0` würde ein Flex-Kind
+       * NIE unter seine eigene Inhaltshöhe schrumpfen, `overflow-y: auto` griffe dadurch nie
+       * (der Katalog quillt sonst über den Picker-Rahmen hinaus, statt intern zu scrollen —
+       * auf 375px reicht der Platz für 12 Phrasen + Titel + Abbrechen-Kachel nicht immer).
+       */
+      #ghost-message-picker-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      /* Eine Phrasen-Kachel — Touch-Target ≥ 48 px (Regel 4), Muster `.item-slot`s Pointer-only-Verdrahtung (kein zweiter Eingabepfad). */
+      .ghost-message-picker__phrase {
+        min-height: 48px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.4rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.06);
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      .ghost-message-picker__phrase:active {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Abbrechen-Kachel — Muster `.ghost-message-picker__phrase`, optisch zurückhaltender (kein Akzentrand). `flex-shrink: 0` (Muster `#ghost-message-picker__title`): bleibt IMMER voll bedienbar (≥ 48 px), auch wenn der scrollbare Body oben knapp wird. */
+      #ghost-message-picker-cancel {
+        flex-shrink: 0;
+        min-height: 48px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0.25rem;
+        border-radius: 0.4rem;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: rgba(255, 255, 255, 0.1);
+        font-weight: bold;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      #ghost-message-picker-cancel:active {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      /*
        * Fang-Sog-Tap-Button (Felix-Entscheid 2026-07-18, „Tapp-Sog"): die STÄNDIGE Haupt-Aktion
        * des Fängers — deshalb in Interact-Größe (`--interact-button-size`, Touch-Target ≥ 48 px)
        * und dauerhaft sichtbar, solange man Fänger ist (`.visible` via
@@ -2526,7 +2662,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-Bk0WOaQb.js"></script>
+    <script type="module" crossorigin src="./assets/index-CSaymQRc.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -2588,6 +2724,20 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M20.5 3.5L11.5 12.5" />
           <path d="M11.5 12.5l-6 2.6L3 21l5.9-2.5 2.6-6z" />
+        </svg>
+      </div>
+      <!--
+        Geister-Bodennachrichten-Schreib-Button (Kanon §10, Umsetzungsauftrag „Geister-
+        Bodennachrichten (Client)"): NUR als Geist sichtbar (`.visible` via
+        `updateGhostMessageButtonVisibility()`, Muster `#mobile-broom-button`). Feder-Icon
+        (Quill) — Tap öffnet den Phrasen-Picker (`#ghost-message-picker`, s. u.). Verdrahtung
+        `setupGhostMessageControls()` (`scenes/MatchScene.ts`); Desktop-Taste G löst denselben
+        Umschalter aus.
+      -->
+      <div id="mobile-ghost-message-button" class="mobile-move-mode-button" aria-label="Geisternachricht schreiben">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 3c-5 0-11 4-13 12l-1 4 4-1C17 16 21 10 21 5c0-1-1-2-2-2z" />
+          <path d="M9 15L4 20" />
         </svg>
       </div>
       <!--
@@ -2831,6 +2981,20 @@
       </div>
 
       <div id="tweak-console"></div>
+
+      <!--
+        Geister-Bodennachrichten-Phrasen-Picker (Kanon §10, Umsetzungsauftrag „Geister-
+        Bodennachrichten (Client)"): NUR öffenbar als Geist (`openGhostMessagePicker()`-Gate,
+        `scenes/MatchScene.ts`), Default versteckt (`#ghost-message-picker` ohne `.open`).
+        `#ghost-message-picker-body` wird EINMALIG aus dem festen `GHOST_MESSAGE_PHRASES`-Katalog
+        (`@hide-seek/shared`) befüllt (`renderGhostMessagePickerPhrases()`) — kein zweiter,
+        handgepflegter Phrasen-Text hier im Markup.
+      -->
+      <div id="ghost-message-picker">
+        <div id="ghost-message-picker__title">Leave a message</div>
+        <div id="ghost-message-picker-body"></div>
+        <div id="ghost-message-picker-cancel">Cancel</div>
+      </div>
     </div>
   </body>
 </html>
