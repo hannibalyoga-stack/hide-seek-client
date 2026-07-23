@@ -189,3 +189,21 @@ Einsatz im Client: `apps/client/src/scenes/MatchScene.ts`s `handleRuneAdd()` (`R
 | Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
 |---|---|---|---|---|
 | `audio/fang-eigen-sting/fang-eigen-sting.m4a` | `audio.fang-eigen-sting` | `b46495221b359ca2d3054dd362d0e027123fc17e7528d039bab942af348e0b2a` | `d1d7de383c56a0db65cae36722ccfb2d7e513fa5539ee0fc1c9312f7bba651b3` | vorschlag |
+
+## Effekte: Eiswand-Barriere — Top-down-Sprite (Felix-Auftrag 2026-07-23, GPT-Image-Pipeline)
+
+- `effects/eiswand.png` — Quelle `assets-src/effects/eiswand/eiswand_b.png` (eigene gpt-image-2-Generierung, 1536x1024, Magenta-Keyout, Style-Anchor `style-anchor-room.png`; **Variante B „Eisplatten/Presseisrücken" von Felix am 2026-07-23 gewählt** — Variante A „Kristall-Palisade" liegt als Alternative daneben, Prompts in den Sidecars). Derivat: Alpha-Trim + Nearest-Downscale auf 512x148. Der Renderer streckt das Sprite exakt auf das Kollisions-Band (Optik == Kollision) und rotiert es für vertikale Wände um 90 Grad.
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `effects/eiswand.png` | `effects.eiswand` | `649cde87af8e747dfb253a5e2ba39158c7c189094470ea33c4c627f130f18855` | `3e49f09e764c87a24f9577588b819c819a186530b3fae947f65c2be0ed8960c0` | vorschlag |
+
+## Audio: Eiswand-Zauber — Entstehen / Arming-Knacken / Zerbrechen (Felix-Auftrag 2026-07-23)
+
+- Drei positionale SFX (eigene ElevenLabs-Generierung, je 3 Varianten nach Sound-Pipeline-Regel, Prompts in den Sidecars offengelegt; **jeweils Variante 3 von Felix am 2026-07-23 gewählt** und als Mono-AAC-Derivat abgeleitet): `eiswand-knacken` (0,35-s-Arming-Telegraph, K18), `eiswand-entstehen` (Wand schießt aus dem Boden, Design-Gate A5), `eiswand-zerbrechen` (Lebensdauer-Ende, A5). Positional → Mono-AAC-Derivate (`afconvert -f m4af -d aac -b 96000 -c 1`).
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `audio/eiswand-entstehen/eiswand-entstehen.m4a` | `audio.eiswand-entstehen` | `75069ee52b91a1f929366572d12b77ef174efc32e9f05b8479850c119f7ee563` | `1cb1b8c9e710e536fdec3f9889d592d8db4a96d7d88b331fdef5b4833b840cd4` | vorschlag |
+| `audio/eiswand-knacken/eiswand-knacken.m4a` | `audio.eiswand-knacken` | `1d5a82794fdb250fc5cbde08e94429f54043b6f774a2a46c739a1f8ea407a593` | `7b77f05f387bad5fa4859ad14f4a08e3e9416a1d400e79bdb2e3dc6f3ea86f64` | vorschlag |
+| `audio/eiswand-zerbrechen/eiswand-zerbrechen.m4a` | `audio.eiswand-zerbrechen` | `652fefb44c8d9b44adcec74e8d86e88ff02362a7aa4d186703df78bea6d0e0a8` | `30fcb3b17ad99e4e715fcfed67294819bbcdc75446804c70be2d9ff2c041cbed` | vorschlag |
