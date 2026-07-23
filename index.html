@@ -2472,8 +2472,40 @@
         font-size: 0.7rem;
         color: var(--theme-color-brass);
       }
+
+      /*
+       * „Fallenlassen"-Button (Phase 5 „Slot fallenlassen (sichere Geste)", Felix-Entscheid
+       * 2026-07-22/23): der EINE interaktive Kindknoten innerhalb des ansonsten rein passiven,
+       * `pointer-events: none` tragenden Detailfensters — `pointer-events: auto` reaktiviert
+       * gezielt NUR diesen Knopf (Kind-Override, Muster `.wr-button` andernorts). Mobile-Tag-1-
+       * Mindestgröße `min-height: 48px` (Regel 4) trotz Rechteck-statt-Kreis-Form (anders als die
+       * runden `.wr-button`-Slots — hier ein voller Textknopf, keine Wiederverwendung sinnvoll).
+       */
+      #wr-detail-card__drop {
+        margin-top: 0.5rem;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+        border: 1px solid var(--theme-color-brass);
+        background: rgba(120, 30, 30, 0.35);
+        color: var(--theme-color-text-body);
+        font: 0.75rem / 1 var(--theme-font-body);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        cursor: pointer;
+      }
+
+      #wr-detail-card__drop:active {
+        background: rgba(160, 40, 40, 0.55);
+      }
     </style>
-    <script type="module" crossorigin src="./assets/index-BofIqCWn.js"></script>
+    <script type="module" crossorigin src="./assets/index-1hOPbh4u.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -2582,16 +2614,15 @@
         </div>
         <div class="item-bar__group" id="item-bar-spell-group"></div>
         <!--
-          Gruppe 3 (Umsetzungsauftrag „Truhen-Öffnen-Sound + 3 Item-Slots + Tempo-Schub als
-          gehaltenes Item", 2026-07-18, Teil B): GENAU 3 statische Item-Slots (Felix: „drei Item
-          Slots haben wir"), lösen die vormals ERSATZLOS entfernten Platzhalter-Slots wieder ein.
-          Slot 1 zeigt das SERVER-`heldItemType` (1-Slot-Modell unverändert, `items.ts`), Tap
-          sendet denselben `useItem`-Wunsch wie Taste R/der mobile Besen-Button. Slots 2+3 sind
-          BEWUSST leere, nicht-interaktive Scaffolding-Slots (`.item-slot--item-empty`) — das
-          Mehrfach-Slot-Inventar-Modell ist ein separates Konzept
-          (`vault/40-Backlog/item-slots-wechsel-ui.md`), diese 3-sichtbar/1-belegbar-Schere ist
-          ABSICHTLICH. Verdrahtung `scenes/MatchScene.ts`s `setupItemBar()`/
-          `updateItemBarItemSlotHud()`.
+          Gruppe 3 (ursprünglich Umsetzungsauftrag „Truhen-Öffnen-Sound + 3 Item-Slots + Tempo-
+          Schub als gehaltenes Item", 2026-07-18, Teil B — **Phase 4 „Client-Konsum des 4-Slot-
+          Inventars", Felix-Entscheid 2026-07-22: POOL statt Fix-Zuordnung**): GENAU 3 statische
+          DOM-Plätze (Felix: „drei Item Slots haben wir"), aber jetzt ALLE DREI Tap-Ziele — jeder
+          Platz zeigt den item-Slot mit dem entsprechenden RANG unter den aktuell BELEGTEN
+          Item-Slots des eigenen 4-Slot-Inventars (`renderItemBarItemSlots()`), nicht mehr fest
+          Slot 1 = das ehemalige `heldItemType`. Ein eventueller 4. gleichzeitiger Item-Slot bleibt
+          auf diesem DESKTOP-Pfad unsichtbar (der WR-Touch-Cluster zeigt alle 4 generischen Slots).
+          Verdrahtung `scenes/MatchScene.ts`s `setupItemBar()`/`renderItemBarItemSlots()`.
         -->
         <div class="item-bar__group" id="item-bar-item-group">
           <div class="item-slot item-slot--item" id="item-slot-item-1">
@@ -2600,12 +2631,16 @@
             <div class="item-slot__item-pips" id="item-slot-item-1-pips"></div>
             <div class="item-slot__frame"></div>
           </div>
-          <div class="item-slot item-slot--item item-slot--item-empty" id="item-slot-item-2">
+          <div class="item-slot item-slot--item" id="item-slot-item-2">
             <div class="item-slot__panel"></div>
+            <div class="item-slot__icon item-slot__icon--emoji" id="item-slot-item-2-icon"></div>
+            <div class="item-slot__item-pips" id="item-slot-item-2-pips"></div>
             <div class="item-slot__frame"></div>
           </div>
-          <div class="item-slot item-slot--item item-slot--item-empty" id="item-slot-item-3">
+          <div class="item-slot item-slot--item" id="item-slot-item-3">
             <div class="item-slot__panel"></div>
+            <div class="item-slot__icon item-slot__icon--emoji" id="item-slot-item-3-icon"></div>
+            <div class="item-slot__item-pips" id="item-slot-item-3-pips"></div>
             <div class="item-slot__frame"></div>
           </div>
         </div>
@@ -2763,6 +2798,7 @@
           <span id="wr-detail-card__kind">Zauber</span>
           <span id="wr-detail-card__name"></span>
           <span id="wr-detail-card__meta"></span>
+          <div id="wr-detail-card__drop">Fallenlassen</div>
         </div>
       </div>
 
