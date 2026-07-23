@@ -260,6 +260,13 @@
          * scenes/MatchScene.ts renderSpellSlots()).
          */
         --item-slot-accent-spell-catform: #e67e22;
+        /*
+         * Eule-Verwandlung (Umsetzungsauftrag „Eule-Zauber", 2026-07-23): eigene Kategorie
+         * „euleform" — bleiches Mondblau (thematisch Nachtsicht/Adleraugen), bewusst kuehler und
+         * violettstichiger als das cyanlastige Spur-Eisblau (#5fb3ce), damit beide Blautoene in
+         * der Leiste unterscheidbar bleiben (kosmetisch, scenes/MatchScene.ts renderSpellSlots()).
+         */
+        --item-slot-accent-spell-euleform: #8fa3c8;
         --item-slot-cooldown-color: rgba(0, 0, 0, 0.55);
         /*
          * Mobile-Slot-Budget (Umsetzungsauftrag `2026-07-17-verlangsamungsspur.md`, LOAD-BEARING;
@@ -1297,6 +1304,10 @@
       /* Katzen-Verwandlung: eigene Akzentfarbe für die Kategorie „catform". */
       .item-slot--spell-catform {
         --slot-accent: var(--item-slot-accent-spell-catform);
+      }
+      /* Eule-Verwandlung: eigene Akzentfarbe für die Kategorie „euleform". */
+      .item-slot--spell-euleform {
+        --slot-accent: var(--item-slot-accent-spell-euleform);
       }
       .item-slot--item {
         width: var(--item-slot-size-spell);
@@ -2662,7 +2673,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CSaymQRc.js"></script>
+    <script type="module" crossorigin src="./assets/index-BFOXdvVJ.js"></script>
   </head>
   <body>
     <div id="game-container">

@@ -207,3 +207,15 @@ Einsatz im Client: `apps/client/src/scenes/MatchScene.ts`s `handleRuneAdd()` (`R
 | `audio/eiswand-entstehen/eiswand-entstehen.m4a` | `audio.eiswand-entstehen` | `75069ee52b91a1f929366572d12b77ef174efc32e9f05b8479850c119f7ee563` | `1cb1b8c9e710e536fdec3f9889d592d8db4a96d7d88b331fdef5b4833b840cd4` | vorschlag |
 | `audio/eiswand-knacken/eiswand-knacken.m4a` | `audio.eiswand-knacken` | `1d5a82794fdb250fc5cbde08e94429f54043b6f774a2a46c739a1f8ea407a593` | `7b77f05f387bad5fa4859ad14f4a08e3e9416a1d400e79bdb2e3dc6f3ea86f64` | vorschlag |
 | `audio/eiswand-zerbrechen/eiswand-zerbrechen.m4a` | `audio.eiswand-zerbrechen` | `652fefb44c8d9b44adcec74e8d86e88ff02362a7aa4d186703df78bea6d0e0a8` | `30fcb3b17ad99e4e715fcfed67294819bbcdc75446804c70be2d9ff2c041cbed` | vorschlag |
+
+## Offen: Eule-Verwandlung — Sprite-Sheet fehlt noch (Umsetzungsauftrag „Eule-Zauber", Phase 2)
+
+**KEIN neues Binär-Asset in dieser Runde.** Die Eule-Form (11. Zauber) rendert bis auf Weiteres
+über einen PLATZHALTER: dieselbe Basis-Charaktertextur wie die Zauberschülerin
+(`characters/zauberschuelerin-mvp/walk_sheet.png`, bereits oben dokumentiert), zusätzlich getönt
+(`EULE_FORM_TINT_COLOR`, `apps/client/src/config.ts`) als „ich bin gerade Eule"-Signal. TODO(asset):
+ein echtes Eule-Sprite-Sheet (Muster `characters/katze-mvp/walk_sheet.png` — identisches 8×6-Raster
+à 68×68 px) muss noch generiert und von Felix abgenommen werden; die Swap-Mechanik dafür
+(`apps/client/src/characters/spriteKeys.ts`s `EULE_TEXTURE_KEY`/`euleSpriteKey()`,
+`scenes/MatchScene.ts`s `updateCharacterFacing()`) ist bereits vollständig verdrahtet und braucht
+beim Asset-Tausch selbst keine weitere Änderung.
