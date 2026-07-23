@@ -1611,10 +1611,69 @@
           var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
             var(--interact-button-size) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap)
         );
+        /* Cooldown-Ratio-Stellschraube (Muster `#wr-dash-button`s `--wr-slot-cooldown: 0`), pro
+           Frame gesetzt von `updateGhostMessageButtonCooldown()` (`scenes/MatchScene.ts`). */
+        --ghost-message-cooldown: 0;
       }
 
       #mobile-ghost-message-button.visible {
         display: flex;
+      }
+
+      /*
+       * Cooldown-Feedback-Paket (Felix-Playtest-Nachbesserung 2026-07-23, „ich möchte, dass du
+       * daraus ein Icon machst, wie die ganzen anderen, wo man auch den Cooldown dann sieht"):
+       * Wipe + Icon-Dimmen + Countdown-Zahl + Bereit-Aufleuchten + Not-Ready-Schütteln — WÖRTLICH
+       * dasselbe Feedback-Set wie jeder WR-Aktions-Button (`#wr-dash-button`/`#wr-slot-*`, s.
+       * dortige Kommentare + `.wr-button.is-cooldown`/`.cooldown-ready`/`.press-denied`-Regeln
+       * oben), hier nur unter eigenen Klassennamen NACHGEBAUT statt der `.wr-button`-Klasse
+       * selbst zugewiesen — ein zweites `.wr-button` auf einem strukturell andersartigen
+       * `.mobile-move-mode-button` (eigene `width`/`height`/`position`-Formel, eigene
+       * Sichtbarkeits-/Stapel-Spalte, s. Kommentar oben) würde dessen Geometrie-Deklarationen
+       * überschreiben (Kollisionsrisiko mit `#mobile-broom-button`/`#mobile-catch-tap-button`).
+       * Reiner CSS-Nachbau derselben Formeln, dieselben wiederverwendeten Keyframes
+       * (`wr-cooldown-ready`/`wr-cooldown-glyph-ready`/`wr-press-denied`) — kein neues Timing
+       * erfunden. Fortgeschrieben in `updateGhostMessageButtonCooldown()`
+       * (`scenes/MatchScene.ts`, Muster `updateWrDashCooldown()`); das Not-Ready-Schütteln löst
+       * `openGhostMessagePicker()` aus (Muster `#wr-interact-button`s AK2-Gate).
+       */
+      .mobile-move-mode-button__cooldown {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background: conic-gradient(var(--wr-cooldown-color) calc(var(--ghost-message-cooldown, 0) * 1turn), transparent 0);
+        pointer-events: none;
+      }
+
+      .mobile-move-mode-button__time {
+        position: absolute;
+        z-index: 5;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -54%);
+        color: var(--hud-text-color);
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 0.95rem;
+        font-weight: 800;
+        text-shadow: 0 1px 4px #000;
+        pointer-events: none;
+      }
+
+      #mobile-ghost-message-button.is-cooldown svg {
+        filter: grayscale(0.35);
+        opacity: 0.68;
+      }
+
+      #mobile-ghost-message-button.cooldown-ready {
+        animation: wr-cooldown-ready 0.48s ease-out;
+      }
+
+      #mobile-ghost-message-button.cooldown-ready svg {
+        animation: wr-cooldown-glyph-ready 0.48s ease-out;
+      }
+
+      #mobile-ghost-message-button.press-denied {
+        animation: wr-press-denied 0.28s ease-in-out;
       }
 
       /*
@@ -2902,7 +2961,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-C_nqtiDu.js"></script>
+    <script type="module" crossorigin src="./assets/index-IqWEdcII.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3013,12 +3072,23 @@
         (Quill) — Tap öffnet den Phrasen-Picker (`#ghost-message-picker`, s. u.). Verdrahtung
         `setupGhostMessageControls()` (`scenes/MatchScene.ts`); Desktop-Taste G löst denselben
         Umschalter aus.
+
+        Cooldown-Anzeige (Felix-Playtest-Nachbesserung 2026-07-23, „ich möchte, dass du daraus
+        ein Icon machst, wie die ganzen anderen, wo man auch den Cooldown dann sieht"):
+        `.mobile-move-mode-button__cooldown` (Wipe) + `.mobile-move-mode-button__time`
+        (Restsekunden) sind 1:1 dieselben zwei Kind-Elemente wie an JEDEM WR-Aktions-Button
+        (`#wr-dash-button`/`#wr-slot-*`, s. dortige Kommentare) — nur eigens benannte Klassen,
+        weil dieser Button strukturell EIN `.mobile-move-mode-button` bleibt, kein `.wr-button`
+        (siehe CSS-Kommentar). Fortgeschrieben in `updateGhostMessageButtonCooldown()`
+        (`scenes/MatchScene.ts`, Muster `updateWrDashCooldown()`).
       -->
       <div id="mobile-ghost-message-button" class="mobile-move-mode-button" aria-label="Geisternachricht schreiben">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M19 3c-5 0-11 4-13 12l-1 4 4-1C17 16 21 10 21 5c0-1-1-2-2-2z" />
           <path d="M9 15L4 20" />
         </svg>
+        <div class="mobile-move-mode-button__cooldown"></div>
+        <b class="mobile-move-mode-button__time" aria-live="polite"></b>
       </div>
       <!--
         Fang-Sog-Tap-Button (Felix-Entscheid 2026-07-18, „Tapp-Sog" — vault/30-Systeme/
