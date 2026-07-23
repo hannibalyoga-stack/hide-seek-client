@@ -998,13 +998,16 @@
        * Safe-area-bereinigte Fläche wie `#sound-compass`/`#reveal-markers` (Mobile-Regel 5) —
        * die Vignette respektiert dadurch strukturell die Insets (Notch etc.), statt sie zu
        * überdecken. `box-shadow: inset` erzeugt einen randbasierten Dunkel-/Rotschimmer OHNE
-       * Framebuffer-/Canvas-Trick (reiner CSS-Vignette-Kniff, klassisches Muster): die
-       * `100vmax`-Ausbreitung sorgt dafür, dass der harte Farbübergang immer WEIT außerhalb des
-       * sichtbaren Bereichs liegt — nur der weiche Blur-Kern erreicht den Rand, die Mitte bleibt
-       * transparent. `opacity` wird PRO FRAME von `scenes/MatchScene.ts`s
-       * `updateChaseVignette()` gesetzt (Deckkraft = geglätteter Meter-Füllstand ×
-       * `chaseVignetteMaxAlpha`, live tunbar über die Tweak-Konsole) — die Grundfarbe selbst
-       * bleibt ein fester, gedämpfter Warnrot-Ton (kein Kampf-/Blut-Rot, K1).
+       * Framebuffer-/Canvas-Trick (reiner CSS-Vignette-Kniff, klassisches Muster). Blur (weicher
+       * Kern) UND Spread (satter Rand) sind Custom Properties `--chase-vignette-blur` /
+       * `--chase-vignette-spread` (Einheit `vmin`, per `calc(... * 1vmin)` responsive): sie werden
+       * PRO FRAME von `scenes/MatchScene.ts`s `updateChaseVignette()` füllstand-abhängig gesetzt,
+       * damit sich die Vignette mit steigender Aufladung „zusammenzieht" (weiter nach innen ragt);
+       * die Fallback-Werte (`12`/`2`) greifen nur vor dem ersten Frame. `opacity` wird ebenfalls
+       * pro Frame gesetzt (Deckkraft = geglätteter Meter-Füllstand, gewichtet mit
+       * `chaseVignetteMaxAlpha`); alle drei Werte sind live tunbar über die Tweak-Konsole
+       * (`chaseVignetteMaxAlpha` / `chaseVignetteMaxBlurVmin` / `chaseVignetteMaxSpreadVmin`) — die
+       * Grundfarbe selbst bleibt ein fester, gedämpfter Warnrot-Ton (kein Kampf-/Blut-Rot, K1).
        */
       #chase-vignette {
         position: fixed;
@@ -1014,7 +1017,8 @@
         left: var(--hud-safe-left);
         pointer-events: none;
         opacity: 0;
-        box-shadow: inset 0 0 12vmin 2vmin rgba(153, 27, 27, 0.9);
+        box-shadow: inset 0 0 calc(var(--chase-vignette-blur, 12) * 1vmin)
+          calc(var(--chase-vignette-spread, 2) * 1vmin) rgba(153, 27, 27, 0.9);
       }
 
       /*
@@ -2522,7 +2526,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-DG0FDH7k.js"></script>
+    <script type="module" crossorigin src="./assets/index-Bk0WOaQb.js"></script>
   </head>
   <body>
     <div id="game-container">
