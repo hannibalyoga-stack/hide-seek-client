@@ -1466,6 +1466,20 @@
       .item-slot--dash {
         --slot-accent: var(--item-slot-accent-dash);
       }
+      /*
+       * Spinnenverwandlung (Umsetzungsauftrag `2026-07-23-spinnenverwandlung.md`, Schritt 19,
+       * „Dash-Slot-Umdeutung"): der Dash-Knopf wird in aktiver Spinnenform zum Ebenen-Umschalter
+       * — Wire-/Input-Semantik bleibt UNVERÄNDERT (weiterhin `moveMode: DASH`, siehe
+       * `scenes/MatchScene.ts`), NUR die bestehende Doppel-Chevron-Geometrie dreht sich je nach
+       * Zielrichtung (Boden→Decke = "hoch", Decke→Boden = "runter";
+       * `updateItemBarHud()`/`resolveDashSlotSpiderMode()`).
+       */
+      .item-slot--dash.is-spider-ascend .item-slot__icon svg {
+        transform: rotate(-90deg);
+      }
+      .item-slot--dash.is-spider-descend .item-slot__icon svg {
+        transform: rotate(90deg);
+      }
       .item-slot--spell {
         --slot-accent: var(--item-slot-accent-spell);
         /*
@@ -2575,6 +2589,14 @@
         --wr-slot-cooldown: 0;
       }
 
+      /* Spinnenverwandlung-Dash-Slot-Umdeutung (Schritt 19) — Muster `.item-slot--dash.is-spider-*` oben, WR-Pendant. */
+      #wr-dash-button.is-spider-ascend .wr-button__icon {
+        transform: rotate(-90deg);
+      }
+      #wr-dash-button.is-spider-descend .wr-button__icon {
+        transform: rotate(90deg);
+      }
+
       /* Cooldown-Wipe (Muster `.item-slot__cooldown`: dunkler Radial-Sweep, schrumpft beim Abkühlen). */
       .wr-button__cooldown {
         position: absolute;
@@ -2996,7 +3018,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-B6IL_Qb-.js"></script>
+    <script type="module" crossorigin src="./assets/index-22gb0Syl.js"></script>
   </head>
   <body>
     <div id="game-container">
