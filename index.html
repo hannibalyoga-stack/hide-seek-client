@@ -1853,6 +1853,41 @@
       }
 
       /*
+       * Objektverwandlung — „Objekt drehen"-Button (Felix-Auftrag 2026-07-24, „ein zusätzlicher
+       * HUD-Knopf, der das getarnte Objekt pro Druck um 45° dreht … eigener kontextueller
+       * HUD-Button, nur in Objektform sichtbar"): SELBE Spalte wie `#wr-reroll-button` (SNEAK-
+       * Spalte), aber EINE ETAGE HÖHER gestapelt (`+ var(--move-mode-button-size) + var(--hud-gap)`
+       * zusätzlich zur Reroll-Formel — exakt dasselbe Stapel-Muster wie
+       * `#mobile-ghost-message-button` relativ zu `#mobile-broom-button`, s. dortiger Kommentar)
+       * — dadurch KOLLISIONSFREI mit dem Reroll-Button, obwohl BEIDE gleichzeitig sichtbar sind
+       * (anders als Reroll/Fang-Sog ist Drehen KEIN rollenexklusives Gegenstück, sondern eine
+       * ZUSÄTZLICHE Aktion NEBEN dem Re-Roll, solange die eigene Objektform aktiv ist). Bewusst
+       * NICHT in Interact-Größe (Muster `#mobile-ghost-message-button`s kleinerer
+       * `.mobile-move-mode-button`-Standardmaß statt einer Größen-Überschreibung) — eine sekundäre
+       * Zusatz-Aktion neben der primären Re-Roll-Aktion, trotzdem Touch-Target ≥ 48 px (Mobile-
+       * Tag-1-Regel 4) + Safe-Area-Insets (Regel 5) über dieselbe geteilte Basisklasse.
+       * `.visible`-Toggle via `updateWrRotateButtonVisibility()` (Muster
+       * `updateWrRerollButtonVisibility()`, dasselbe Effekt-Gate).
+       */
+      #wr-rotate-button {
+        display: none;
+        right: calc(var(--hud-safe-right) + var(--hud-gap) + var(--interact-button-size) + var(--hud-gap));
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
+            var(--interact-button-size) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap)
+        );
+      }
+
+      #wr-rotate-button.visible {
+        display: flex;
+      }
+
+      /* Tap-Feedback, Muster `#wr-reroll-button:active` (kein Hover-Zwang). */
+      #wr-rotate-button:active {
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      /*
        * Sichtbarer floating Joystick (Felix-Playtest 2026-07-13 „Mobile-UI deutlich
        * nutzerfreundlicher" + Touch-UX-Best-Practice „dynamic/floating stick"): rein visuelles
        * DOM-Overlay (`pointer-events: none` — der Whole-Canvas-Joystick UNTER dem Canvas fängt die
@@ -2961,7 +2996,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-78BEbXol.js"></script>
+    <script type="module" crossorigin src="./assets/index-BFysYYZw.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3115,6 +3150,22 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M4 12a8 8 0 0 1 13.66-5.66M20 12a8 8 0 0 1-13.66 5.66" />
           <path d="M17 3v4h-4M7 21v-4h4" />
+        </svg>
+      </div>
+      <!--
+        Objektverwandlung — „Objekt drehen"-Button (Felix-Auftrag 2026-07-24): NUR sichtbar
+        während der eigenen aktiven Objektform (`.visible` via
+        `updateWrRotateButtonVisibility()`), Muster `#wr-reroll-button`. Icon = Quadrat (das
+        getarnte Objekt) + Drehpfeil — bewusst ANDERE Bogen-Sprache als der Reroll-Ringpfeil
+        (`#wr-reroll-button`, zwei GEGENLÄUFIGE Halbkreise ohne umschlossene Form), damit beide
+        Buttons auf den ersten Blick unterscheidbar bleiben, obwohl sie nebeneinander/übereinander
+        sichtbar sind. Verdrahtung `setupWrRotateControls()` (`scenes/MatchScene.ts`).
+      -->
+      <div id="wr-rotate-button" class="mobile-move-mode-button" aria-label="Objekt drehen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="5" y="5" width="11" height="11" rx="1.5" />
+          <path d="M18.5 9.5a5 5 0 0 1-7.9 6.1" />
+          <path d="M19.5 6.5l0 3.4-3.4 0" />
         </svg>
       </div>
 
