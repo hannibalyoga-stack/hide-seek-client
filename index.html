@@ -213,6 +213,9 @@
         --item-slot-panel-bg: rgba(18, 20, 28, 0.72);
         --item-slot-accent-empty: #555a66;
         --item-slot-accent-dash: #8fd0ff;
+        /* Slide (Auftrag „Slide"): eigener Akzent (mint-türkis, „gleitend/flüssig") — klar vom
+           Dash-Blau unterscheidbar, damit der zweite Bewegungs-Slot auf einen Blick erkennbar ist. */
+        --item-slot-accent-slide: #7fe6c8;
         --item-slot-accent-spell: var(--hud-endgame-color);
         /*
          * Item-Slot-Gruppe (Umsetzungsauftrag „Truhen-Öffnen-Sound + 3 Item-Slots + Tempo-Schub
@@ -367,6 +370,11 @@
          * `--wr-interact-tone-hider` = dasselbe Violett (Verstecken/Verlassen, Verstecker-Aktionen),
          * `--wr-interact-tone-catcher` = eigenes Türkis NUR für „Durchsuchen"/„Öffnen" (Fänger-
          * Truhen-Aktion visuell unterscheidbar) — einziger neuer Farbwert in diesem Umbau.
+         *
+         * `--wr-interact-tone-sealed` (§7-Etagen-Flow-Kern, WP-E1, `"stairSealed"`-Zustand):
+         * dasselbe Rot wie der Shrink-Sperr-Fließtext (`SHRINK_ROT_FILL_COLOR`, `apps/client/src/
+         * config.ts`) — „gesperrt" ist im gesamten Spiel bereits dieses Rot, keine neue
+         * Bedeutungsfarbe.
          */
         --wr-slot-accent: #555a66;
         --wr-slot-accent-spell: var(--item-slot-accent-spell);
@@ -376,6 +384,7 @@
         --wr-interact-tone-neutral: #7a7566;
         --wr-interact-tone-hider: var(--hud-endgame-color);
         --wr-interact-tone-catcher: #7fb3c4;
+        --wr-interact-tone-sealed: #dc2626;
       }
 
       /* Kompakthöhen (Mockup-Schwellen „≤ 375" / „≤ 335", echte Landschafts-Viewporthöhe — die
@@ -1462,7 +1471,7 @@
         pointer-events: none;
       }
 
-      /* Zustandsfarben (Akzentrand + Icon). Leer = grau (Default oben), Dash = blau, Zauber = Violett. */
+      /* Zustandsfarben (Akzentrand + Icon). Leer = grau (Default oben), Dash = blau, Slide = mint-türkis, Zauber = Violett. */
       .item-slot--dash {
         --slot-accent: var(--item-slot-accent-dash);
       }
@@ -1479,6 +1488,11 @@
       }
       .item-slot--dash.is-spider-descend .item-slot__icon svg {
         transform: rotate(90deg);
+      }
+      /* Slide (Auftrag „Slide"): Muster `.item-slot--dash` — eigener Akzent, gleiche Slot-Größe (kein
+         `--item-slot-size-spell`-Shrink, der Slide-Slot ist ein Bewegungs-Slot wie der Dash). */
+      .item-slot--slide {
+        --slot-accent: var(--item-slot-accent-slide);
       }
       .item-slot--spell {
         --slot-accent: var(--item-slot-accent-spell);
@@ -1799,6 +1813,77 @@
 
       #ghost-message-picker-cancel:active {
         background: rgba(255, 255, 255, 0.3);
+      }
+
+      /*
+       * Schrein-Rune-Nachzeichnen-Overlay (Übergabe-Auftrag „Schrein-System: shared-Ernte +
+       * Server-Anbindung", WP5): echtes VOLLBILD-DOM-Overlay — verdeckt bewusst die Sicht
+       * (Design-Absicht: Risiko/Payoff, man bleibt während der 8-s-Challenge fangbar, s.
+       * `scenes/MatchScene.ts`s `updateShrineRuneOverlay()`-Dokumentation). Muster
+       * `#ghost-message-picker`/`#tweak-console` (Default `display: none` + `pointer-events: none`
+       * — ein geschlossenes Overlay nimmt STRUKTURELL keinen Klickbereich ein, Mobile-Tag-1-Regel
+       * 1; erst `.visible` schaltet sichtbar + interaktiv), aber `inset: 0` statt eines zentrierten
+       * Panels (Muster `#self-caught-screen`) — der eigentliche Zeichenbereich ist das innere
+       * Quadrat `#shrine-rune-canvas`. `z-index` auf derselben Modal-Ebene wie `#ghost-message-
+       * picker`/`#tweak-console` (beide `1000`) — GLEICHRANGIG, kein struktureller Konflikt (ein
+       * Geist kann während der eigenen Rune-Challenge nicht gleichzeitig den Nachrichten-Picker
+       * öffnen, `updateGhostMessageButtonVisibility()`s Sichtbarkeits-Gate; die Dev-Tweak-Konsole
+       * bleibt für Entwickler unabhängig bedienbar).
+       *
+       * Safe-Area-Insets (Regel 5) als Innenabstand, damit `#shrine-rune-hint` UND die Zeichen-
+       * fläche nie unter eine Notch/Kamera-Aussparung rutschen.
+       */
+      #shrine-rune-overlay {
+        position: fixed;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        box-sizing: border-box;
+        padding: calc(var(--hud-safe-top) + var(--hud-gap)) calc(var(--hud-safe-right) + var(--hud-gap))
+          calc(var(--hud-safe-bottom) + var(--hud-gap)) calc(var(--hud-safe-left) + var(--hud-gap));
+        background: rgba(0, 0, 0, 0.35);
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      #shrine-rune-overlay.visible {
+        display: flex;
+        pointer-events: auto;
+      }
+
+      #shrine-rune-hint {
+        flex-shrink: 0;
+        color: var(--theme-color-text-title);
+        font: calc(var(--hud-font-size) * 1.3) / 1.3 var(--theme-font-title);
+        letter-spacing: var(--theme-letter-spacing-title);
+        text-align: center;
+        text-shadow: 0 0 8px #000;
+        pointer-events: none;
+      }
+
+      /*
+       * Die eigentliche Zeichenfläche: responsive QUADRAT (`min(80vmin, …)`, kein fester
+       * Pixelwert — Mobile-Tag-1-Regel 2/3), zusätzlich auf die verfügbare Höhe NEBEN dem Hinweis-
+       * Text geklemmt (`calc(100vh - Safe-Area - Gaps - Hinweistext-Zeile)`), damit sie auf
+       * niedrigen Viewports (Querformat) nie über den Rand hinausragt. `scenes/MatchScene.ts`s
+       * `resizeShrineRuneCanvas()` synchronisiert die Backing-Store-Größe (`width`/`height`-
+       * Attribute) mit dieser tatsächlich gerenderten CSS-Größe. `touch-action: none` unterdrückt
+       * NUR Standard-Browser-Gesten (Scroll/Zoom) auf der Zeichenfläche — kein zweiter Eingabepfad
+       * (Regel 1), der Zeiger selbst läuft ausschließlich über Pointer-Events.
+       */
+      #shrine-rune-canvas {
+        flex-shrink: 0;
+        width: min(80vmin, 26rem);
+        height: min(80vmin, 26rem);
+        max-width: calc(100vw - var(--hud-safe-left) - var(--hud-safe-right) - 2 * var(--hud-gap));
+        max-height: calc(100vh - var(--hud-safe-top) - var(--hud-safe-bottom) - 2 * var(--hud-gap) - 3rem);
+        border-radius: 0.5rem;
+        touch-action: none;
+        cursor: crosshair;
+        pointer-events: auto;
       }
 
       /*
@@ -2658,6 +2743,14 @@
         color: var(--wr-interact-tone-catcher);
       }
 
+      /* §7-Etagen-Flow-Kern (WP-E1): Gesperrt-Optik des `"stairSealed"`-Zustands — `actionable`
+         bleibt `true` (siehe `interactionButtonState.ts`), NUR die Rand-/Icon-Farbe wechselt auf
+         Rot statt der neutralen/rollen-getönten Farbe (Muster `tone-hider`/`tone-catcher`). */
+      #wr-interact-button.tone-sealed {
+        box-shadow: inset 0 0 0 2.5px var(--wr-interact-tone-sealed);
+        color: var(--wr-interact-tone-sealed);
+      }
+
       #wr-interact-button__icon {
         width: var(--wr-interact-icon-size);
         height: var(--wr-interact-icon-size);
@@ -3018,7 +3111,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-22gb0Syl.js"></script>
+    <script type="module" crossorigin src="./assets/index-D6P1PAm7.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3219,6 +3312,25 @@
             <div class="item-slot__cooldown"></div>
             <div class="item-slot__frame"></div>
           </div>
+          <!--
+            Slide-Slot (Auftrag „Slide — Momentum-Impuls neben Dash", 2026-07-23): der ZWEITE
+            Bewegungs-Knopf NEBEN dem Dash (Felix: „ein zweiter Knopf zum Testen, welcher sich besser
+            anfühlt"). Gleiche Slot-Mechanik (Tap = `requestSlide()`, Cooldown-Wipe aus
+            `slideCooldownTicksRemaining`), Verdrahtung `scenes/MatchScene.ts`s `setupSlideSlot()`/
+            `updateSlideSlotHud()`. Icon = geschwungene Gleit-Linie + Pfeil (Momentum/lenkbar), klar
+            unterscheidbar vom harten Dash-Doppelchevron.
+          -->
+          <div class="item-slot item-slot--slide is-actionable" id="item-slot-slide">
+            <div class="item-slot__panel"></div>
+            <div class="item-slot__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 15c4 0 5-7 10-7 4 0 4 5 8 5" />
+                <path d="M16 9l4 4-4 4" />
+              </svg>
+            </div>
+            <div class="item-slot__cooldown"></div>
+            <div class="item-slot__frame"></div>
+          </div>
         </div>
         <div class="item-bar__group" id="item-bar-spell-group"></div>
         <!--
@@ -3355,6 +3467,23 @@
               <ellipse cx="12" cy="12" rx="5.6" ry="2.6" fill="none" stroke="currentColor" stroke-width="1.4" />
               <ellipse cx="12" cy="12" rx="2.4" ry="1.1" fill="currentColor" stroke="none" />
             </symbol>
+            <!--
+              Interaktionsknopf: Schrein aktivieren (Übergabe-Auftrag „Schrein-System: shared-
+              Ernte + Server-Anbindung", WP5) — stilisierter Altar-Sockel mit Rune-Funke darüber,
+              rollen-neutral (kein `tone-*`, `shrineActivate` gilt je nach Buff-Art für eine ODER
+              beide Rollen).
+            -->
+            <symbol id="wr-i-interact-shrine" viewBox="0 0 24 24">
+              <path
+                d="M5 20.5h14M6.5 20.5v-4.5h11v4.5M8 16v-3h8v3"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <path d="M12 4 14.2 8.4 12 11.2 9.8 8.4Z" fill="currentColor" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" />
+            </symbol>
             <!-- Generischer Leerplatz-Umriss (leerer Slot). -->
             <symbol id="wr-i-slot-empty" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.4 2.8" />
@@ -3405,8 +3534,17 @@
           <b class="wr-button__time" aria-live="polite"></b>
         </div>
 
-        <div id="wr-interact-button" class="is-disabled" aria-hidden="true">
+        <div id="wr-interact-button" class="wr-button is-disabled" aria-hidden="true">
           <svg id="wr-interact-button__icon"><use href="#wr-i-interact-none"></use></svg>
+          <!--
+            Geist-Türöffner-Cooldown-Anzeige (Feature „Geist-Türöffner", Kanon §10 bewusst
+            geöffnet): dieselben `.wr-button__cooldown`/`.wr-button__time`-Kindelemente wie
+            `#wr-dash-button`/die vier Slots (Muster oben) — bleiben für JEDE andere Interaktion
+            (Tür/Truhe/Verstecken/Portal) leer/unsichtbar (`scenes/MatchScene.ts`s
+            `updateWrInteractButton()` speist sie NUR während `action === "ghostDoorOpen"`).
+          -->
+          <div class="wr-button__cooldown"></div>
+          <b class="wr-button__time" aria-live="polite"></b>
         </div>
 
         <div id="wr-detail-card">
@@ -3431,6 +3569,19 @@
         <div id="ghost-message-picker__title">Leave a message</div>
         <div id="ghost-message-picker-body"></div>
         <div id="ghost-message-picker-cancel">Cancel</div>
+      </div>
+
+      <!--
+        Schrein-Rune-Nachzeichnen-Overlay (Übergabe-Auftrag „Schrein-System: shared-Ernte +
+        Server-Anbindung", WP5): Aufbau/Öffnen/Schließen ausschließlich in `scenes/MatchScene.ts`
+        (`setupShrineRuneOverlay()`/`openShrineRuneOverlay()`/`closeShrineRuneOverlay()`),
+        gesteuert durch die `channelType`-Flanke des eigenen Spielers
+        (`CHANNEL_TYPE_SHRINE_ACTIVATE`). `aria-hidden`, da rein spielerisches Zeichnen-Feedback
+        ohne Text-Alternative (Muster `#shrine-rune-overlay`s CSS-Dokumentation).
+      -->
+      <div id="shrine-rune-overlay" aria-hidden="true">
+        <div id="shrine-rune-hint">Draw the rune</div>
+        <canvas id="shrine-rune-canvas"></canvas>
       </div>
     </div>
   </body>
