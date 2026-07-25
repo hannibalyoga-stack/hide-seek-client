@@ -413,6 +413,55 @@
         overflow: hidden;
       }
 
+      /*
+       * Long-Press-Fix iOS (Felix-Befund 2026-07-25: „beim langen Drücken auf dem Handy werden
+       * die Icons markiert, als ob ich Text markieren würde"): iOS Safari startet bei einem
+       * langen Fingerdruck seine Standard-Textauswahl bzw. das Callout-Menü (Kopieren/Teilen/
+       * „Bild sichern") — für ein Vollbild-Spiel, in dem ein langer Druck IMMER eine
+       * Spieleingabe ist (Joystick halten, Interaktionsknopf gedrückt halten), ist das
+       * ausnahmslos eine Störung. Standardpraxis für Canvas-Spiele: Auswahl + Callout + Bild-
+       * Drag global abschalten.
+       *
+       * Bewusst GLOBAL statt pro Element (die Einzelregeln `user-select: none` an den
+       * Cluster-Buttons weiter unten deckten nur die bereits bekannten Knöpfe ab — der Befund
+       * betrifft aber ebenso jedes dynamisch erzeugte Overlay: Geister-Picker, Händler-Panel,
+       * Ansagen-Texte, HUD-Icons). Drei Eigenschaften, die iOS getrennt auswertet:
+       * - `-webkit-touch-callout: none` — unterdrückt das Long-Press-Kontextmenü (nur WebKit,
+       *   ohne Standard-Gegenstück; genau das ist der von Felix gesehene Effekt bei den
+       *   `<img>`-Icons).
+       * - `-webkit-user-select` + `user-select` — verhindert die Textauswahl-Lupe. Die
+       *   `-webkit-`-Variante bleibt nötig (Safari kennt das ungepräfixte `user-select` erst
+       *   ab 16.4; das Spiel läuft auch auf älteren iOS-Versionen).
+       * - `-webkit-user-drag: none` auf Bildern — sonst lässt sich ein Icon als Bild
+       *   „aufnehmen" und wegziehen (Desktop-Safari/Chrome).
+       *
+       * NICHT angefasst: `touch-action`. Das steht bewusst nur an den Elementen, die es
+       * brauchen — global gesetzt würde es Scrollen in Overlays töten (Befund Geister-Picker,
+       * 2026-07-25).
+       *
+       * Ausnahme für echte Eingabefelder (Dev-Tweak-Konsole, `src/tweak/tweakConsole.ts`
+       * erzeugt `<input>`-Slider/Zahlenfelder/Suchfeld): dort muss Markieren/Cursor-Setzen
+       * weiterhin funktionieren.
+       */
+      html {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      input,
+      textarea,
+      select,
+      [contenteditable="true"] {
+        -webkit-user-select: text;
+        user-select: text;
+      }
+
+      img {
+        -webkit-user-drag: none;
+      }
+
       #game-container {
         position: relative;
         width: 100vw;
