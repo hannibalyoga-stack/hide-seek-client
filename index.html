@@ -1761,6 +1761,16 @@
        * NIE unter seine eigene Inhaltshöhe schrumpfen, `overflow-y: auto` griffe dadurch nie
        * (der Katalog quillt sonst über den Picker-Rahmen hinaus, statt intern zu scrollen —
        * auf 375px reicht der Platz für 12 Phrasen + Titel + Abbrechen-Kachel nicht immer).
+       *
+       * Felix-Playtest-Fix 2026-07-25 („lässt sich auf mobil nicht scrollen"): `touch-action:
+       * pan-y` statt des HUD-Standards `touch-action: none`. Der HUD-Standard ist für
+       * Steuer-Flächen richtig (Joystick/Buttons dürfen die Seite nicht mitschieben), tötet auf
+       * einer SCROLLBAREN Liste aber genau die Geste, die sie braucht: die Phrasen-Kacheln
+       * bedecken den Body lückenlos, jede Wischgeste beginnt also auf einer Kachel — mit
+       * `touch-action: none` dort verwirft der Browser sie, bevor der Scroll-Container sie sieht.
+       * `pan-y` erlaubt exakt das vertikale Schieben und weiterhin KEIN Pinch-Zoom/Doppeltipp.
+       * `overscroll-behavior: contain` hält die Geste am Ende der Liste im Picker (kein
+       * Weiterreichen an die Seite darunter).
        */
       #ghost-message-picker-body {
         flex: 1 1 auto;
@@ -1770,9 +1780,11 @@
         gap: 0.4rem;
         overflow-y: auto;
         overflow-x: hidden;
+        touch-action: pan-y;
+        overscroll-behavior: contain;
       }
 
-      /* Eine Phrasen-Kachel — Touch-Target ≥ 48 px (Regel 4), Muster `.item-slot`s Pointer-only-Verdrahtung (kein zweiter Eingabepfad). */
+      /* Eine Phrasen-Kachel — Touch-Target ≥ 48 px (Regel 4), Muster `.item-slot`s Pointer-only-Verdrahtung (kein zweiter Eingabepfad). `touch-action: pan-y` statt `none`: die Kachel darf die Scroll-Geste ihres Containers nicht schlucken (s. `#ghost-message-picker-body`). */
       .ghost-message-picker__phrase {
         min-height: 48px;
         box-sizing: border-box;
@@ -1783,7 +1795,7 @@
         border: 1px solid rgba(255, 255, 255, 0.2);
         background: rgba(255, 255, 255, 0.06);
         pointer-events: auto;
-        touch-action: none;
+        touch-action: pan-y;
         -webkit-tap-highlight-color: transparent;
         user-select: none;
       }
@@ -3111,7 +3123,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-RkHhflx1.js"></script>
+    <script type="module" crossorigin src="./assets/index-Qfb_5ufz.js"></script>
   </head>
   <body>
     <div id="game-container">
