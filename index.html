@@ -3064,11 +3064,27 @@
         transform: translate(-50%, -50%) scale(1.08);
       }
 
+      /*
+       * Icon-Träger-PAAR des Drag-Ghosts (Felix-Auftrag 2026-07-25 „immer die Icons der
+       * Aktion-Bar") — Muster `.wr-slot__icon-emoji`/`.wr-slot__icon-image`: beide liegen fest im
+       * Ghost-DOM, `applySlotIcon()` zeigt genau EINEN. Der Emoji-Träger ist hier per Default
+       * SICHTBAR (der Ghost hat kein `data-kind`-Umschalten wie ein echter Slot).
+       */
       .wr-slot-drag-ghost__icon {
-        width: var(--wr-slot-icon-size);
-        height: var(--wr-slot-icon-size);
+        font-size: var(--wr-slot-icon-size);
+        line-height: 1;
         display: block;
         pointer-events: none;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+      }
+
+      .wr-slot-drag-ghost__icon-image {
+        display: none;
+        width: calc(var(--wr-slot-icon-size) * 1.4);
+        height: calc(var(--wr-slot-icon-size) * 1.4);
+        object-fit: contain;
+        pointer-events: none;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
       }
 
       /*
@@ -3111,11 +3127,41 @@
         color: var(--wr-slot-accent-item);
       }
 
-      #wr-detail-card__name {
+      /*
+       * Kopfzeile des Detailfensters: Icon + Name nebeneinander (Felix-Auftrag 2026-07-25). Flex
+       * statt Text-Präfix, damit der `<img>`-Träger dieselbe `display: block`-Umschaltung von
+       * `applySlotIcon()` verträgt wie jeder Slot — die Zeile richtet ihn selbst mittig aus.
+       */
+      #wr-detail-card__head {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 0.3rem;
+      }
+
+      /* Emoji-Fallback-Icon — Default SICHTBAR (Muster Händler-Panel `.merchant-offer__icon-emoji`), `applySlotIcon()` blendet es aus, sobald ein Pixel-Icon-Derivat vorliegt. */
+      #wr-detail-card__icon-emoji {
         display: block;
+        font-size: 1.5rem;
+        line-height: 1;
+        flex: none;
+      }
+
+      /* Pixel-Icon-Derivat — Default versteckt (Muster `.wr-slot__icon-image`), `applySlotIcon()` zeigt es, sobald ein Icon-Asset existiert. */
+      #wr-detail-card__icon-image {
+        display: none;
+        width: 2rem;
+        height: 2rem;
+        flex: none;
+        object-fit: contain;
+        filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
+      }
+
+      #wr-detail-card__name {
         font: 1rem / 1.3 var(--theme-font-body);
         color: var(--theme-color-text-body);
-        margin-bottom: 0.3rem;
+        min-width: 0;
+        overflow-wrap: anywhere;
       }
 
       #wr-detail-card__meta {
@@ -3156,7 +3202,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CycmoTss.js"></script>
+    <script type="module" crossorigin src="./assets/index-BJjYK8-b.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3581,7 +3627,18 @@
 
         <div id="wr-detail-card">
           <span id="wr-detail-card__kind">Zauber</span>
-          <span id="wr-detail-card__name"></span>
+          <!--
+            Icon-Träger-PAAR des Detailfensters (Felix-Auftrag 2026-07-25 „immer die Icons der
+            Aktion-Bar"): exakt dasselbe Muster wie ein Slot selbst — Emoji-`<span>` UND
+            Pixel-Icon-`<img>` liegen beide fest im DOM, `applySlotIcon()` (`scenes/MatchScene.ts`)
+            zeigt genau EINEN von beiden. Vorher stand hier nur das Emoji als Text-Präfix des
+            Namens, das Fenster zeigte also ein anderes Bild als der gehaltene Slot.
+          -->
+          <div id="wr-detail-card__head">
+            <span id="wr-detail-card__icon-emoji"></span>
+            <img id="wr-detail-card__icon-image" alt="" draggable="false" />
+            <span id="wr-detail-card__name"></span>
+          </div>
           <span id="wr-detail-card__meta"></span>
           <div id="wr-detail-card__drop">Fallenlassen</div>
         </div>
