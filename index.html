@@ -1627,7 +1627,7 @@
        * aber EINE Etage HÖHER in derselben rechten Spalte gestapelt (`+ var(--move-mode-button-
        * size) + var(--hud-gap)` zusätzlich zur Besen-Formel) — dadurch KOLLISIONSFREI mit sowohl
        * `#mobile-broom-button` (eigene Spalte, eine Etage darunter) als auch
-       * `#mobile-catch-tap-button` (andere Spalte). Sichtbarkeit (`.visible`) steuert
+       * `#wr-reroll-button` (andere Spalte). Sichtbarkeit (`.visible`) steuert
        * AUSSCHLIESSLICH `updateGhostMessageButtonVisibility()` (pro Frame, NUR als Geist —
        * Muster `#mobile-broom-button`s „nur sichtbar, wenn nutzbar", hier `isGhost`-Gate statt
        * Item-Gate). Verdrahtung `setupGhostMessageControls()` (`scenes/MatchScene.ts`).
@@ -1658,7 +1658,7 @@
        * selbst zugewiesen — ein zweites `.wr-button` auf einem strukturell andersartigen
        * `.mobile-move-mode-button` (eigene `width`/`height`/`position`-Formel, eigene
        * Sichtbarkeits-/Stapel-Spalte, s. Kommentar oben) würde dessen Geometrie-Deklarationen
-       * überschreiben (Kollisionsrisiko mit `#mobile-broom-button`/`#mobile-catch-tap-button`).
+       * überschreiben (Kollisionsrisiko mit `#mobile-broom-button`/`#wr-reroll-button`).
        * Reiner CSS-Nachbau derselben Formeln, dieselben wiederverwendeten Keyframes
        * (`wr-cooldown-ready`/`wr-cooldown-glyph-ready`/`wr-press-denied`) — kein neues Timing
        * erfunden. Fortgeschrieben in `updateGhostMessageButtonCooldown()`
@@ -1899,46 +1899,13 @@
       }
 
       /*
-       * Fang-Sog-Tap-Button (Felix-Entscheid 2026-07-18, „Tapp-Sog"): die STÄNDIGE Haupt-Aktion
-       * des Fängers — deshalb in Interact-Größe (`--interact-button-size`, Touch-Target ≥ 48 px)
-       * und dauerhaft sichtbar, solange man Fänger ist (`.visible` via
-       * `updateCatchTapButtonVisibility()`, Rollen-Gate statt Item-Gate — Muster
-       * `#mobile-broom-button`). Position: SNEAK-Spalte (dieselbe `right`-Formel wie
-       * `#mobile-sneak-button`), eine Etage ÜBER dem Interact-Boden (dieselben `bottom`-Summanden
-       * wie `#mobile-broom-button`) — kollidiert dadurch strukturell mit KEINEM der beiden
-       * (Besen-Spalte rechts, Sneak-Etage darunter), auch wenn ein Fänger Besen + Sog gleichzeitig
-       * trägt.
-       */
-      #mobile-catch-tap-button {
-        display: none;
-        right: calc(var(--hud-safe-right) + var(--hud-gap) + var(--interact-button-size) + var(--hud-gap));
-        bottom: calc(
-          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
-            var(--interact-button-size) + var(--hud-gap)
-        );
-        width: var(--interact-button-size);
-        height: var(--interact-button-size);
-      }
-
-      #mobile-catch-tap-button.visible {
-        display: flex;
-      }
-
-      /* Tap-Feedback (der Sog lebt vom schnellen Wiederholungs-Tap — ohne sichtbare Quittung
-         fühlt sich Hämmern taub an; reine Darstellung, Muster `#mobile-sneak-button.active`). */
-      #mobile-catch-tap-button:active {
-        background: rgba(255, 255, 255, 0.35);
-      }
-
-      /*
        * Objektverwandlung — „Neu würfeln"-Button (Umsetzungsauftrag `2026-07-23-
        * objektverwandlung.md`, Teil C, Felix-Entscheid „solange die Form läuft, in ein neues
        * zufälliges Objekt wechseln … eigener kontextueller HUD-Button, nur in Objektform
-       * sichtbar"): DIESELBE Position wie `#mobile-catch-tap-button` (SNEAK-Spalte, eine Etage
-       * ÜBER dem Interact-Boden) — rollenexklusiv KOLLISIONSFREI, weil Objektverwandlung
-       * Verstecker-only (A1) und der Fang-Sog-Button Fänger-only ist: KEIN Spieler sieht je
-       * beide gleichzeitig. `.visible`-Toggle via `updateWrRerollButtonVisibility()` (Muster
-       * `#mobile-catch-tap-button`s Rollen-Gate, hier ein Effekt-Gate). Touch-Target ≥ 48 px +
+       * sichtbar"): SNEAK-Spalte, eine Etage ÜBER dem Interact-Boden — bis zum Entfernen der
+       * Tapp-Beschleunigung (Felix-Entscheid 2026-07-25) teilte er diesen Platz rollenexklusiv
+       * mit dem Fang-Sog-Tap-Button; seitdem steht er dort allein. `.visible`-Toggle via
+       * `updateWrRerollButtonVisibility()` (Effekt-Gate). Touch-Target ≥ 48 px +
        * Safe-Area-Insets über die geteilte `.mobile-move-mode-button`-Basisklasse (Mobile-Tag-1-
        * Regeln 3–5), kein Hover-Zwang (`:active`-Feedback statt `:hover`, Regel „kein
        * Hover-Zwang").
@@ -1958,7 +1925,7 @@
         display: flex;
       }
 
-      /* Tap-Feedback, Muster `#mobile-catch-tap-button:active` (kein Hover-Zwang). */
+      /* Tap-Feedback, Muster `#mobile-sneak-button.active` (kein Hover-Zwang). */
       #wr-reroll-button:active {
         background: rgba(255, 255, 255, 0.35);
       }
@@ -3123,7 +3090,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-Qfb_5ufz.js"></script>
+    <script type="module" crossorigin src="./assets/index-CIxK7cVT.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3253,23 +3220,10 @@
         <b class="mobile-move-mode-button__time" aria-live="polite"></b>
       </div>
       <!--
-        Fang-Sog-Tap-Button (Felix-Entscheid 2026-07-18, „Tapp-Sog" — vault/30-Systeme/
-        fang-sog.md): NUR für die Fänger-Rolle sichtbar (`.visible` via
-        `updateCatchTapButtonVisibility()`, Muster `#mobile-broom-button`). Icon = 3/4-Ring +
-        Funke — dieselbe Bogen-Sprache wie der Ladebogen am Ziel (Wiedererkennung statt
-        neuem Symbol-Vokabular). Verdrahtung `setupCatchTapControls()` (`scenes/MatchScene.ts`).
-      -->
-      <div id="mobile-catch-tap-button" class="mobile-move-mode-button" aria-label="Fangen">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M12 3a9 9 0 1 1-9 9" />
-          <path d="M12 7.5l1.2 3.3L16.5 12l-3.3 1.2L12 16.5l-1.2-3.3L7.5 12l3.3-1.2z" fill="currentColor" stroke="none" />
-        </svg>
-      </div>
-      <!--
         Objektverwandlung — „Neu würfeln"-Button (Umsetzungsauftrag `2026-07-23-
         objektverwandlung.md`, Teil C): NUR sichtbar während der eigenen aktiven Objektform
         (`.visible` via `updateWrRerollButtonVisibility()`). Icon = Rück-/Ringpfeil (Refresh-
-        Piktogramm, dieselbe Bogen-Sprache wie `#mobile-catch-tap-button`) — „neu würfeln"
+        Piktogramm) — „neu würfeln"
         statt eines Würfel-Symbols, weil ein Würfel bei 24 px kaum als Pip-Muster lesbar wäre.
         Verdrahtung `setupWrRerollControls()` (`scenes/MatchScene.ts`).
       -->
