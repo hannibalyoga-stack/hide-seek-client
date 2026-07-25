@@ -586,10 +586,11 @@
        * & neu starten"): startet AUSGEBLENDET (`display: none` Default, Muster
        * `#netlog-export-button`) — `scenes/MatchScene.ts`s `setupDevResetButton()` schaltet die
        * `.visible`-Klasse NUR frei, wenn dasselbe Dev-Gate wie die Tweak-Konsole aktiv ist
-       * (`tweak/devGate.ts`s `isDevGateActive()`). Bewusst NICHT in der `html.touch-ui`-Ausblend-
-       * Liste weiter unten (anders als `#debug-toggle-button`/`#tweak-console-toggle`) — dieser
-       * Button muss AUCH auf Touch erreichbar bleiben, die Tweak-Konsole ist dort sonst gar nicht
-       * mehr auslösbar. Unten LINKS verankert (Safe-Area, Regel 3/5) — der komplett freie
+       * (`tweak/devGate.ts`s `isDevGateActive()`). Seit Felix' Entscheid 2026-07-25 („den will ich
+       * nur in Desktop") zusätzlich in der `html.touch-ui`-Ausblend-Liste weiter unten, genau wie
+       * `#debug-toggle-button`/`#tweak-console-toggle` — auf dem Handy war der Knopf trotz der
+       * Eckenwahl ein Fehl-Tap-Risiko mitten im Spielgeschehen, und ein versehentlicher Klick
+       * kostet die ganze Runde. Unten LINKS verankert (Safe-Area, Regel 3/5) — der komplett freie
        * Gegenpol zum rechten Daumen-Cluster (Item-Leiste/Interact/Move-Mode-Buttons) UND zur
        * oberen Ecken-Belegung (Minimap links, Debug/NetLog rechts), damit ein Fehl-Tap im
        * hitzigen Spielgeschehen unwahrscheinlich bleibt.
@@ -2522,7 +2523,13 @@
        * Reine Darstellungs-Weiche per CSS-Klasse, KEIN zweiter Eingabepfad (Regel 1).
        */
       html.touch-ui #debug-toggle-button,
-      html.touch-ui #tweak-console-toggle {
+      html.touch-ui #tweak-console-toggle,
+      /* Felix-Entscheid 2026-07-25: der Dev-Reset-Knopf unten links ist Desktop-only — auf dem
+         Handy liegt er im Daumen-Weg und startet bei einem Fehl-Tap die laufende Runde neu
+         (Begründung ausführlich an `#dev-reset-button` oben). Schlägt das `display: flex` aus
+         `#dev-reset-button.visible`, das `setupDevResetButton()` bei aktivem Dev-Gate setzt:
+         höhere Spezifität durch das zusätzliche `html`-Element im Selektor. */
+      html.touch-ui #dev-reset-button {
         display: none;
       }
 
@@ -2621,6 +2628,16 @@
         touch-action: none;
         -webkit-tap-highlight-color: transparent;
         user-select: none;
+        /*
+         * Mobile-Fix (Felix-Befund 2026-07-25 „Fallenlassen geht auf mobil nicht"): jeder Slot
+         * enthält ein echtes `<img class="wr-slot__icon-image">` (Pixel-Icon-Derivat). Ein
+         * Long-Press auf ein Bild öffnet auf iOS Safari das System-Callout („Bild sichern…") —
+         * der Browser übernimmt damit die Geste und schickt `pointercancel` statt `pointerup`,
+         * womit das Detailfenster mit dem „Fallenlassen"-Knopf nie erschien. `draggable="false"`
+         * am `<img>` deckt nur den Desktop-Drag ab, NICHT das Touch-Callout. Die Eigenschaft
+         * vererbt sich — deshalb hier einmal am Knopf statt an jedem Icon einzeln.
+         */
+        -webkit-touch-callout: none;
       }
 
       .wr-button__icon {
@@ -3139,7 +3156,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-YAFTmlrI.js"></script>
+    <script type="module" crossorigin src="./assets/index-C152pBFE.js"></script>
   </head>
   <body>
     <div id="game-container">
