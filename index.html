@@ -879,6 +879,53 @@
       }
 
       /*
+        Reliquien-Fund-Puls (Playtest-Punkt P17 „Währungsfund viel klarer anzeigen"): sitzt LINKS
+        neben Icon und Pips, weil der Stapel oben rechts klebt — nach innen ist die einzige
+        Richtung, in die er wachsen kann, ohne aus dem Safe-Area-Rand zu laufen.
+        `position: absolute` gegen das Flex-Elternteil, damit das Erscheinen die Pip-Zeile NICHT
+        verschiebt (sonst zuckt bei jedem Fund das ganze HUD).
+      */
+      #relic-hud {
+        position: fixed;
+      }
+
+      #relic-hud-gain {
+        position: absolute;
+        right: 100%;
+        margin-right: 0.5em;
+        white-space: nowrap;
+        color: var(--relic-hud-gain-color, #f2c65a);
+        font-weight: 700;
+        text-shadow: 0 0 6px #000, 0 0 12px rgba(242, 198, 90, 0.55);
+        opacity: 0;
+        transform: translateY(0.3em);
+        pointer-events: none;
+      }
+
+      #relic-hud-gain.pulse {
+        animation: relic-gain-pulse var(--relic-hud-gain-duration, 1400ms) ease-out 1;
+      }
+
+      @keyframes relic-gain-pulse {
+        0%   { opacity: 0; transform: translateY(0.5em) scale(0.85); }
+        18%  { opacity: 1; transform: translateY(0) scale(1.12); }
+        32%  { opacity: 1; transform: translateY(0) scale(1); }
+        75%  { opacity: 1; transform: translateY(-0.15em) scale(1); }
+        100% { opacity: 0; transform: translateY(-0.6em) scale(1); }
+      }
+
+      /* Bewegungsreduktion respektieren: sichtbar ja, springen nein. */
+      @media (prefers-reduced-motion: reduce) {
+        #relic-hud-gain.pulse {
+          animation: relic-gain-fade var(--relic-hud-gain-duration, 1400ms) ease-out 1;
+        }
+        @keyframes relic-gain-fade {
+          0%, 85% { opacity: 1; transform: none; }
+          100%    { opacity: 0; transform: none; }
+        }
+      }
+
+      /*
        * Reliquien-Icon (Dark-Souls-Pixel-Icon `assets/icons/reliquie.png`, Muster der 8
        * Zauber-/Item-Icons — Felix-Vorgabe „im Dark-Souls-UI-Icon-Design"). Ersetzt den zuvor
        * inline gezeichneten SVG-Edelstein durch das abgeleitete PNG-Derivat; `image-rendering:
@@ -3202,7 +3249,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-Beztk0ah.js"></script>
+    <script type="module" crossorigin src="./assets/index-DDWkXc5T.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3231,6 +3278,13 @@
       <div id="relic-hud">
         <img id="relic-hud-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
         <span id="relic-hud-pips"></span>
+        <!--
+          Fund-Puls (Playtest-Punkt P17): steigt bei jedem Reliquien-Zuwachs kurz auf. Bewusst ein
+          EIGENES Element neben den Pips statt der geteilten Ein-Slot-Ansage `#catch-announcement` —
+          dort wurde „Reliquie gefunden!" vom Truhen-Ausgang desselben Ticks überschrieben, bevor
+          ein Frame gezeichnet war.
+        -->
+        <span id="relic-hud-gain"></span>
       </div>
       <!--
         Händler-Kauf-Panel (Scheibe S3, s. CSS oben): drei FESTE Angebot-Buttons (Muster fester
