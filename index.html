@@ -2514,6 +2514,33 @@
         color: rgba(255, 255, 255, 0.4);
       }
 
+      /*
+        Nicht verdrahtete Regler (Felix-Auftrag 2026-07-27): Der Eintrag steht in der Registry, die
+        Simulation liest ihn aber nicht — sie nutzt an dieser Stelle weiterhin die feste Konstante.
+        Ein Dreh bewirkt NICHTS.
+
+        Bewusst ein eigener Zustand neben „gesperrt": gesperrt heißt „darf sich nicht ändern", ohne
+        Wirkung heißt „ändert sich, bewirkt aber nichts". Wer das nicht unterscheiden kann, dreht
+        weiter und wundert sich.
+
+        Die ganze Zeile wird gedimmt und schräggestellt vom Rest abgesetzt, damit man beim
+        Überfliegen sieht, welche Regler überhaupt etwas tun — der Hover-Titel nennt den Grund.
+      */
+      .tweak-row--unwired {
+        opacity: 0.45;
+      }
+
+      .tweak-row--unwired .tweak-row__label {
+        text-decoration: line-through;
+        text-decoration-thickness: 1px;
+      }
+
+      .tweak-row__scope-badge--unwired {
+        color: var(--hud-low-time-color, #f2c65a);
+        border-color: currentColor;
+        border-style: dashed;
+      }
+
       /* Constraint-Warnindikator (Konzept §6): dieselbe Warnfarbe wie die Low-Time-HUD-Warnung (`--hud-low-time-color`) — konsistente Warn-Sprache statt einer neuen, unbegründeten Farbe. */
       .tweak-row__warning {
         font-size: 0.7rem;
@@ -3224,6 +3251,18 @@
         display: block;
       }
 
+      /*
+       * Über einem Händler-Angebot (Punkt P31): Das Fenster ist regulär unten RECHTS verankert,
+       * das Händler-Panel unten MITTIG — auf 375 px überlappen beide, und das Fenster (z-index 21)
+       * läge ÜBER den Angeboten, die es erklären soll. Waagerecht mittig plus ein in JS
+       * gemessenes `bottom` (`positionWrDetailCardAbove()`) setzt es sauber DARÜBER.
+       */
+      #wr-detail-card.from-merchant {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+      }
+
       #wr-detail-card__kind {
         display: block;
         font-size: 0.65rem;
@@ -3326,11 +3365,21 @@
         cursor: pointer;
       }
 
+      /*
+         * `[hidden]` gegen den ID-Selektor darüber (Punkt P31): `#wr-detail-card__drop` setzt
+         * `display: flex`, und ein ID-Selektor schlägt die `[hidden] { display: none }`-Regel des
+         * Browser-Stylesheets. Ohne diese Zeile bliebe der Fallenlassen-Knopf trotz `hidden = true`
+         * sichtbar — und damit über einem Händler-Angebot sichtbar UND wirkungslos.
+         */
+      #wr-detail-card__drop[hidden] {
+        display: none;
+      }
+
       #wr-detail-card__drop:active {
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BIIh-AG6.js"></script>
+    <script type="module" crossorigin src="./assets/index-BpRy84wU.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3760,29 +3809,41 @@
           <b class="wr-button__time" aria-live="polite"></b>
         </div>
 
-        <div id="wr-detail-card">
-          <span id="wr-detail-card__kind">Zauber</span>
-          <!--
-            Icon-Träger-PAAR des Detailfensters (Felix-Auftrag 2026-07-25 „immer die Icons der
-            Aktion-Bar"): exakt dasselbe Muster wie ein Slot selbst — Emoji-`<span>` UND
-            Pixel-Icon-`<img>` liegen beide fest im DOM, `applySlotIcon()` (`scenes/MatchScene.ts`)
-            zeigt genau EINEN von beiden. Vorher stand hier nur das Emoji als Text-Präfix des
-            Namens, das Fenster zeigte also ein anderes Bild als der gehaltene Slot.
-          -->
-          <div id="wr-detail-card__head">
-            <span id="wr-detail-card__icon-emoji"></span>
-            <img id="wr-detail-card__icon-image" alt="" draggable="false" />
-            <span id="wr-detail-card__name"></span>
-          </div>
-          <!--
-            Kurzbeschreibung (Playtest-Punkt P23): steht ZWISCHEN Name und Meta-Zeile — zuerst was
-            es tut, dann sein Zustand. Vorher gab es hier gar nichts, und der Name war die
-            technische ID.
-          -->
-          <span id="wr-detail-card__desc"></span>
-          <span id="wr-detail-card__meta"></span>
-          <div id="wr-detail-card__drop">Fallenlassen</div>
+      </div>
+
+      <!--
+        Detailfenster einer Fähigkeit — liegt BEWUSST AUSSERHALB von `#wr-cluster` (Felix'
+        Playtest-Befund 2026-07-26, Punkt P22: „diese Long-Press-Funktionen sind auf Desktop nicht
+        umgesetzt, es ist nur im Mobile"). Der Cluster ist per `display: none` komplett aus dem
+        Desktop-Layout genommen; solange das Fenster darin lag, konnte es dort GAR NICHT erscheinen
+        — jede Desktop-Geste wäre stumm geblieben. Das Fenster ist `position: fixed`, der
+        DOM-Elternteil trägt also ohnehin nichts zur Platzierung bei.
+
+        Zwei Quellen speisen dasselbe Fenster: ein Aktions-Slot (Fallenlassen möglich) und ein
+        Händler-Angebot (Punkt P31, kein Fallenlassen). Verdrahtung `showWrDetailCard()`.
+      -->
+      <div id="wr-detail-card">
+        <span id="wr-detail-card__kind">Zauber</span>
+        <!--
+          Icon-Träger-PAAR des Detailfensters (Felix-Auftrag 2026-07-25 „immer die Icons der
+          Aktion-Bar"): exakt dasselbe Muster wie ein Slot selbst — Emoji-`<span>` UND
+          Pixel-Icon-`<img>` liegen beide fest im DOM, `applySlotIcon()` (`scenes/MatchScene.ts`)
+          zeigt genau EINEN von beiden. Vorher stand hier nur das Emoji als Text-Präfix des
+          Namens, das Fenster zeigte also ein anderes Bild als der gehaltene Slot.
+        -->
+        <div id="wr-detail-card__head">
+          <span id="wr-detail-card__icon-emoji"></span>
+          <img id="wr-detail-card__icon-image" alt="" draggable="false" />
+          <span id="wr-detail-card__name"></span>
         </div>
+        <!--
+          Kurzbeschreibung (Playtest-Punkt P23): steht ZWISCHEN Name und Meta-Zeile — zuerst was
+          es tut, dann sein Zustand. Vorher gab es hier gar nichts, und der Name war die
+          technische ID.
+        -->
+        <span id="wr-detail-card__desc"></span>
+        <span id="wr-detail-card__meta"></span>
+        <div id="wr-detail-card__drop">Fallenlassen</div>
       </div>
 
       <div id="tweak-console"></div>
