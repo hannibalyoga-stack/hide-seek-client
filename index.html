@@ -1746,6 +1746,40 @@
       }
 
       /*
+        Auto-Follow-Knopf (Playtest-Punkt P28): dieselbe rechte Spalte wie Interakt- und
+        Schrift-Knopf, eine Etage darüber — dieselbe `calc()`-Kette, nur um eine weitere
+        Knopfhöhe plus Abstand verlängert. Keine neue Spalte: Der Geist bedient alle drei
+        Handlungen mit demselben Daumen.
+      */
+      #auto-follow-button {
+        display: none;
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        /*
+          Die Kette ist die des Schrift-Knopfs, verlängert um eine Knopfhöhe plus ZWEI Abstände.
+          Der zweite Abstand ist kein Schönheitsmaß: Die Kette rechnet mit
+          `--move-mode-button-size` (70 px im Geist-Modus), das gezeichnete Element ist mit seinem
+          2-px-Rand auf beiden Seiten aber 74 px hoch. Ohne den Ausgleich blieben nachgemessen nur
+          4 px Luft zum Schrift-Knopf; mit ihm sind es 12 px.
+        */
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--item-bar-height) + var(--hud-gap) +
+            var(--interact-button-size) + var(--hud-gap) + var(--move-mode-button-size) + var(--hud-gap) +
+            var(--move-mode-button-size) + var(--hud-gap) + var(--hud-gap)
+        );
+      }
+
+      #auto-follow-button.visible {
+        display: flex;
+      }
+
+      /* Läuft das Folgen gerade, ist der Knopf deutlich als AKTIV zu erkennen — sonst wüsste
+         niemand, ob der Druck angekommen ist. */
+      #auto-follow-button.is-active {
+        border-color: var(--theme-color-brass);
+        background: rgba(120, 90, 30, 0.55);
+      }
+
+      /*
        * Cooldown-Feedback-Paket (Felix-Playtest-Nachbesserung 2026-07-23, „ich möchte, dass du
        * daraus ein Icon machst, wie die ganzen anderen, wo man auch den Cooldown dann sieht"):
        * Wipe + Icon-Dimmen + Countdown-Zahl + Bereit-Aufleuchten + Not-Ready-Schütteln — WÖRTLICH
@@ -3065,7 +3099,7 @@
       html.is-ghost #item-charges-hud,
       html.is-ghost #relic-hud,
       html.is-ghost #merchant-panel,
-      html.is-ghost .mobile-move-mode-button:not(#mobile-ghost-message-button):not(#wr-interact-button) {
+      html.is-ghost .mobile-move-mode-button:not(#mobile-ghost-message-button):not(#wr-interact-button):not(#auto-follow-button) {
         display: none !important;
       }
 
@@ -3075,8 +3109,26 @@
         moderat (1,25), damit die Touch-Ziele wachsen, ohne den Daumenbereich zu sprengen; die
         Mindestgröße von 48 px war ohnehin schon erfüllt.
       */
-      html.is-ghost #wr-interact-button,
-      html.is-ghost #mobile-ghost-message-button {
+      /*
+        Die runden Geist-Knöpfe wachsen über die VARIABLE, nicht über `transform: scale()`.
+        Nachgemessen bei 375 px: Mit dem Skalierungs-Behelf rechneten die `bottom:`-`calc()`-Ketten
+        weiter mit der UNSKALIERTEN Größe (3,5 rem = 56 px), während die Knöpfe 70 px groß
+        gezeichnet wurden — der dritte Knopf (Auto-Follow, Punkt P28) überlappte den Schrift-Knopf
+        dadurch um 11 px, und die rechte Kante lag bündig am Bildschirmrand statt im Sicherheits-
+        abstand. Über die Variable stimmen Layout und Darstellung wieder überein.
+
+        4,375 rem = 3,5 rem × 1,25 — derselbe Faktor wie vorher, nur an der richtigen Stelle.
+      */
+      html.is-ghost {
+        --move-mode-button-size: 4.375rem;
+      }
+
+      /*
+        Der Interakt-Knopf behält den Skalierungs-Behelf: Er hängt an einer eigenen Variablen
+        (`--wr-interact-diameter`, zusätzlich per Media-Query überschrieben) und steht als
+        unterster in der Spalte — unter ihm liegt nichts, was er verschieben könnte.
+      */
+      html.is-ghost #wr-interact-button {
         transform: scale(1.25);
       }
 
@@ -3085,7 +3137,7 @@
         oberen Mitte, wo im Lebenden-HUD nichts liegt.
       */
       html.is-ghost #game-container::after {
-        content: "Geist — du kannst Türen öffnen und Schriften hinterlassen";
+        content: "Geist — Türen öffnen, Schrift hinterlassen, folgen";
         position: fixed;
         top: calc(var(--hud-safe-top) + var(--hud-gap));
         left: 50%;
@@ -3379,7 +3431,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-P9YqLt8u.js"></script>
+    <script type="module" crossorigin src="./assets/index-CKi03r_X.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3514,6 +3566,24 @@
         </svg>
         <div class="mobile-move-mode-button__cooldown"></div>
         <b class="mobile-move-mode-button__time" aria-live="polite"></b>
+      </div>
+      <!--
+        Auto-Follow (Felix' Playtest-Punkt P28): der dritte und letzte Geist-Knopf — Türen öffnen,
+        Schrift hinterlassen, dem Fänger folgen. Liegt BEWUSST hier und nicht in `#wr-cluster`:
+        der Cluster ist auf dem Desktop per `display: none` komplett aus dem Layout genommen, ein
+        Knopf darin wäre dort unerreichbar (dieselbe Falle wie beim Detailfenster, Punkt P22).
+
+        Icon: eine Fußspur-Kette mit Pfeil — „hinterhergehen". Inline-SVG statt Asset, wie bei
+        allen anderen Knöpfen dieser Klasse; ein Pixel-Icon liefe über die Asset-Pipeline und
+        bräuchte Felix' Abnahme.
+      -->
+      <div id="auto-follow-button" class="mobile-move-mode-button" aria-label="Dem Fänger folgen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="6" cy="18" r="2" />
+          <circle cx="11" cy="12" r="2" />
+          <circle cx="16" cy="6" r="2" />
+          <path d="M19 3l2 2-2 2" />
+        </svg>
       </div>
       <!--
         Objektverwandlung — „Neu würfeln"-Button (Umsetzungsauftrag `2026-07-23-
