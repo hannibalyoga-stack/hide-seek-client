@@ -3013,6 +3013,70 @@
        * Reihen-Gap; Dash/Schleichen (kleinerer Ø) vertikal auf Interakt-MITTE zentriert
        * (bottom + halbe Ø-Differenz).
        */
+      /*
+        ===========================================================================================
+        GEIST-HUD-MODUS (Felix' Playtest-Befund 2026-07-26, Punkt P30)
+        ===========================================================================================
+        „Als Geist muss die UI noch mal ganz klar gemacht werden, sodass alles ausgeblendet wird
+        außer die Optionen, die du hast. Es muss klar sein, dass du einmal eine Tür öffnen kannst
+        und dass du die Schriften hinterlassen kannst — die müssen auch deutlich dominanter in der
+        UI präsenter sein."
+
+        Dasselbe „ein DOM, mehrere Kleider"-Muster wie `html.hud-layout-classic` darunter: EINE
+        Klasse am Wurzelelement, gesetzt aus `MatchScene.ts`s `updateGhostMessageButtonVisibility()`.
+
+        Vorher wurden die Geist-Knöpfe ADDITIV eingeblendet, während die Lebenden-Bedienelemente
+        stehen blieben und nur ein Nutzbarkeits-Gate bekamen — deaktiviert statt versteckt. Der
+        Geist sah das volle Lebenden-HUD plus zwei Knöpfe.
+
+        Was der Geist NICHT mehr braucht: Aktionsleiste (er hat kein Inventar), Bewegungsform-
+        Knöpfe (Dash/Schleichen wirken nicht), Reliquien-Beutel, Item-Ladungen, Minimap-Fußabdrücke.
+        Was BLEIBT und größer wird: Interakt-Knopf (Tür öffnen) und Schrift-Knopf.
+      */
+      html.is-ghost .wr-slot,
+      html.is-ghost #wr-slot-row,
+      html.is-ghost #item-charges-hud,
+      html.is-ghost #relic-hud,
+      html.is-ghost #merchant-panel,
+      html.is-ghost .mobile-move-mode-button:not(#mobile-ghost-message-button):not(#wr-interact-button) {
+        display: none !important;
+      }
+
+      /*
+        Die beiden verbleibenden Aktionen werden deutlich größer als im Lebenden-HUD — sie sind
+        jetzt das gesamte Handlungsangebot, nicht mehr zwei Knöpfe unter vielen. Faktor bewusst
+        moderat (1,25), damit die Touch-Ziele wachsen, ohne den Daumenbereich zu sprengen; die
+        Mindestgröße von 48 px war ohnehin schon erfüllt.
+      */
+      html.is-ghost #wr-interact-button,
+      html.is-ghost #mobile-ghost-message-button {
+        transform: scale(1.25);
+      }
+
+      /*
+        Ruhiger Hinweis, dass man Geist ist — ohne Dauer-Overlay über dem Spielfeld. Sitzt in der
+        oberen Mitte, wo im Lebenden-HUD nichts liegt.
+      */
+      html.is-ghost #game-container::after {
+        content: "Geist — du kannst Türen öffnen und Schriften hinterlassen";
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap));
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.25em 0.9em;
+        border-radius: 999px;
+        background: rgba(20, 20, 32, 0.62);
+        color: #cfd0e4;
+        font: var(--hud-font-size) / 1.4 monospace;
+        letter-spacing: 0.02em;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+        white-space: nowrap;
+        max-width: calc(100vw - 2 * var(--hud-gap));
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
       html.hud-layout-classic {
         --wrc-tile-size: var(--item-slot-size);
         --wrc-tile-gap: var(--item-slot-gap);
@@ -3249,7 +3313,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CmlGmXRm.js"></script>
+    <script type="module" crossorigin src="./assets/index-BzfbObNv.js"></script>
   </head>
   <body>
     <div id="game-container">
