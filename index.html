@@ -1304,9 +1304,16 @@
       /*
        * Blutrausch — rote Randvignette (Auftrag `2026-07-21-blutrausch.md`, N2: strikt
        * randbasiert, Bildschirm-MITTE bleibt frei; nur auf dem Fänger-Bildschirm sichtbar).
-       * Safe-area-bereinigte Fläche wie `#sound-compass`/`#reveal-markers` (Mobile-Regel 5) —
-       * die Vignette respektiert dadurch strukturell die Insets (Notch etc.), statt sie zu
-       * überdecken. `box-shadow: inset` erzeugt einen randbasierten Dunkel-/Rotschimmer OHNE
+       * **Immer randlos über den GANZEN Bildschirm** (Felix-Befund 2026-07-27: „auf Mobile geht
+       * der Gradient nicht bis ganz unten zum Screen") — bewusste Ausnahme von der
+       * Safe-Area-Regel (Mobile-Regel 5), die die Vignette vorher wie `#sound-compass`/
+       * `#reveal-markers` einrückte: `env(safe-area-inset-bottom)` (Home-Indikator) schob den
+       * unteren Vignettenrand sichtbar nach oben. Die Regel schützt BEDIENBARE bzw. LESBARE
+       * Elemente vor Notch/Indikator; diese Vignette ist reine, nicht interaktive Rand-Deko
+       * (`pointer-events: none`), die den Rahmen gerade komplett ausfüllen SOLL. Höhe wie
+       * `#game-container` (`100dvh`, `100vh` als Fallback für ältere Browser) statt `inset: 0`:
+       * so deckt sie exakt den sichtbaren Bereich ab, auch wenn die Mobile-Browserleiste ein-
+       * oder ausklappt. `box-shadow: inset` erzeugt einen randbasierten Dunkel-/Rotschimmer OHNE
        * Framebuffer-/Canvas-Trick (reiner CSS-Vignette-Kniff, klassisches Muster). Blur (weicher
        * Kern) UND Spread (satter Rand) sind Custom Properties `--chase-vignette-blur` /
        * `--chase-vignette-spread` (Einheit `vmin`, per `calc(... * 1vmin)` responsive): sie werden
@@ -1320,10 +1327,11 @@
        */
       #chase-vignette {
         position: fixed;
-        top: var(--hud-safe-top);
-        right: var(--hud-safe-right);
-        bottom: var(--hud-safe-bottom);
-        left: var(--hud-safe-left);
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
         pointer-events: none;
         opacity: 0;
         box-shadow: inset 0 0 calc(var(--chase-vignette-blur, 12) * 1vmin)
@@ -1777,6 +1785,57 @@
       #auto-follow-button.is-active {
         border-color: var(--theme-color-brass);
         background: rgba(120, 90, 30, 0.55);
+      }
+
+      /*
+       * Geist-Schwebe-Umschalter (Felix-Auftrag 2026-07-27): sitzt im rechten Daumen-Cluster,
+       * direkt LINKS neben dem großen `#wr-interact-button` und mit ihm auf einer Mittellinie —
+       * exakt die Formel und der Platz, an dem im Lebenden-HUD der Bewegungsmodus-Knopf
+       * (`#mobile-sneak-button`) liegt und der beim Geist frei ist (Schleichen ist ausgeblendet).
+       *
+       * BEWUSST NICHT auf der Dash-Position (`--wr-dash-right` = 12,987rem ≈ 208px von rechts):
+       * die läge bei 375px Breite bei x ≈ 107, also in der linken Bildhälfte — und die gehört seit
+       * dem Wild-Rift-Umbau KOMPLETT dem floating Joystick (Felix-Playtest-Befund „steht voll im
+       * Weg", siehe `#mobile-sneak-button`-Kommentar oben). Im Lebenden-HUD ist der Dash-Knopf
+       * dort Teil eines ganzen Slot-Clusters; beim Geist stünde er als EINZIGER Knopf mitten in der
+       * Joystick-Zone. Felix' „Ausgleich zum Dash-Knopf" ist damit funktional erfüllt (der eine
+       * Bewegungs-Knopf des Geistes), ohne die Daumen-Zonen-Regel zu brechen.
+       *
+       * Sichtbarkeit (`.visible`) steuert AUSSCHLIESSLICH `updateGhostGlideButtonState()` (pro
+       * Frame, NUR als Geist — Muster `#mobile-ghost-message-button` darüber).
+       */
+      #mobile-ghost-glide-button {
+        display: none;
+        right: calc(var(--hud-safe-right) + var(--wr-interact-right) + var(--wr-interact-diameter) + var(--hud-gap));
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--wr-interact-bottom) +
+            (var(--wr-interact-diameter) - var(--move-mode-button-size)) / 2
+        );
+      }
+
+      #mobile-ghost-glide-button.visible {
+        display: flex;
+      }
+
+      /*
+       * Aktiv-Zustand: der Knopf IST die Modus-Anzeige (ein Toggle ohne sichtbaren Zustand wäre
+       * blind bedienbar). Bewusst kräftig — Ring, Glühen und ein leicht vergrößerter Kreis — weil
+       * das Bewegungsgefühl sich schlagartig ändert und man wissen muss, in welchem Modus man ist.
+       * Gespeist aus dem SERVER-Feld `ghostGlideActive`, nicht aus einer lokalen Vermutung.
+       */
+      #mobile-ghost-glide-button.is-active {
+        border-color: #8fd6ff;
+        color: #d8f1ff;
+        background: rgba(30, 78, 110, 0.55);
+        box-shadow:
+          0 0 10px rgba(143, 214, 255, 0.55),
+          inset 0 0 8px rgba(143, 214, 255, 0.3);
+        transform: scale(1.06);
+      }
+
+      /* Zeigefinger-Feedback beim Antippen (Muster der übrigen HUD-Knöpfe). */
+      #mobile-ghost-glide-button:active {
+        filter: brightness(1.25);
       }
 
       /*
@@ -3093,13 +3152,44 @@
         Was der Geist NICHT mehr braucht: Aktionsleiste (er hat kein Inventar), Bewegungsform-
         Knöpfe (Dash/Schleichen wirken nicht), Reliquien-Beutel, Item-Ladungen, Minimap-Fußabdrücke.
         Was BLEIBT und größer wird: Interakt-Knopf (Tür öffnen) und Schrift-Knopf.
+
+        **Nachtrag Felix-Befund 2026-07-27 („Geister müssen nicht langsam laufen, und sie müssen
+        auch nicht dashen — es ist wirklich Dashen und Hiden raus"):** die Liste unten traf im
+        WILD-RIFT-Layout — also dem Mobile-Standard — genau die zwei Knöpfe NICHT, um die es geht.
+        Dash und Schleichen sitzen dort als `#wr-dash-button`/`#wr-sneak-button` im Daumen-Cluster
+        und tragen die Klasse `.wr-button`, nicht `.mobile-move-mode-button` (letztere gehört dem
+        klassischen/Desktop-Layout). Der Geist sah deshalb weiterhin einen Dash- und einen
+        Schleichen-Knopf, die für ihn beide wirkungslos sind. Beide sind jetzt ausdrücklich
+        mitgelistet — der Cluster zeigt dem Geist nur noch Interakt + Schrift.
+
+        „Hiden raus" braucht KEINE eigene Regel: der Versteck-Zustand des Interakt-Knopfs
+        (`hideEnter`/`hideExit`) ist für einen Geist gar nicht erreichbar — `resolveInteractionButton
+        State()` zweigt für ihn VOR dem Versteck-Zweig in `ghostDoorOpen` ab (`hud/
+        interactionButtonState.ts`), der Knopf zeigt also strukturell nur noch „Tür öffnen".
+
+        **Nachtrag Schwebe-Auftrag (Felix 2026-07-27):** als VIERTE Geist-Aktion kommt der
+        Schwebe-Umschalter dazu (`#mobile-ghost-glide-button`) — der Cluster zeigt dem Geist damit
+        Interakt, Schrift, Folgen und Schweben. Beide neuen Geist-Knöpfe müssen unten von der
+        Ausblendregel ausgenommen werden, sonst blendet die `.mobile-move-mode-button`-Regel sie
+        gleich wieder aus.
       */
       html.is-ghost .wr-slot,
       html.is-ghost #wr-slot-row,
+      html.is-ghost #wr-dash-button,
+      html.is-ghost #wr-sneak-button,
+      /*
+        Die KLASSISCHE Aktionsleiste (`#item-bar` mit `#item-slot-*`) blieb bis zum
+        Schwebe-Auftrag (2026-07-27) stehen — P30 hatte nur die Wild-Rift-Variante
+        (`.wr-slot`/`#wr-slot-row`) ausgeblendet. Im klassischen HUD-Layout sah ein Geist also
+        weiterhin Dash-, Slide- und Item-Slots, die er alle nicht nutzen kann; aufgefallen ist es
+        beim 375px-Check des Schwebe-Knopfs, der dort mit der Leiste überlappte. Deckt jetzt beide
+        Kleider ab — genau das, was P30 mit „Aktionsleiste, er hat kein Inventar" gemeint hat.
+      */
+      html.is-ghost #item-bar,
       html.is-ghost #item-charges-hud,
       html.is-ghost #relic-hud,
       html.is-ghost #merchant-panel,
-      html.is-ghost .mobile-move-mode-button:not(#mobile-ghost-message-button):not(#wr-interact-button):not(#auto-follow-button) {
+      html.is-ghost .mobile-move-mode-button:not(#mobile-ghost-message-button):not(#wr-interact-button):not(#auto-follow-button):not(#mobile-ghost-glide-button) {
         display: none !important;
       }
 
@@ -3431,7 +3521,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CKi03r_X.js"></script>
+    <script type="module" crossorigin src="./assets/index-Dp8w9Czv.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3583,6 +3673,25 @@
           <circle cx="11" cy="12" r="2" />
           <circle cx="16" cy="6" r="2" />
           <path d="M19 3l2 2-2 2" />
+        </svg>
+      </div>
+      <!--
+        Geist-Schwebe-Umschalter (Felix-Auftrag 2026-07-27, „ein Speed-Knopf als Ausgleich zum
+        Dash-Knopf"): NUR als Geist sichtbar (`.visible` via `updateGhostGlideButtonState()`),
+        sitzt an EXAKT der Position, an der im Lebenden-HUD der Dash-Knopf liegt — derselbe
+        Daumen, dieselbe Rolle. KEIN Cooldown-Wipe/-Countdown (Muster
+        `#mobile-ghost-message-button`), denn dies ist ein TOGGLE, kein Impuls: die Rückmeldung ist
+        der Ein-/Aus-Zustand selbst (`.is-active`), gespeist aus dem SERVER-Zustand
+        (`ghostGlideActive`), nicht aus einer lokalen Vermutung.
+
+        Icon: zwei nachlaufende Bögen (Fahrtwind/Sog) statt eines Blitzes — der Modus ist kein
+        Sprint, sondern Schweben mit Nachlauf.
+      -->
+      <div id="mobile-ghost-glide-button" class="mobile-move-mode-button" role="switch" aria-checked="false" aria-label="Schweben umschalten">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8h11a3 3 0 1 0-3-3" />
+          <path d="M3 13h14a3 3 0 1 1-3 3" />
+          <path d="M3 18h7" />
         </svg>
       </div>
       <!--
