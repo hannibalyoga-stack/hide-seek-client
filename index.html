@@ -1144,16 +1144,17 @@
         top: calc(var(--hud-safe-top) + var(--hud-gap) + 2em);
         left: calc(var(--hud-safe-left) + var(--hud-gap));
         /*
-         * Tap-Toggle (Felix-Auftrag 2026-07-17, Mobile-Layout-Umbau): das Panel ist seither
-         * SELBST ein Tap-/Klick-Ziel (ein Tap klappt die Karte auf den kleinen Karten-Knopf
-         * `#minimap-restore-button` zusammen, ein weiterer klappt sie wieder auf) — deshalb
-         * `pointer-events: auto` statt des früheren `none`. Dasselbe Pointer-only-Muster wie
-         * `.mobile-move-mode-button` (EIN Eingabepfad für Maus UND Touch, `touch-action: none`
-         * gegen Doppel-Tap-Zoom, `stopPropagation()` im Handler in `scenes/MatchScene.ts`s
-         * `setupMinimapDom()` — strukturell erreicht ein Panel-Tap den Whole-Canvas-Joystick
-         * ohnehin nie, das Panel ist DOM-Geschwister des Phaser-Canvas). Das aufgeklappte Panel
-         * (~150×110px, `MINIMAP_PANEL_MAX_*_PX`) und der zusammengeklappte Knopf (≥48px, s. u.)
-         * liegen beide über der Mobile-Tag-1-Mindestgröße (Regel 4).
+         * Das Panel ist SELBST ein Tap-/Klick-Ziel — deshalb `pointer-events: auto`. Seit Felix'
+         * Playtest-Punkt P34 („Vollbild ERSETZT das Ein-/Ausklappen", 2026-07-27) öffnet ein Tap
+         * die Vollbildkarte `#karte-vollbild`, statt das Panel zusammenzuklappen; den kleinen
+         * Wieder-Aufklapp-Knopf gibt es nicht mehr.
+         *
+         * Dasselbe Pointer-only-Muster wie `.mobile-move-mode-button` (EIN Eingabepfad für Maus
+         * UND Touch, `touch-action: none` gegen Doppel-Tap-Zoom, `stopPropagation()` im Handler
+         * in `scenes/MatchScene.ts`s `setupKarteVollbild()` — strukturell erreicht ein Panel-Tap
+         * den Whole-Canvas-Joystick ohnehin nie, das Panel ist DOM-Geschwister des
+         * Phaser-Canvas). Das Panel liegt mit ~150×110px über der Mobile-Tag-1-Mindestgröße
+         * (Regel 4).
          */
         pointer-events: auto;
         touch-action: none;
@@ -1165,41 +1166,6 @@
       #minimap-canvas {
         display: block;
         border-radius: 2px;
-      }
-
-      /*
-       * Zusammengeklappter Minimap-Zustand (`.minimap-panel--minimized`, geschaltet in
-       * `scenes/MatchScene.ts`s `setupMinimapDom()`-Tap-Handler): Canvas weg, stattdessen ein
-       * kleiner runder Karten-Knopf an derselben Stelle (Optik-Muster `#debug-toggle-button`,
-       * Größe ≥48px, Regel 4) — die Karte verschwindet nie „spurlos", der Weg zurück bleibt
-       * sichtbar an Ort und Stelle.
-       */
-      #minimap-restore-button {
-        display: none;
-        width: var(--debug-toggle-button-size);
-        height: var(--debug-toggle-button-size);
-        min-width: 48px;
-        min-height: 48px;
-        border-radius: 50%;
-        border: 2px solid var(--hud-text-color);
-        background: rgba(0, 0, 0, 0.35);
-        color: var(--hud-text-color);
-        align-items: center;
-        justify-content: center;
-      }
-
-      #minimap-restore-button svg {
-        width: 1.6rem;
-        height: 1.6rem;
-        display: block;
-      }
-
-      #minimap-panel.minimap-panel--minimized #minimap-canvas {
-        display: none;
-      }
-
-      #minimap-panel.minimap-panel--minimized #minimap-restore-button {
-        display: flex;
       }
 
       /*
@@ -2035,6 +2001,94 @@
        * Safe-Area-Insets (Regel 5) als Innenabstand, damit `#shrine-rune-hint` UND die Zeichen-
        * fläche nie unter eine Notch/Kamera-Aussparung rutschen.
        */
+      /*
+        Vollbildkarte (Felix' Playtest-Punkt P34: „Vollbild ERSETZT das Ein-/Ausklappen").
+        Aufbau 1:1 nach `#shrine-rune-overlay` unten — inklusive `pointer-events: none` im
+        geschlossenen Zustand: Ohne das fräße ein unsichtbares Vollflächen-Overlay den
+        Whole-Canvas-Joystick (Mobile-Tag-1-Regel 1).
+
+        `z-index: 999` — über dem gesamten HUD (1…21), aber bewusst UNTER der Modal-Ebene 1000
+        (Rune-Challenge, Geister-Picker, Tweak-Konsole). Die Karte ist HUD, kein Modal: Eine
+        laufende Challenge darf sie nie verdecken.
+
+        Das Element liegt als letztes Kind von `#game-container` — ausdrücklich NICHT in
+        `#wr-cluster` (der ist am Desktop `display: none`; genau diese stille Sperre hat P22 und
+        P30 je einmal live gekostet) und NICHT in `#minimap-panel` (dort erbte es dessen
+        `pointerdown` per Bubbling und schlösse sich beim Öffnen sofort wieder).
+      */
+      #karte-vollbild {
+        position: fixed;
+        inset: 0;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        box-sizing: border-box;
+        padding: calc(var(--hud-safe-top) + var(--hud-gap)) calc(var(--hud-safe-right) + var(--hud-gap))
+          calc(var(--hud-safe-bottom) + var(--hud-gap)) calc(var(--hud-safe-left) + var(--hud-gap));
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 999;
+        pointer-events: none;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      #karte-vollbild.visible {
+        display: flex;
+        pointer-events: auto;
+      }
+
+      /*
+        Messrahmen für die Zeichenfläche. `flex: 1 1 auto` UND `min-height: 0` sind beide nötig —
+        ohne sie misst `getBoundingClientRect()` in einem Flex-Kind die falsche Höhe (dieselbe
+        Falle, die `resizeShrineRuneCanvas()` in `scenes/MatchScene.ts` dokumentiert).
+      */
+      #karte-vollbild-flaeche {
+        flex: 1 1 auto;
+        min-height: 0;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      #karte-vollbild-canvas {
+        display: block;
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 2px;
+        touch-action: none;
+      }
+
+      /* Optik-Muster `#debug-toggle-button`; ≥48px (Regel 4) — erbt die Zusicherung des
+         entfallenen `#minimap-restore-button`. Braucht KEINEN eigenen Handler: Es ist Kind des
+         Overlays und läuft über dessen `pointerdown`. */
+      #karte-vollbild-schliessen {
+        position: absolute;
+        /*
+          Eine Etage UNTER dem Debug-Knopf. Nachgemessen bei 375 px: Auf gleicher Höhe deckten
+          sich beide exakt (top 8, left 311, 56x56) — das ✕ lag als reines Bild auf dem DBG-Knopf.
+          Funktional war das folgenlos (ein Tap irgendwo auf dem Overlay schließt ohnehin), es sah
+          nur nach Fehler aus.
+        */
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap));
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        width: var(--debug-toggle-button-size);
+        height: var(--debug-toggle-button-size);
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--hud-text-color);
+        background: rgba(0, 0, 0, 0.45);
+        color: var(--hud-text-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font: 1.2rem / 1 sans-serif;
+      }
+
       #shrine-rune-overlay {
         position: fixed;
         inset: 0;
@@ -3559,19 +3613,12 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-Dp8w9Czv.js"></script>
+    <script type="module" crossorigin src="./assets/index-DKarDd1c.js"></script>
   </head>
   <body>
     <div id="game-container">
       <div id="minimap-panel">
         <canvas id="minimap-canvas"></canvas>
-        <!-- Zusammengeklappter Zustand (Tap-Toggle, s. CSS oben): Karten-Symbol als Wieder-Aufklapp-Knopf. -->
-        <div id="minimap-restore-button">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M9 4L3.5 6v14L9 18l6 2 5.5-2V4L15 6 9 4z" />
-            <path d="M9 4v14M15 6v14" />
-          </svg>
-        </div>
       </div>
       <div id="debug-overlay"></div>
       <div id="players-count">Players: 0</div>
@@ -4090,6 +4137,22 @@
       <div id="shrine-rune-overlay" aria-hidden="true">
         <div id="shrine-rune-hint">Draw the rune</div>
         <canvas id="shrine-rune-canvas"></canvas>
+      </div>
+
+      <!--
+        Vollbildkarte (Felix' Playtest-Punkt P34). Bewusst hier als letztes Kind von
+        `#game-container` und NICHT in `#wr-cluster` — der ist am Desktop `display: none`, und
+        genau diese stille Sperre hat das Detailfenster (P22) und den Geist-Interakt-Knopf (P30)
+        je einmal live gekostet.
+
+        Der Schließen-Knopf trägt KEINEN eigenen Handler: Ein `pointerdown` irgendwo auf dem
+        Overlay schließt, und er ist ein Kind davon. Ein Ziel, ein Weg.
+      -->
+      <div id="karte-vollbild" aria-hidden="true">
+        <div id="karte-vollbild-flaeche">
+          <canvas id="karte-vollbild-canvas"></canvas>
+        </div>
+        <div id="karte-vollbild-schliessen" aria-hidden="true">✕</div>
       </div>
     </div>
   </body>
