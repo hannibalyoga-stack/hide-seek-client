@@ -3173,6 +3173,19 @@
         Ausblendregel ausgenommen werden, sonst blendet die `.mobile-move-mode-button`-Regel sie
         gleich wieder aus.
       */
+      /*
+        Nachtrag 2026-07-27 zu P30 — der DESKTOP-Pfad. Nachgemessen am laufenden Bild: Im
+        Geist-Modus war dort KEIN Interaktions-Knopf mehr sichtbar. Beide Kandidaten fielen weg —
+        `#mobile-interact-button` unter die Ausblendregel unten, und der davon ausgenommene
+        `#wr-interact-button` liegt in `#wr-cluster`, der am Desktop ohnehin `display: none` ist.
+        Die Ausnahme dort lief also ins Leere, genau wie beim Detailfenster in Punkt P22.
+
+        Türen öffnen ging trotzdem weiter — die Taste E ist nicht gegated —, aber ohne jeden
+        sichtbaren Hinweis darauf. Deshalb ist `#mobile-interact-button` jetzt ebenfalls
+        ausgenommen: Auf TOUCH bleibt er unberührt (dort blendet ihn `html.touch-ui` aus, s. o.,
+        und der Cluster-Knopf übernimmt), am DESKTOP ist er der einzige Weg zu einem sichtbaren
+        Knopf.
+      */
       html.is-ghost .wr-slot,
       html.is-ghost #wr-slot-row,
       html.is-ghost #wr-dash-button,
@@ -3189,7 +3202,7 @@
       html.is-ghost #item-charges-hud,
       html.is-ghost #relic-hud,
       html.is-ghost #merchant-panel,
-      html.is-ghost .mobile-move-mode-button:not(#mobile-ghost-message-button):not(#wr-interact-button):not(#auto-follow-button):not(#mobile-ghost-glide-button) {
+      html.is-ghost .mobile-move-mode-button:not(#mobile-ghost-message-button):not(#wr-interact-button):not(#auto-follow-button):not(#mobile-ghost-glide-button):not(#mobile-interact-button) {
         display: none !important;
       }
 
@@ -3211,6 +3224,11 @@
       */
       html.is-ghost {
         --move-mode-button-size: 4.375rem;
+        /*
+          Vergrößerungsfaktor des Interakt-Knopfs im Geist-Modus. EINE Quelle für zwei Stellen:
+          den Transform selbst und den Abstand, den der Schwebe-Knopf davon halten muss.
+        */
+        --ghost-interact-scale: 1.25;
       }
 
       /*
@@ -3219,7 +3237,27 @@
         unterster in der Spalte — unter ihm liegt nichts, was er verschieben könnte.
       */
       html.is-ghost #wr-interact-button {
-        transform: scale(1.25);
+        transform: scale(var(--ghost-interact-scale));
+      }
+
+      /*
+        Nachtrag 2026-07-27: Der Schwebe-Knopf berechnet seinen Abstand aus
+        `--wr-interact-diameter` — also aus der UNSKALIERTEN Größe. Der Interakt-Knopf daneben wird
+        im Geist-Modus aber per `transform` vergrößert, und ein Transform verschiebt nur das BILD,
+        nicht die Layout-Rechnung. Nachgemessen bei 375 px: Die beiden Knöpfe ÜBERLAPPTEN.
+
+        Der skalierte Knopf wächst um seinen Mittelpunkt, seine linke Kante rückt also um
+        `Durchmesser × (Faktor − 1) / 2` nach links. Genau das wird hier ausgeglichen — über
+        DENSELBEN Faktor, damit die beiden Stellen nicht auseinanderlaufen können.
+
+        (Dieselbe Falle wie bei den drei gestapelten Geist-Knöpfen weiter oben, die deshalb über
+        `--move-mode-button-size` wachsen statt über einen Transform.)
+      */
+      html.is-ghost #mobile-ghost-glide-button {
+        right: calc(
+          var(--hud-safe-right) + var(--wr-interact-right) + var(--wr-interact-diameter) +
+            var(--hud-gap) + var(--wr-interact-diameter) * (var(--ghost-interact-scale) - 1) / 2
+        );
       }
 
       /*
@@ -3227,7 +3265,7 @@
         oberen Mitte, wo im Lebenden-HUD nichts liegt.
       */
       html.is-ghost #game-container::after {
-        content: "Geist — Türen öffnen, Schrift hinterlassen, folgen";
+        content: "Geist — Tür öffnen, schreiben, folgen, schweben";
         position: fixed;
         top: calc(var(--hud-safe-top) + var(--hud-gap));
         left: 50%;
