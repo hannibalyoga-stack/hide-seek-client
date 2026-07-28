@@ -623,6 +623,59 @@
       }
 
       /*
+       * Bot-Panel-Öffner (Auftrag „serverseitige Bot-KI", Client-Bedienung): Form, Größe und
+       * Safe-Area-Verankerung 1:1 nach `#dev-reset-button` oben — aber BEWUSST OHNE dessen zwei
+       * Sonderregeln:
+       *
+       * 1. KEIN Dev-Gate: Bots sind ein Spiel-Feature („allein spielen können"), kein
+       *    Entwickler-Werkzeug — der Server-Handler (`MatchRoom.ts`s `handleAddBot()`) ist aus
+       *    demselben Grund nicht dev-gegatet. Der Knopf ist deshalb von Anfang an sichtbar
+       *    (`display: flex` direkt, keine `.visible`-Umschaltung).
+       * 2. KEIN `html.touch-ui`-Ausblend-Eintrag (Liste weiter unten, ~`html.touch-ui
+       *    #dev-reset-button`): der Knopf MUSS auf dem Handy sichtbar bleiben. Der Dev-Reset ist
+       *    dort ausgeblendet, weil ein Fehl-Tap die laufende Runde neu startet; ein Fehl-Tap hier
+       *    öffnet nur ein Panel, das ein zweiter Tap wieder schließt.
+       *
+       * Position: dieselbe linke Spalte wie der Dev-Reset, eine Etage darüber (Formel = dessen
+       * `bottom` + eine Knopfhöhe + ein Abstand, Muster `#netlog-export-button` über
+       * `#debug-toggle-button`). Die Etage ist bewusst FEST und nicht davon abhängig, ob der
+       * Dev-Reset gerade sichtbar ist (Dev-Gate/Touch) — sonst läge derselbe Knopf je nach
+       * Umgebung an zwei verschiedenen Stellen, und Muskelgedächtnis ist genau das, was einen
+       * Fehl-Tap verhindert. Linke untere Ecke = der freie Gegenpol zum rechten Daumen-Cluster
+       * (ausführliche Begründung an `#dev-reset-button`).
+       */
+      #bot-panel-button {
+        position: fixed;
+        bottom: calc(
+          var(--hud-safe-bottom) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap)
+        );
+        left: calc(var(--hud-safe-left) + var(--hud-gap));
+        width: var(--debug-toggle-button-size);
+        height: var(--debug-toggle-button-size);
+        min-width: 48px;
+        min-height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--hud-text-color);
+        background: rgba(0, 0, 0, 0.35);
+        color: var(--hud-text-color);
+        font: 1.3rem / 1.2 sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      /* Offenes Panel = aktiver Knopf (Muster `#debug-toggle-button.active`): ein Umschalter ohne
+         sichtbaren Zustand wäre blind bedienbar. */
+      #bot-panel-button.is-active {
+        background: rgba(255, 255, 255, 0.35);
+      }
+
+      /*
        * Statuszeile (Übergabe-Auftrag T4c, Felix-Default E-T4c-4): eigenständiges,
        * nicht-interaktives Element für den dreiwertigen Verbindungsstatus ("verbunden" /
        * "reconnecte…" / "Verbindung verloren") — bewusst getrennt vom technischen
@@ -1980,6 +2033,162 @@
       }
 
       #ghost-message-picker-cancel:active {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+      /*
+       * Bot-Panel (Auftrag „serverseitige Bot-KI", Client-Bedienung): zentriertes, modales
+       * DOM-Overlay — Aufbau 1:1 nach `#ghost-message-picker` oben (Default `display: none` +
+       * `pointer-events: none`, ERST `.open` schaltet sichtbar UND interaktiv; ein geschlossenes
+       * Overlay nimmt strukturell KEINEN Klickbereich ein, Mobile-Tag-1-Regel 1). Breite
+       * `min(92vw, 22rem)` und die beiden `max-*`-Deckel aus Safe-Area-Insets sind derselbe
+       * relative Rahmen (Regeln 3/5) — kein fester Pixelwert, läuft bei 375px nicht über den Rand.
+       * `z-index: 1000` = dieselbe Modal-Ebene wie Geister-Picker/Tweak-Konsole/Rune-Overlay
+       * (gleichrangig, kein struktureller Konflikt: das Panel ist ein bewusst geöffnetes Menü,
+       * kein reaktives Overlay).
+       *
+       * Sprache: DEUTSCH, anders als der Spieltext (Kanon §7, englisch). Das Panel ist ein
+       * Steuer-/Testwerkzeug für Felix — dieselbe Einordnung wie die Tweak-Konsole, deren
+       * Beschriftungen ebenfalls deutsch sind.
+       *
+       * Aufbau/Verdrahtung (`setupBotPanel()`/`toggleBotPanel()`/`updateBotPanelCount()`) in
+       * `scenes/MatchScene.ts` — dieser Block ist NUR Layout.
+       */
+      #bot-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        flex-direction: column;
+        gap: 0.5rem;
+        width: min(92vw, 22rem);
+        max-width: calc(100vw - var(--hud-safe-left) - var(--hud-safe-right) - 2 * var(--hud-gap));
+        max-height: calc(100vh - var(--hud-safe-top) - var(--hud-safe-bottom) - 2 * var(--hud-gap));
+        box-sizing: border-box;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background: rgba(10, 10, 16, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 sans-serif;
+        z-index: 1000;
+        pointer-events: none;
+      }
+
+      #bot-panel.open {
+        display: flex;
+        pointer-events: auto;
+      }
+
+      #bot-panel__title {
+        flex-shrink: 0;
+        margin: 0;
+        font: 1rem / 1.2 var(--theme-font-title);
+        color: var(--theme-color-text-title);
+        text-align: center;
+      }
+
+      /* Live-Stand aus `MatchRoomState.botCount` (server-autoritativ, s. `updateBotPanelCount()`).
+         `flex-shrink: 0` wie der Titel: die eine Zahl, wegen der das Panel offen ist, darf nie
+         weggeschrumpft werden. */
+      #bot-panel-count {
+        flex-shrink: 0;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+        opacity: 0.85;
+      }
+
+      /*
+       * Scrollbarer Kachel-Bereich (Stufen-Wahl + vier Aktionen) — `flex: 1 1 auto` +
+       * `min-height: 0` wie `#ghost-message-picker-body`: ohne `min-height: 0` schrumpft ein
+       * Flex-Kind NIE unter seine Inhaltshöhe, `overflow-y: auto` griffe nie. Bei 375×667 passt
+       * alles ohne Scrollen; im Querformat (z. B. 375px Höhe) rettet genau dieser Deckel die
+       * Bedienbarkeit.
+       *
+       * `touch-action: pan-y` statt des HUD-Standards `none` — exakt der Felix-Playtest-Fix vom
+       * Geister-Picker (2026-07-25 „lässt sich auf mobil nicht scrollen"): die Kacheln bedecken
+       * den Body lückenlos, jede Wischgeste beginnt also auf einer Kachel; `none` verwirft sie,
+       * bevor der Scroll-Container sie sieht. `overscroll-behavior: contain` hält die Geste am
+       * Listenende im Panel.
+       */
+      #bot-panel-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        overflow-y: auto;
+        overflow-x: hidden;
+        touch-action: pan-y;
+        overscroll-behavior: contain;
+      }
+
+      /* Die drei Stufen nebeneinander: `flex: 1 1 0` verteilt die Breite gleichmäßig, statt sie
+         in festen Pixeln zu setzen (Regel 3). Bei 375px bleiben je ~100px — weit über der
+         48-px-Mindestbreite (Regel 4), die Höhe deckt `.bot-panel__tile`. */
+      #bot-panel-stufen {
+        display: flex;
+        gap: 0.4rem;
+      }
+
+      #bot-panel-stufen > .bot-panel__tile {
+        flex: 1 1 0;
+        justify-content: center;
+      }
+
+      /* Eine Kachel (Stufe ODER Aktion) — Touch-Target ≥ 48 px (Regel 4), Pointer-only verdrahtet
+         (kein zweiter Eingabepfad, Regel 1). `touch-action: pan-y` wie beim Geister-Picker: die
+         Kachel darf die Scroll-Geste ihres Containers nicht schlucken. */
+      .bot-panel__tile {
+        min-height: 48px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.4rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.06);
+        pointer-events: auto;
+        touch-action: pan-y;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      .bot-panel__tile:active {
+        background: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Gewählte Stufe — Messing-Akzent wie `#auto-follow-button.is-active`: die Auswahl bleibt
+         über das Schließen hinaus bestehen, also muss sie beim nächsten Öffnen sofort ablesbar
+         sein. */
+      .bot-panel__tile.is-active {
+        border-color: var(--theme-color-brass);
+        background: rgba(120, 90, 30, 0.55);
+      }
+
+      /* Schließen-Kachel — Muster `#ghost-message-picker-cancel`: außerhalb des scrollbaren Bodys,
+         `flex-shrink: 0`, damit sie IMMER voll bedienbar bleibt (≥ 48 px), auch wenn der Body oben
+         knapp wird. `touch-action: none`, weil hier nichts zu scrollen ist. */
+      #bot-panel-close {
+        flex-shrink: 0;
+        min-height: 48px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0.25rem;
+        border-radius: 0.4rem;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: rgba(255, 255, 255, 0.1);
+        font-weight: bold;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      #bot-panel-close:active {
         background: rgba(255, 255, 255, 0.3);
       }
 
@@ -3613,7 +3822,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CqR8GU5g.js"></script>
+    <script type="module" crossorigin src="./assets/index-BxV8T4EJ.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -3625,6 +3834,14 @@
       <div id="debug-toggle-button">DBG</div>
       <div id="netlog-export-button">LOG</div>
       <div id="dev-reset-button" title="Dev: Raum leeren &amp; neu starten">⟳</div>
+      <!--
+        Bot-Panel-Öffner (Auftrag „serverseitige Bot-KI", Client-Bedienung): liegt als direktes
+        Kind von `#game-container` — NICHT in `#wr-cluster` (der ist am Desktop `display: none`;
+        genau diese stille Sperre hat das Detailfenster (P22) und den Geist-Interakt-Knopf (P30) je
+        einmal live gekostet). Anders als der Dev-Reset-Knopf direkt darüber ist er auf JEDEM Gerät
+        sichtbar (Begründung an `#bot-panel-button` im Stylesheet).
+      -->
+      <div id="bot-panel-button" role="button" aria-label="Bots verwalten" title="Bots hinzufügen/entfernen">🤖</div>
       <div id="connection-status"></div>
       <div id="catch-announcement"></div>
       <div id="self-caught-screen"></div>
@@ -4124,6 +4341,38 @@
         <div id="ghost-message-picker__title">Leave a message</div>
         <div id="ghost-message-picker-body"></div>
         <div id="ghost-message-picker-cancel">Cancel</div>
+      </div>
+
+      <!--
+        Bot-Panel (Auftrag „serverseitige Bot-KI", Client-Bedienung): Default versteckt
+        (`#bot-panel` ohne `.open`), Öffnen/Schließen ausschließlich über `scenes/MatchScene.ts`s
+        `setupBotPanel()`/`toggleBotPanel()`. Die Kacheln stehen FEST im Markup (kein dynamischer
+        Aufbau wie beim Geister-Picker: es sind sieben unveränderliche Einträge, kein
+        Katalog/Wire-Vertrag) — `MatchScene.ts` verdrahtet sie über ihre IDs.
+
+        Jede Aktion schickt genau EINE reliable Nachricht an den Server (`addBot`/`removeBot`) und
+        nimmt NICHTS lokal vorweg: die Zahl unten kommt aus `MatchRoomState.botCount`, also aus dem
+        replizierten Zustand (CLAUDE.md Regel 2 — der Server ist die einzige Wahrheit).
+
+        Die Stufen-Kacheln sind `role="radio"` in einem `role="radiogroup"`: genau eine ist gewählt,
+        die Wahl allein löst nichts aus — sie geht erst als `stufe`-Feld mit dem nächsten
+        „+ …-Bot" über die Leitung.
+      -->
+      <div id="bot-panel">
+        <div id="bot-panel__title">Bots</div>
+        <div id="bot-panel-count">Bots im Spiel: 0</div>
+        <div id="bot-panel-body">
+          <div id="bot-panel-stufen" role="radiogroup" aria-label="Schwierigkeit">
+            <div id="bot-panel-stufe-leicht" class="bot-panel__tile" role="radio" aria-checked="false">leicht</div>
+            <div id="bot-panel-stufe-normal" class="bot-panel__tile is-active" role="radio" aria-checked="true">normal</div>
+            <div id="bot-panel-stufe-schwer" class="bot-panel__tile" role="radio" aria-checked="false">schwer</div>
+          </div>
+          <div id="bot-panel-add-hider" class="bot-panel__tile" role="button">+ Verstecker-Bot</div>
+          <div id="bot-panel-add-catcher" class="bot-panel__tile" role="button">+ Fänger-Bot</div>
+          <div id="bot-panel-remove-last" class="bot-panel__tile" role="button">Letzten entfernen</div>
+          <div id="bot-panel-remove-all" class="bot-panel__tile" role="button">Alle entfernen</div>
+        </div>
+        <div id="bot-panel-close" role="button">Schließen</div>
       </div>
 
       <!--
