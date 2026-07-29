@@ -219,3 +219,17 @@ ein echtes Eule-Sprite-Sheet (Muster `characters/katze-mvp/walk_sheet.png` — i
 (`apps/client/src/characters/spriteKeys.ts`s `EULE_TEXTURE_KEY`/`euleSpriteKey()`,
 `scenes/MatchScene.ts`s `updateCharacterFacing()`) ist bereits vollständig verdrahtet und braucht
 beim Asset-Tausch selbst keine weitere Änderung.
+
+## Audio: Versteck-Herzschlag, ersetzt geschlechtsabhängiges Atemgeräusch (Felix-Auftrag 2026-07-22, portiert 2026-07-29)
+
+- `audio/ambience/versteck-herzschlag.m4a` — Quelle `assets-src/audio/versteck-herzschlag/versteck-herzschlag.mp3` (ElevenLabs, Original-Download `GOREFlsh-heart_beat_cinematic-Elevenlabs.mp3`), ~9-s-Herzschlag-Loop. Ersetzt das bisherige geschlechtsabhängige Atemgeräusch (`audio/ambience/atem-versteckt-{weiblich,maennlich}.m4a`) — Felix-Rückbau: KEINE Differenzierung mehr, EIN Sound für jede Figur, solange die eigene Figur versteckt ist. Nicht-positional Self-only-Loop (Muster `atem-versteckt-*`), daher Mono-AAC-Derivat (`afconvert -f m4af -d aac -b 96000 -c 1 <master>`), ~112 KB.
+
+**Freigabe Einsatz im Spiel: Felix-Auftrag 2026-07-22** („wenn man sich versteckt, diesen Sound des Herzschlags abspielen, keine Differenzierung, Dauerloop"), bestätigt als Entscheid F am 2026-07-26 („Zurück"). Status in `assets-src` bleibt `vorschlag` bis zur Live-Hörprobe/Endabnahme — die Freigabe gilt für den Einsatz im Client, nicht als Endabnahme des Audio-Assets.
+
+**Zur Derivat-Prüfsumme:** Das Derivat wurde am 2026-07-29 aus demselben Master mit demselben Rezept NEU abgeleitet (das Derivat vom 2026-07-22 ging beim Baum-Sync verloren, siehe P42). Der Master-sha256 ist unverändert `c37bbb…`; die AUDIO-Nutzdaten sind byte-identisch zur Ableitung vom 2026-07-22, es unterscheiden sich ausschließlich 18 Bytes des MP4-Container-Zeitstempels (`mvhd`) — daher der abweichende Derivat-sha256 gegenüber dem damaligen `fd67fbed…`. `afconvert` ist nicht byte-reproduzierbar; die Provenienzkette Master → Rezept → Derivat ist ununterbrochen.
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `audio/ambience/versteck-herzschlag.m4a` | `audio.versteck-herzschlag` | `c37bbb380e759f13ad3fc9ec7da1412808430a3031a13c42367b8c49dafaaa91` | `7abbc49d096f24e8fd72ff1701d8ea84e156f27f061a6fb05126bf1ecf7c0d98` | vorschlag |
+
+**Verwaiste Alt-Derivate:** `audio/ambience/atem-versteckt-{weiblich,maennlich}.m4a` werden seit der P42-Portierung (2026-07-29) von KEINEM Code-Pfad mehr geladen, liegen aber weiter im Baum. Die Master unter `assets-src/audio/atem-versteckt-*` bleiben laut Asset-Grundgesetz ohnehin erhalten; ob die Derivate gelöscht werden, entscheidet Felix (offener Punkt in `vault/30-Systeme/versteck-herzschlag.md`).
