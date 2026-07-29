@@ -1542,7 +1542,12 @@
         position: absolute;
         inset: var(--item-slot-inner-inset);
         border-radius: calc(var(--item-slot-radius) - var(--item-slot-inner-inset));
-        background: var(--item-slot-panel-bg);
+        /* Raritäts-Innenverlauf ÜBER dem Panel-Grund (Konzept §7) — bei fehlender Stufe ist
+         * `--slot-rarity-wash` transparent und der Slot sieht aus wie zuvor. Die Mitte (bis 26 %)
+         * bleibt frei, damit das Icon lesbar bleibt. */
+        background:
+          radial-gradient(circle at 50% 50%, rgba(18, 20, 28, 0) 26%, var(--slot-rarity-wash) 100%),
+          var(--item-slot-panel-bg);
         box-shadow: inset 0 0 0 2px var(--slot-accent);
       }
 
@@ -1590,6 +1595,69 @@
         background-repeat: no-repeat;
         z-index: 3;
         pointer-events: none;
+      }
+
+      /*
+       * Raritätsstufen am Slot (Konzept `vault/40-Backlog/raritaetsstufen-items-zauber.md` §7,
+       * Felix-Entscheide 2026-07-29) — ZWEI Träger, beide bewusst gewählt:
+       *
+       * 1. Die vier EckNIETEN des Steinrahmens, als Overlay-Derivat je Stufe über dem Rahmen.
+       * 2. Ein Innenverlauf am Panel, der von der Kante nach innen ausläuft und die Mitte frei
+       *    lässt, damit das Pixel-Icon lesbar bleibt.
+       *
+       * NICHT der Akzentrand: am Asset ausgemessen deckt `slot-item-frame.png` von 1,3 px bis
+       * 8,4 px (auf den 54-px-Slot umgerechnet), der 2-px-Rand des Panels sitzt bei 5 bis 7 px —
+       * er liegt vollständig unter dem Stein und ist in der Item-Bar unsichtbar. Das gilt
+       * rückwirkend auch für die Zauber-Art-Farben, die er heute tragen soll.
+       *
+       * Common bekommt WEDER Nieten-Overlay NOCH Tönung: die Nieten behalten ihr Messing, die
+       * Abwesenheit von Farbe IST die Common-Kennzeichnung (Felix-Vorgabe 2026-07-18). Keine
+       * Stufen-Pips (Felix-Entscheid 2026-07-29: „nur die Farbe").
+       *
+       * Die Slot-AUSSENMASSE ändern sich nicht — das 48-px-Touch-Target bleibt unangetastet.
+       */
+      .item-slot__studs {
+        position: absolute;
+        inset: 0;
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        /* Über dem Steinrahmen (z-index 3), damit die Nieten ihn überschreiben. */
+        z-index: 4;
+        pointer-events: none;
+      }
+
+      .item-slot--rarity-selten .item-slot__studs {
+        background-image: url("assets/ui/slot-studs-selten.png");
+      }
+      .item-slot--rarity-rar .item-slot__studs {
+        background-image: url("assets/ui/slot-studs-rar.png");
+      }
+      .item-slot--rarity-episch .item-slot__studs {
+        background-image: url("assets/ui/slot-studs-episch.png");
+      }
+      .item-slot--rarity-legendaer .item-slot__studs {
+        background-image: url("assets/ui/slot-studs-legendaer.png");
+      }
+
+      /*
+       * Innenverlauf: `--slot-rarity-wash` trägt die Raritätsfarbe mit ihrem Alpha (0,30,
+       * Felix-Wahl aus 0,18 / 0,30 / 0,45). Ohne gesetzte Stufe ist die Variable transparent —
+       * der Verlauf ist dann wirkungslos und der Slot sieht exakt aus wie bisher.
+       */
+      .item-slot {
+        --slot-rarity-wash: transparent;
+      }
+      .item-slot--rarity-selten {
+        --slot-rarity-wash: rgba(30, 255, 0, 0.3);
+      }
+      .item-slot--rarity-rar {
+        --slot-rarity-wash: rgba(0, 112, 221, 0.3);
+      }
+      .item-slot--rarity-episch {
+        --slot-rarity-wash: rgba(163, 53, 238, 0.3);
+      }
+      .item-slot--rarity-legendaer {
+        --slot-rarity-wash: rgba(255, 128, 0, 0.3);
       }
 
       /* Zustandsfarben (Akzentrand + Icon). Leer = grau (Default oben), Dash = blau, Zauber = Violett. */
@@ -3814,7 +3882,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CtywkkNZ.js"></script>
+    <script type="module" crossorigin src="./assets/index-Df9HgXjz.js"></script>
   </head>
   <body>
     <div id="game-container">
