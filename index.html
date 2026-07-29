@@ -213,9 +213,6 @@
         --item-slot-panel-bg: rgba(18, 20, 28, 0.72);
         --item-slot-accent-empty: #555a66;
         --item-slot-accent-dash: #8fd0ff;
-        /* Slide (Auftrag „Slide"): eigener Akzent (mint-türkis, „gleitend/flüssig") — klar vom
-           Dash-Blau unterscheidbar, damit der zweite Bewegungs-Slot auf einen Blick erkennbar ist. */
-        --item-slot-accent-slide: #7fe6c8;
         --item-slot-accent-spell: var(--hud-endgame-color);
         /*
          * Item-Slot-Gruppe (Umsetzungsauftrag „Truhen-Öffnen-Sound + 3 Item-Slots + Tempo-Schub
@@ -1595,7 +1592,7 @@
         pointer-events: none;
       }
 
-      /* Zustandsfarben (Akzentrand + Icon). Leer = grau (Default oben), Dash = blau, Slide = mint-türkis, Zauber = Violett. */
+      /* Zustandsfarben (Akzentrand + Icon). Leer = grau (Default oben), Dash = blau, Zauber = Violett. */
       .item-slot--dash {
         --slot-accent: var(--item-slot-accent-dash);
       }
@@ -1612,11 +1609,6 @@
       }
       .item-slot--dash.is-spider-descend .item-slot__icon svg {
         transform: rotate(90deg);
-      }
-      /* Slide (Auftrag „Slide"): Muster `.item-slot--dash` — eigener Akzent, gleiche Slot-Größe (kein
-         `--item-slot-size-spell`-Shrink, der Slide-Slot ist ein Bewegungs-Slot wie der Dash). */
-      .item-slot--slide {
-        --slot-accent: var(--item-slot-accent-slide);
       }
       .item-slot--spell {
         --slot-accent: var(--item-slot-accent-spell);
@@ -3457,7 +3449,7 @@
         Die KLASSISCHE Aktionsleiste (`#item-bar` mit `#item-slot-*`) blieb bis zum
         Schwebe-Auftrag (2026-07-27) stehen — P30 hatte nur die Wild-Rift-Variante
         (`.wr-slot`/`#wr-slot-row`) ausgeblendet. Im klassischen HUD-Layout sah ein Geist also
-        weiterhin Dash-, Slide- und Item-Slots, die er alle nicht nutzen kann; aufgefallen ist es
+        weiterhin Dash- und Item-Slots, die er alle nicht nutzen kann; aufgefallen ist es
         beim 375px-Check des Schwebe-Knopfs, der dort mit der Leiste überlappte. Deckt jetzt beide
         Kleider ab — genau das, was P30 mit „Aktionsleiste, er hat kein Inventar" gemeint hat.
       */
@@ -3822,7 +3814,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-XdMFypL9.js"></script>
+    <script type="module" crossorigin src="./assets/index-CPQOkiAt.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -4050,25 +4042,6 @@
             <div class="item-slot__icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M4 5l7 7-7 7M13 5l7 7-7 7" />
-              </svg>
-            </div>
-            <div class="item-slot__cooldown"></div>
-            <div class="item-slot__frame"></div>
-          </div>
-          <!--
-            Slide-Slot (Auftrag „Slide — Momentum-Impuls neben Dash", 2026-07-23): der ZWEITE
-            Bewegungs-Knopf NEBEN dem Dash (Felix: „ein zweiter Knopf zum Testen, welcher sich besser
-            anfühlt"). Gleiche Slot-Mechanik (Tap = `requestSlide()`, Cooldown-Wipe aus
-            `slideCooldownTicksRemaining`), Verdrahtung `scenes/MatchScene.ts`s `setupSlideSlot()`/
-            `updateSlideSlotHud()`. Icon = geschwungene Gleit-Linie + Pfeil (Momentum/lenkbar), klar
-            unterscheidbar vom harten Dash-Doppelchevron.
-          -->
-          <div class="item-slot item-slot--slide is-actionable" id="item-slot-slide">
-            <div class="item-slot__panel"></div>
-            <div class="item-slot__icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M2 15c4 0 5-7 10-7 4 0 4 5 8 5" />
-                <path d="M16 9l4 4-4 4" />
               </svg>
             </div>
             <div class="item-slot__cooldown"></div>
