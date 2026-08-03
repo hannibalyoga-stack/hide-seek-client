@@ -376,6 +376,15 @@
         --wr-slot-3-bottom: 0.92rem;
         --wr-dash-right: 12.987rem;
         --wr-dash-bottom: 0.92rem;
+        /* Besen-Vehikel (Felix-Auftrag 2026-08-03 „Besen als Kernmechanik"): eigener Button
+           DIREKT ÜBER dem Dash — gleiche Spalte, eine Knopfhöhe + Gap höher (0,92 + 3,062 +
+           0,65). Felix' Vorgabe „extra Button neben dem Dash"; ZWISCHEN Dash und Schleichen ist
+           kein Platz (17,357 − 12,987 = Knopf + Gap), die Spalte darüber ist frei. */
+        --wr-broom-right: 12.987rem;
+        --wr-broom-bottom: 4.63rem;
+        /* Eigener Akzent (warmes Holz-Braun) — bewusst weder Dash- noch Slot-Akzent, der
+           Vehikel-Knopf ist eine eigene Mechanik-Familie. */
+        --wr-broom-accent: #b9925a;
         --wr-sneak-right: 17.357rem;
         --wr-sneak-bottom: 1.09rem;
         /*
@@ -883,24 +892,8 @@
         transform: scale(1.3);
       }
 
-      /*
-       * Item-Ladungs-Pips (Auftrag „Besen als erstes Item + minimales Item-Nutzungs-Fundament
-       * (Runde 1)"): eigene, self-only Zeile UNTER `#wins-counter` (Muster dortiger Positionierung,
-       * `2em` weiterer Zeilenabstand) — `●`/`○`-Zeichen als einfache, lesbare Pips (AK-7), gefüllt
-       * durch `scenes/MatchScene.ts`s `updateItemHud()`. `display: none` Default (nur sichtbar,
-       * solange ein Item im Slot liegt), `.visible` schaltet frame-genau um (Muster
-       * `#netlog-export-button`).
-       */
-      #item-charges-hud {
-        display: none;
-        position: fixed;
-        top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap) + 4em);
-        right: calc(var(--hud-safe-right) + var(--hud-gap));
-        color: var(--hud-text-color);
-        font: var(--hud-font-size) / 1.4 monospace;
-        text-shadow: 0 0 4px #000;
-        pointer-events: none;
-      }
+      /* Vehikel-Umbau (Felix-Auftrag 2026-08-03): das vormalige Besen-Ladungs-Pips-HUD
+         (`#item-charges-hud`) ist mit dem Ladungs-Modell ersatzlos entfallen. */
 
       #item-charges-hud.visible {
         display: block;
@@ -1968,16 +1961,19 @@
       }
 
       /*
-       * Mobile Item-Nutzungs-Button (Auftrag „Besen als erstes Item + minimales Item-Nutzungs-
-       * Fundament (Runde 1)"): EIN Tap-Button (kein Halten), Verdrahtung in `scenes/MatchScene.ts`s
-       * `setupUseItemControls()`, Zustand in `net/useItemInput.ts`s `MobileUseItemState`. Teilt
-       * sich die Basis-Optik mit den Bewegungsmodus-/Interaktions-Buttons
-       * (`.mobile-move-mode-button`, Größe/Form/Touch-Verhalten identisch — Touch-Target ≥ 48 px,
-       * Mobile-Tag-1-Regel 4), ist aber ANDERS als jene NICHT dauerhaft sichtbar (AK-7: „nur
-       * sichtbar, wenn nutzbar" — Item im Slot ODER aktiver Flug): `display: none` als
-       * ID-spezifischer Default überschreibt die Klassen-Vorgabe `display: flex`, `.visible`
-       * (`updateItemHud()`, `MatchScene.ts`) schaltet ihn frame-genau wieder ein (Muster
-       * `#netlog-export-button`).
+       * Desktop-Besen-Button (ursprünglich Auftrag „Besen als erstes Item + minimales Item-
+       * Nutzungs-Fundament (Runde 1)"; **Besen-Vehikel, Felix-Auftrag 2026-08-03: der Besen ist
+       * Kernmechanik** — der Button ist seither für JEDEN lebenden Spieler DAUERHAFT sichtbar,
+       * nicht mehr „nur wenn Item nutzbar"): EIN Tap-Button (kein Halten), Verdrahtung in
+       * `scenes/MatchScene.ts`s `setupUseItemControls()`, sendet die payload-lose
+       * `"broomVehicle"`-Toggle-Nachricht. Teilt sich die Basis-Optik mit den Bewegungsmodus-/
+       * Interaktions-Buttons (`.mobile-move-mode-button`, Touch-Target ≥ 48 px, Mobile-Tag-1-
+       * Regel 4). `display: none` als ID-spezifischer Default, `.visible`
+       * (`updateBroomVehicleHud()`, pro Frame: lebend UND nicht entkommen) schaltet ihn ein.
+       * `.is-cooldown` dimmt (reduzierte Optik statt Wipe — der Touch-Cluster-Zwilling
+       * `#wr-broom-button` trägt die volle Wipe-Anzeige), `.is-flying` markiert den aktiven Flug
+       * (Tap = Landen), `.mobile-broom-button__time` ist die Countdown-Zahl (Muster
+       * `.wr-button__time`).
        */
       #mobile-broom-button {
         display: none;
@@ -1994,6 +1990,27 @@
 
       #mobile-broom-button.visible {
         display: flex;
+      }
+
+      #mobile-broom-button.is-cooldown {
+        opacity: 0.45;
+      }
+
+      #mobile-broom-button.is-flying {
+        box-shadow: inset 0 0 0 2px var(--hud-text-color);
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      .mobile-broom-button__time {
+        position: absolute;
+        bottom: 0.1rem;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font: 0.6rem/1 monospace;
+        color: inherit;
+        text-shadow: 0 0 3px #000;
+        pointer-events: none;
       }
 
       /*
@@ -3428,6 +3445,31 @@
       }
 
       /*
+       * Besen-Vehikel-Button (Felix-Auftrag 2026-08-03 „Besen als Kernmechanik statt Loot-Item"):
+       * fester Knopf DIREKT ÜBER dem Dash — Cooldown-Wipe/Countdown-Zahl exakt im Dash-Muster
+       * (dieselben `.wr-button__cooldown`/`.wr-button__time`-Kindelemente, gespeist aus dem
+       * server-autoritativen `broomCooldownTicksRemaining`, `updateBroomVehicleHud()`).
+       * `.is-flying` markiert den aktiven Flug (Tap = Landen) — heller Füllton, Muster
+       * `#wr-sneak-button.active`.
+       */
+      #wr-broom-button {
+        right: calc(var(--hud-safe-right) + var(--wr-broom-right));
+        bottom: calc(var(--hud-safe-bottom) + var(--wr-broom-bottom));
+        --wr-slot-cooldown: 0;
+      }
+      #wr-broom-button.is-cooldown {
+        box-shadow: inset 0 0 0 2px var(--wr-slot-accent);
+        color: var(--wr-slot-accent);
+      }
+      #wr-broom-button:not(.is-cooldown) {
+        box-shadow: inset 0 0 0 2px var(--wr-broom-accent);
+        color: var(--wr-broom-accent);
+      }
+      #wr-broom-button.is-flying {
+        background: rgba(255, 255, 255, 0.16);
+      }
+
+      /*
        * Dynamischer Interaktionsknopf: EIN Tap-Button, Icon/Ton wechseln pro Frame je nach der
        * server-autoritativ vorhergesagten Aktion (`hud/interactionButtonState.ts`,
        * `scenes/MatchScene.ts`s `updateWrInteractButton()`). Verdrahtung des Taps selbst
@@ -3704,6 +3746,7 @@
       html.is-ghost .wr-slot,
       html.is-ghost #wr-slot-row,
       html.is-ghost #wr-dash-button,
+      html.is-ghost #wr-broom-button,
       html.is-ghost #wr-sneak-button,
       /*
         Die KLASSISCHE Aktionsleiste (`#item-bar` mit `#item-slot-*`) blieb bis zum
@@ -3714,7 +3757,6 @@
         Kleider ab — genau das, was P30 mit „Aktionsleiste, er hat kein Inventar" gemeint hat.
       */
       html.is-ghost #item-bar,
-      html.is-ghost #item-charges-hud,
       html.is-ghost #relic-hud,
       html.is-ghost #merchant-panel,
       html.is-ghost .mobile-move-mode-button:not(#mobile-ghost-message-button):not(#wr-interact-button):not(#auto-follow-button):not(#mobile-ghost-glide-button):not(#mobile-interact-button) {
@@ -4099,7 +4141,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CTLBoJKx.js"></script>
+    <script type="module" crossorigin src="./assets/index-jQeo4js_.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -4124,7 +4166,6 @@
       <div id="self-caught-screen"></div>
       <div id="match-timer"></div>
       <div id="wins-counter">Wins: 0</div>
-      <div id="item-charges-hud"></div>
       <!-- Reliquien-Zähler (Scheibe S1, s. CSS oben): Gold-Edelstein rein per Inline-SVG gezeichnet (kein PNG-Asset nötig). -->
       <div id="relic-hud">
         <img id="relic-hud-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
@@ -4234,6 +4275,8 @@
           <path d="M20.5 3.5L11.5 12.5" />
           <path d="M11.5 12.5l-6 2.6L3 21l5.9-2.5 2.6-6z" />
         </svg>
+        <!-- Besen-Vehikel (2026-08-03): Countdown-Zahl des Cooldowns (Muster `.wr-button__time`). -->
+        <b class="mobile-broom-button__time" aria-live="polite"></b>
       </div>
       <!--
         Geister-Bodennachrichten-Schreib-Button (Kanon §10, Umsetzungsauftrag „Geister-
@@ -4429,6 +4472,11 @@
               <circle cx="12" cy="12" r="2.4" fill="none" stroke="currentColor" stroke-width="2" />
               <path d="M4.5 19.5l15-15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </symbol>
+            <!-- Besen-Vehikel (Felix-Auftrag 2026-08-03) — Pfad 1:1 aus `#mobile-broom-button` übernommen. -->
+            <symbol id="wr-i-broom" viewBox="0 0 24 24">
+              <path d="M20.5 3.5L11.5 12.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M11.5 12.5l-6 2.6L3 21l5.9-2.5 2.6-6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </symbol>
             <!-- Interaktionsknopf: neutral (nichts in Reichweite). -->
             <symbol id="wr-i-interact-none" viewBox="0 0 24 24">
               <path d="M12 3.5 18.5 12 12 20.5 5.5 12Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
@@ -4522,6 +4570,14 @@
 
         <div id="wr-dash-button" class="wr-button" aria-hidden="true">
           <svg class="wr-button__icon"><use href="#wr-i-dash"></use></svg>
+          <div class="wr-button__cooldown"></div>
+          <b class="wr-button__time" aria-live="polite"></b>
+        </div>
+
+        <!-- Besen-Vehikel (Felix-Auftrag 2026-08-03): fester Auf-/Absteige-Toggle über dem Dash,
+             Verdrahtung `setupWrActionCluster()`, Zustand `updateBroomVehicleHud()`. -->
+        <div id="wr-broom-button" class="wr-button" aria-hidden="true">
+          <svg class="wr-button__icon"><use href="#wr-i-broom"></use></svg>
           <div class="wr-button__cooldown"></div>
           <b class="wr-button__time" aria-live="polite"></b>
         </div>
