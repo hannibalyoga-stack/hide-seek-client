@@ -1301,6 +1301,98 @@
         --loot-rarity-wash: rgb(var(--rarity-legendaer) / 0.3);
       }
 
+      /*
+       * ---------------------------------------------------------------------------------------
+       * Zauberschmied-Fenster (Felix-Auftrag 2026-08-03) — `scenes/MatchScene.ts`s
+       * `updateSchmiedPanel()`, Zeilen-Aufbereitung in `hud/schmiedFenster.ts`.
+       *
+       * Erbt Rahmen/Underlay/Zeilen/Stufenfarben komplett vom Loot-Fenster oben (`.loot-row` +
+       * `.item-slot--rarity-*`) — hier stehen NUR die Abweichungen. Bewusst zentriert wie das
+       * Loot-Fenster und nicht unten wie das Händler-Panel: es ist das breiteste Fenster des
+       * Spiels (Icon + Name + Zielstufe + Preis über vier Zeilen), und unten liegt bereits der
+       * Wild-Rift-Daumen-Cluster.
+       */
+      #schmied-panel {
+        display: none;
+        position: fixed;
+        top: 38%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        flex-direction: column;
+        gap: 0.3rem;
+        padding: 0.55rem 0.6rem 0.45rem;
+        /* Breiter als das Loot-Fenster (17rem): die Zeile trägt zusätzlich Zielstufe und Preis. */
+        width: min(90vw, 21rem);
+        box-sizing: border-box;
+        border-radius: 0.35rem;
+        background-color: rgba(14, 12, 10, 0.92);
+        background-image: url("assets/ui/loot-panel-underlay.png");
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        border: 1px solid var(--theme-color-brass);
+        box-shadow: 0 0.4rem 1.2rem rgba(0, 0, 0, 0.55);
+      }
+
+      #schmied-panel.visible {
+        display: flex;
+      }
+
+      #schmied-panel__title {
+        font: 0.85rem / 1.2 var(--theme-font-title);
+        letter-spacing: 0.08em;
+        text-align: center;
+        color: var(--theme-color-gold);
+        text-transform: uppercase;
+        opacity: 0.9;
+      }
+
+      /*
+       * Eine Zeile, die man NICHT schmieden kann, wird ausgegraut statt versteckt (natives
+       * `disabled`, Muster `.merchant-offer:disabled`). Zwei Gründe: der Spieler sieht, dass der
+       * Zauber überhaupt existiert und dass hier nichts kaputt ist — und die Fußzeile erklärt
+       * daneben, WARUM (zu teuer vs. nie schmiedbar vs. schon auf der höchsten Stufe).
+       */
+      .schmied-row:disabled {
+        opacity: 0.42;
+        cursor: default;
+      }
+
+      /* Die Zielstufe („→ Rare") hängt hinter dem Namen und trägt die Farbe der ZIELSTUFE, nicht
+         der aktuellen — sie ist das Versprechen, nicht der Bestand. */
+      .schmied-row__ziel {
+        flex-shrink: 0;
+        font-weight: bold;
+        color: var(--schmied-ziel-color, var(--theme-color-text-body));
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+      }
+
+      .schmied-row.schmied-row--ziel-selten {
+        --schmied-ziel-color: rgb(var(--rarity-selten));
+      }
+      .schmied-row.schmied-row--ziel-rar {
+        --schmied-ziel-color: rgb(var(--rarity-rar));
+      }
+      .schmied-row.schmied-row--ziel-episch {
+        --schmied-ziel-color: rgb(var(--rarity-episch));
+      }
+
+      /* Preis: unverändert die Händler-Darstellung; nur bei zu wenig Reliquien gedämpft-rot statt
+         golden, damit „ich kann es mir gerade nicht leisten" ohne Text lesbar ist. Der Ton ist
+         bewusst ein verblasstes Ziegelrot und kein Signalrot — das Design-Gesetz gilt auch für die
+         UI (kein Alarm, keine Kampfsprache), es ist ja nur ein Preis, den man noch nicht zahlen
+         kann. */
+      .schmied-row--zu-teuer .merchant-offer__price {
+        color: #c8553d;
+      }
+
+      #schmied-panel__hint {
+        font: 0.72rem / 1.2 var(--theme-font-body);
+        text-align: center;
+        color: var(--theme-color-text-body);
+        opacity: 0.65;
+        min-height: 0.9rem;
+      }
+
       /* Fußzeile — nennt beide Möglichkeiten, weil das Liegenlassen die eigentliche Neuerung ist. */
       #loot-panel__hint {
         font: 0.72rem / 1.2 var(--theme-font-body);
@@ -3759,6 +3851,7 @@
       html.is-ghost #item-bar,
       html.is-ghost #relic-hud,
       html.is-ghost #merchant-panel,
+      html.is-ghost #schmied-panel,
       html.is-ghost .mobile-move-mode-button:not(#mobile-ghost-message-button):not(#wr-interact-button):not(#auto-follow-button):not(#mobile-ghost-glide-button):not(#mobile-interact-button) {
         display: none !important;
       }
@@ -4141,7 +4234,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BXkHBrH_.js"></script>
+    <script type="module" crossorigin src="./assets/index-C2QrxRt2.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -4236,6 +4329,68 @@
           <span class="loot-row__name"></span>
         </button>
         <div id="loot-panel__hint">E to take — or leave it</div>
+      </div>
+      <!--
+        Zauberschmied-Fenster (Felix-Auftrag 2026-08-03): erbt Rahmen, Pergament-Underlay,
+        Zeilenbau und die Stufenfarben VOLLSTÄNDIG vom Loot-Fenster darüber (`.loot-row`,
+        `.item-slot--rarity-*`) — es soll sich anfühlen wie dasselbe Fenster, weil es dieselbe
+        Handlung ist: man schaut auf etwas und bestätigt. Eigen ist nur die Preisspalte, und die
+        kommt wiederum unverändert vom Händler-Panel (`.merchant-offer__price`).
+
+        Vier Zeilen = `INVENTORY_SLOT_COUNT` (feste DOM-Pools, Muster Loot-/Händler-Fenster —
+        Zeilen werden nie erzeugt/zerstört, nur gefüllt und versteckt).
+      -->
+      <div id="schmied-panel">
+        <div id="schmied-panel__title">Spell Smith</div>
+        <button type="button" class="loot-row schmied-row" id="schmied-row-0" data-slot-index="0">
+          <span class="loot-row__icon">
+            <span class="loot-row__icon-emoji"></span>
+            <img class="loot-row__icon-image" alt="" aria-hidden="true" />
+          </span>
+          <span class="loot-row__name"></span>
+          <span class="schmied-row__ziel"></span>
+          <span class="merchant-offer__price schmied-row__price">
+            <img class="merchant-offer__price-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
+            <span class="merchant-offer__price-value"></span>
+          </span>
+        </button>
+        <button type="button" class="loot-row schmied-row" id="schmied-row-1" data-slot-index="1">
+          <span class="loot-row__icon">
+            <span class="loot-row__icon-emoji"></span>
+            <img class="loot-row__icon-image" alt="" aria-hidden="true" />
+          </span>
+          <span class="loot-row__name"></span>
+          <span class="schmied-row__ziel"></span>
+          <span class="merchant-offer__price schmied-row__price">
+            <img class="merchant-offer__price-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
+            <span class="merchant-offer__price-value"></span>
+          </span>
+        </button>
+        <button type="button" class="loot-row schmied-row" id="schmied-row-2" data-slot-index="2">
+          <span class="loot-row__icon">
+            <span class="loot-row__icon-emoji"></span>
+            <img class="loot-row__icon-image" alt="" aria-hidden="true" />
+          </span>
+          <span class="loot-row__name"></span>
+          <span class="schmied-row__ziel"></span>
+          <span class="merchant-offer__price schmied-row__price">
+            <img class="merchant-offer__price-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
+            <span class="merchant-offer__price-value"></span>
+          </span>
+        </button>
+        <button type="button" class="loot-row schmied-row" id="schmied-row-3" data-slot-index="3">
+          <span class="loot-row__icon">
+            <span class="loot-row__icon-emoji"></span>
+            <img class="loot-row__icon-image" alt="" aria-hidden="true" />
+          </span>
+          <span class="loot-row__name"></span>
+          <span class="schmied-row__ziel"></span>
+          <span class="merchant-offer__price schmied-row__price">
+            <img class="merchant-offer__price-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
+            <span class="merchant-offer__price-value"></span>
+          </span>
+        </button>
+        <div id="schmied-panel__hint"></div>
       </div>
       <div id="match-result"></div>
       <div id="sound-compass"></div>
