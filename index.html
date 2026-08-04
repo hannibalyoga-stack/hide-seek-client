@@ -3431,6 +3431,40 @@
         -webkit-touch-callout: none;
       }
 
+      /*
+       * Stein+Messing-Ring (MVP-Übernahme, Felix-Auftrag 2026-08-04, Handoff
+       * `HANDOFF-WILDRIFT-UI-2026-08-04.md` im MVP-Repo): rundes Geschwister-Derivat des eckigen
+       * `slot-item-frame.png` (gleiche Machart: Stein, 4 Messing-Nieten, innere Rille, Mitte
+       * transparent) als oberste Bild-Ebene über JEDEM Cluster-Button. Schichtung wie die
+       * Desktop-Item-Bar (`.item-slot__frame`): Panel/Scrim < Cooldown-Wipe < Steinring <
+       * Countdown-Zahl (`.wr-button__time`, z-index 5). Der 2-px-Akzentrand (`box-shadow`) liegt
+       * damit vollständig UNTER dem Stein und ist unsichtbar — im MVP-Design bewusst so (Felix-
+       * Entscheid dort: Typ-/Zustands-Farbe trägt das Icon selbst über `color`, nicht der Rand);
+       * exakt dieselbe Akzeptanz wie beim eckigen Rahmen (s. `.item-slot__studs`-Kommentar oben).
+       * Positionen/Radien/Touch-Targets unverändert (Felix-Vorgabe). Der Joystick bekommt KEINEN
+       * Steinring (Felix-Vorgabe im Handoff) — er lebt im Phaser-Canvas, nicht als `.wr-button`,
+       * und ist damit strukturell außen vor. Im klassischen Layout übersteuert
+       * `html.hud-layout-classic .wr-slot::after` (höhere Spezifität, unten) die 4 Slots weiter
+       * mit dem ECKIGEN Rahmen — nur die runden Knöpfe (Interakt/Dash/Schleichen) tragen dort
+       * den runden Ring.
+       */
+      .wr-button::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: url("assets/ui/slot-item-frame-round.png");
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        z-index: 4;
+        pointer-events: none;
+      }
+
+      /* Messing-Piktogramme (Feder/Besen) sind `<img>` mit nicht-quadratischem Zuschnitt —
+         proportional in die Icon-Box einpassen (MVP-Handoff §6: nie feste Quadrate erzwingen). */
+      img.wr-button__icon {
+        object-fit: contain;
+      }
+
       .wr-button__icon {
         width: var(--wr-slot-icon-size);
         height: var(--wr-slot-icon-size);
@@ -3621,6 +3655,23 @@
       }
 
       /*
+       * Messing-Piktogramm-Träger des Interaktionsknopfs (MVP-Übernahme 2026-08-04): zweiter
+       * Icon-Träger NEBEN dem SVG — `updateWrInteractButton()` blendet je Aktion GENAU EINEN ein
+       * (Hand = Standard/„Frei", Tür, Lupe; alle übrigen Zustände behalten ihr SVG-Symbol samt
+       * Ton-Färbung, insbesondere `tone-sealed`-Rot). Muster `.wr-slot__icon-image`: default
+       * versteckt, JS schaltet per `style.display` — bewusst KEIN `hidden`-Attribut (P31-Lektion:
+       * eine eigene `display`-Regel schlüge die `[hidden]`-UA-Regel).
+       */
+      #wr-interact-button__image {
+        display: none;
+        width: var(--wr-interact-icon-size);
+        height: var(--wr-interact-icon-size);
+        object-fit: contain;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.7));
+        pointer-events: none;
+      }
+
+      /*
        * Feedback-Paket (Felix-Auftrag 2026-07-22 abends, „deutlich responsivere Version"):
        * der frühere Kanal-Fortschrittsring am Interaktionsknopf ist auf Felix-Wunsch KOMPLETT
        * entfernt (die Kanal-Dauer zeigt weiterhin allein der Kopf-Balken über der Figur,
@@ -3730,7 +3781,27 @@
        * `renderWrActionSlots()` pro Slot gesetzt) steuert die Rahmenfarbe NACH INHALT (Runde 3:
        * „Rahmenfarbe folgt dem Inhalt, nicht der Position") — `spell` = Violett, `item` = Gold,
        * `empty` = gedämpftes Grau + gestrichelter Rand (kein echter Inhalt, kein Tap-Ziel).
+       *
+       * Raritäts-Innenverlauf (MVP-Übernahme 2026-08-04, Nachzug von Konzept
+       * `raritaetsstufen-items-zauber.md` §7 auf die RUNDEN Slots): seit der Steinring den
+       * Akzentrand verdeckt, trägt der Innenverlauf die Stufen-Farbe — dieselben
+       * `item-slot--rarity-*`-Klassen wie die Desktop-Item-Bar (`renderWrActionSlots()` setzt sie
+       * über `applySlotRarity()`, EIN Klassen-Vokabular), dieselbe Verlaufs-Formel wie
+       * `.item-slot__panel`. `var(--slot-rarity-wash, transparent)` MIT Fallback statt einer
+       * eigenen Default-Deklaration: die `item-slot--rarity-*`-Variablen-Regeln stehen weiter
+       * OBEN in der Datei — eine gleich spezifische `.wr-slot`-Deklaration hier würde sie per
+       * Quellreihenfolge übersteuern und den Verlauf töten. Common/leer bleibt verlaufslos
+       * (Abwesenheit von Farbe IST die Common-Kennzeichnung, Felix-Vorgabe 2026-07-18);
+       * Nieten-Overlays gibt es für den RUNDEN Ring noch nicht (kein `slot-studs`-Pendant —
+       * bewusst offen gelassen, die Slots haben kein `.item-slot__studs`-Kind, die Klassen sind
+       * dort wirkungslos).
        */
+      .wr-slot {
+        background:
+          radial-gradient(circle at 50% 50%, rgba(18, 20, 28, 0) 26%, var(--slot-rarity-wash, transparent) 100%),
+          var(--wr-panel-bg);
+      }
+
       .wr-slot[data-kind="empty"] {
         box-shadow: inset 0 0 0 2px rgba(85, 90, 102, 0.5);
         background: rgba(18, 20, 28, 0.4);
@@ -4234,7 +4305,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-B98ehjHL.js"></script>
+    <script type="module" crossorigin src="./assets/index-BZ3GO5ej.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -4720,7 +4791,9 @@
         </svg>
 
         <div id="wr-sneak-button" class="wr-button" aria-hidden="true">
-          <svg class="wr-button__icon"><use href="#wr-i-sneak"></use></svg>
+          <!-- Messing-Feder statt SVG-Symbol (MVP-Übernahme 2026-08-04, `#wr-i-sneak` bleibt als
+               Symbol im Sheet — Fallback-/Wiederverwendungs-Kandidat, kein toter Code-Pfad). -->
+          <img class="wr-button__icon" src="./assets/ui/btn-icon-leise.png" alt="" draggable="false" />
         </div>
 
         <div id="wr-dash-button" class="wr-button" aria-hidden="true">
@@ -4732,7 +4805,8 @@
         <!-- Besen-Vehikel (Felix-Auftrag 2026-08-03): fester Auf-/Absteige-Toggle über dem Dash,
              Verdrahtung `setupWrActionCluster()`, Zustand `updateBroomVehicleHud()`. -->
         <div id="wr-broom-button" class="wr-button" aria-hidden="true">
-          <svg class="wr-button__icon"><use href="#wr-i-broom"></use></svg>
+          <!-- Messing-Reisig-Besen statt SVG-Symbol (MVP-Übernahme 2026-08-04, Muster Schleichen-Knopf). -->
+          <img class="wr-button__icon" src="./assets/ui/btn-icon-besen.png" alt="" draggable="false" />
           <div class="wr-button__cooldown"></div>
           <b class="wr-button__time" aria-live="polite"></b>
         </div>
@@ -4772,6 +4846,9 @@
 
         <div id="wr-interact-button" class="wr-button is-disabled" aria-hidden="true">
           <svg id="wr-interact-button__icon"><use href="#wr-i-interact-none"></use></svg>
+          <!-- Messing-Piktogramm-Träger (Hand/Tür/Lupe, MVP-Übernahme 2026-08-04) — default
+               versteckt, `updateWrInteractButton()` schaltet je Aktion zwischen ihm und dem SVG. -->
+          <img id="wr-interact-button__image" src="./assets/ui/btn-icon-hand.png" alt="" draggable="false" />
           <!--
             Geist-Türöffner-Cooldown-Anzeige (Feature „Geist-Türöffner", Kanon §10 bewusst
             geöffnet): dieselben `.wr-button__cooldown`/`.wr-button__time`-Kindelemente wie
