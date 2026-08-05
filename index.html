@@ -359,9 +359,36 @@
          * Korrektur 1 abgenommen, heutige Rückmeldung betrifft nur die Höhe).
          */
         --wr-slot-diameter: 3.062rem;
-        --wr-slot-icon-size: 1.7rem;
         --wr-interact-diameter: 5.062rem;
-        --wr-interact-icon-size: 2.2rem;
+        /*
+         * Icon-Größen: aus dem SICHTBAREN Innenloch des Steinrings abgeleitet, nicht geschätzt
+         * (Felix-Befund 2026-08-05: „die Icons sind nicht sauber im Kreis, sondern teilweise
+         * doller abgeschnitten — nutze wirklich den Kreis, der sichtbar ist, als Referenz").
+         *
+         * Vorher waren die Größen ABSOLUT gesetzt (Slot-Icon 1,7rem, Bild-Icon zusätzlich ×1,4 =
+         * 2,38rem) und damit ganze 77,7 % des Slot-Durchmessers — das Innenloch misst aber nur
+         * 66,4 %. Die Icons lagen also mit ihren Rändern UNTER dem Stein, der sie als oberste
+         * Ebene (`z-index: 4`) sichtbar beschnitt. Zusätzlich blieben sie in den
+         * Kompakthöhen-Media-Queries unverändert groß, während die Buttons schrumpften.
+         *
+         * Beide Werte hängen jetzt am jeweiligen Durchmesser und damit automatisch auch an den
+         * Kompaktstufen. Zwei gemessene/geometrische Faktoren:
+         */
+        /* Engste Stelle des Innenlochs, am Derivat `slot-item-frame-round.png` strahlenweise
+           ausgemessen (Innenkante-Radius 85…90 von 128 px): 170 px von 256 px Ringbreite. */
+        --wr-ring-hole-fraction: 0.664;
+        /* Ein Quadrat liegt vollständig in einem Kreis, wenn seine DIAGONALE höchstens dessen
+           Durchmesser ist — Kantenlänge also 1/√2 des Durchmessers. Diese Reserve ist nötig, weil
+           die Icon-Derivate ihre Bildbox fast bis in die Ecken füllen: nachgemessen reicht der
+           deckende Inhalt bei Feder/Besen/Lupe/Spurenleser bis auf 0,66…0,68 der langen Kante
+           (0,707 wäre die exakte Ecke). Mit diesem Faktor passt JEDES Icon-Derivat garantiert ins
+           Loch, auch künftige — der engste Bestand erlaubte 49,0 %, die Formel bleibt mit 47,0 %
+           bewusst knapp darunter statt auf den heutigen Bestand zu tunen. */
+        --wr-icon-square-in-circle: 0.7071;
+        --wr-slot-icon-size: calc(var(--wr-slot-diameter) * var(--wr-ring-hole-fraction) * var(--wr-icon-square-in-circle));
+        --wr-interact-icon-size: calc(
+          var(--wr-interact-diameter) * var(--wr-ring-hole-fraction) * var(--wr-icon-square-in-circle)
+        );
         --wr-interact-right: 0.898rem;
         --wr-interact-bottom: 2.12rem;
         /* Oberster Bogen-Platz = Ult-Platz-Konvention (Zauber-Standardplatz, Mockup-Legende). */
@@ -3494,12 +3521,18 @@
        * Pixel-Icon EINES belegten Slots (`<img>`, Icon-Batch 2026-07-23) — standardmäßig
        * versteckt; `applySlotIcon()` (`scenes/MatchScene.ts`) schaltet auf `display: block`, sobald
        * für den Zauber/das Item ein Icon-Derivat vorliegt, und blendet dann den Emoji-Träger aus.
-       * Etwas größer als das Emoji, damit das Pixel-Icon den runden Slot gut füllt.
+       *
+       * Der frühere ×1,4-Aufschlag gegenüber dem Emoji ist ERSATZLOS weg (Felix-Befund
+       * 2026-08-05): er stammt aus der Zeit vor dem Steinring, als der Slot noch ein reiner
+       * Farbkreis ohne deckenden Rand war und ein größeres Icon ihn schlicht besser füllte. Mit
+       * dem Ring darüber schnitt genau dieser Aufschlag die Icons an. `--wr-slot-icon-size` ist
+       * seit demselben Befund aus dem gemessenen Innenloch abgeleitet (s. `:root`) und gilt jetzt
+       * für BEIDE Träger gleich — Bild wie Emoji.
        */
       .wr-slot__icon-image {
         display: none;
-        width: calc(var(--wr-slot-icon-size) * 1.4);
-        height: calc(var(--wr-slot-icon-size) * 1.4);
+        width: var(--wr-slot-icon-size);
+        height: var(--wr-slot-icon-size);
         object-fit: contain;
         filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
         pointer-events: none;
