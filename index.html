@@ -3477,9 +3477,11 @@
        * Emoji-Icon EINES belegten Slots (Zauber/Item, Muster `.item-slot__icon--emoji`) —
        * standardmäßig leer/unsichtbar (kein Textinhalt), `renderWrActionSlots()`
        * (`scenes/MatchScene.ts`) setzt `textContent` NUR für `data-kind="spell"`/`"item"`.
-       * `data-kind="empty"` zeigt stattdessen den gestrichelten SVG-Platzhalter
-       * (`.wr-slot__icon-empty`) — beide Icon-Träger sind IMMER im DOM (Muster fester
-       * Element-Pool, kein Neuaufbau pro Frame), nur `display` wechselt.
+       * `data-kind="empty"` zeigt gar kein Icon mehr — der gestrichelte SVG-Platzhalter ist
+       * zurückgebaut (Felix-Auftrag 2026-08-05, s. `.wr-slot[data-kind="empty"]` unten), der
+       * Steinring allein kennzeichnet den Platz. Beide verbliebenen Icon-Träger (Emoji + Bild)
+       * sind IMMER im DOM (Muster fester Element-Pool, kein Neuaufbau pro Frame), nur `display`
+       * wechselt.
        */
       .wr-slot__icon-emoji {
         display: none;
@@ -3506,11 +3508,6 @@
       .wr-slot[data-kind="spell"] .wr-slot__icon-emoji,
       .wr-slot[data-kind="item"] .wr-slot__icon-emoji {
         display: block;
-      }
-
-      .wr-slot[data-kind="spell"] .wr-slot__icon-empty,
-      .wr-slot[data-kind="item"] .wr-slot__icon-empty {
-        display: none;
       }
 
       /* Ladungs-Pips EINES Item-Slots (Muster `.item-slot__item-pips`, z. B. Besen "●●○") — leer für Zauber/leere Slots. */
@@ -3791,10 +3788,7 @@
        * eigenen Default-Deklaration: die `item-slot--rarity-*`-Variablen-Regeln stehen weiter
        * OBEN in der Datei — eine gleich spezifische `.wr-slot`-Deklaration hier würde sie per
        * Quellreihenfolge übersteuern und den Verlauf töten. Common/leer bleibt verlaufslos
-       * (Abwesenheit von Farbe IST die Common-Kennzeichnung, Felix-Vorgabe 2026-07-18);
-       * Nieten-Overlays gibt es für den RUNDEN Ring noch nicht (kein `slot-studs`-Pendant —
-       * bewusst offen gelassen, die Slots haben kein `.item-slot__studs`-Kind, die Klassen sind
-       * dort wirkungslos).
+       * (Abwesenheit von Farbe IST die Common-Kennzeichnung, Felix-Vorgabe 2026-07-18).
        */
       .wr-slot {
         background:
@@ -3802,10 +3796,64 @@
           var(--wr-panel-bg);
       }
 
+      /*
+       * Raritäts-NIETEN am runden Ring (Felix-Auftrag 2026-08-05: „ich möchte, dass man in der UI
+       * auch dann die Ornamente entsprechend färbt, sodass man wirklich sieht, was für eine
+       * Raritätsstufe das Item hat"). Zweiter Träger der Stufe neben dem Innenverlauf — exakt das
+       * Modell der Desktop-Item-Bar (`.item-slot__studs`), nur mit den RUNDEN Overlay-Derivaten:
+       * `derive_slot_studs.py` läuft seit heute über beide Steinrahmen und legt die vier Nieten
+       * pixelgenau eingefärbt über ihren jeweiligen Ring (der zarte Farbschimmer der inneren
+       * Rille kommt aus derselben Warmton-Maske mit — auf 49 px Slot-Größe ist er der eigentliche
+       * Stufen-Lesehilfe, vier winzige Punkte allein trügen zu wenig).
+       *
+       * `z-index: 5` (statt der 4 des eckigen Pendants): der runde Ring liegt hier selbst auf 4
+       * und ist ein `::after`-PSEUDO-Element des Slots — Pseudo-Elemente werden nach den normalen
+       * Kindern gemalt, ein gleichrangiges DOM-Kind läge also darunter. Die Countdown-Zahl
+       * (`.wr-button__time`) teilt sich diese 5, steht aber im Markup NACH dem Nieten-Träger und
+       * gewinnt damit den Stapel — die Zahl bleibt oben, so wie vorher.
+       *
+       * Common bekommt bewusst KEIN Overlay: die Nieten behalten ihr Messing, die Abwesenheit von
+       * Farbe IST die Common-Kennzeichnung (Felix-Vorgabe 2026-07-18). Ohne gesetzte Stufe bleibt
+       * das Element bildlos und damit unsichtbar.
+       */
+      .wr-slot__studs {
+        position: absolute;
+        inset: 0;
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        z-index: 5;
+        pointer-events: none;
+      }
+
+      .wr-slot.item-slot--rarity-selten .wr-slot__studs {
+        background-image: url("assets/ui/slot-studs-round-selten.png");
+      }
+      .wr-slot.item-slot--rarity-rar .wr-slot__studs {
+        background-image: url("assets/ui/slot-studs-round-rar.png");
+      }
+      .wr-slot.item-slot--rarity-episch .wr-slot__studs {
+        background-image: url("assets/ui/slot-studs-round-episch.png");
+      }
+      .wr-slot.item-slot--rarity-legendaer .wr-slot__studs {
+        background-image: url("assets/ui/slot-studs-round-legendaer.png");
+      }
+
+      /*
+       * Leerer Slot (Felix-Auftrag 2026-08-05: „bei den Slots, die nicht fix sind, diese
+       * gestrichelten Kreise drumherum entfernen"). Der Ring aus Stein IST die Slot-Kennzeichnung —
+       * die dunklere, gesättigtere Füllung genügt als Leer-Signal. Entfernt wurden ZWEI
+       * gestrichelte Kreise, die sich hier überlagerten: `border-style: dashed` erzeugte (ohne
+       * jede `border-width`-Angabe, über den CSS-Default `medium`) einen 3-px-Strichelring AUSSEN
+       * um den Stein, und der SVG-Platzhalter `#wr-i-slot-empty` einen zweiten, kleineren INNEN.
+       * Beide stammen aus der Zeit vor dem Steinring, als ein leerer Slot sonst unsichtbar
+       * gewesen wäre. Der Platzhalter ist vollständig zurückgebaut (Symbol, die vier
+       * `<svg class="wr-slot__icon-empty">`-Träger und ihre Ausblendregel) statt als leeres
+       * Symbol stehenzubleiben — kein JS hat ihn je angefasst, `applySlotIcon()` schaltet nur
+       * zwischen Emoji- und Bild-Träger.
+       */
       .wr-slot[data-kind="empty"] {
         box-shadow: inset 0 0 0 2px rgba(85, 90, 102, 0.5);
         background: rgba(18, 20, 28, 0.4);
-        border-style: dashed;
       }
 
       .wr-slot[data-kind="spell"] {
@@ -4039,6 +4087,25 @@
         /* Über dem Wipe (Quellreihenfolge), unter der Countdown-Zahl (`.wr-button__time`, z-index 5). */
         z-index: 4;
         pointer-events: none;
+      }
+
+      /*
+       * Raritäts-Nieten im klassischen Layout: hier ist der Rahmen ECKIG (Regel darüber), also
+       * müssen es auch die Nieten sein — sonst läge das runde Overlay der Touch-Optik auf einer
+       * quadratischen Kachel und träfe die Ecknieten nicht. Dieselben vier Stufen, dieselben
+       * Klassen, nur die andere Bild-Variante desselben Ableitungsskripts.
+       */
+      html.hud-layout-classic .wr-slot.item-slot--rarity-selten .wr-slot__studs {
+        background-image: url("assets/ui/slot-studs-selten.png");
+      }
+      html.hud-layout-classic .wr-slot.item-slot--rarity-rar .wr-slot__studs {
+        background-image: url("assets/ui/slot-studs-rar.png");
+      }
+      html.hud-layout-classic .wr-slot.item-slot--rarity-episch .wr-slot__studs {
+        background-image: url("assets/ui/slot-studs-episch.png");
+      }
+      html.hud-layout-classic .wr-slot.item-slot--rarity-legendaer .wr-slot__studs {
+        background-image: url("assets/ui/slot-studs-legendaer.png");
       }
 
       /* Leiste unten: S0 S1 S2 S3 von links nach rechts, S3 am Rand-Anker. */
@@ -4305,7 +4372,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BZ3GO5ej.js"></script>
+    <script type="module" crossorigin src="./assets/index-CrbpB1ev.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -4784,9 +4851,6 @@
               <path d="M12 4 14.2 8.4 12 11.2 9.8 8.4Z" fill="currentColor" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" />
             </symbol>
             <!-- Generischer Leerplatz-Umriss (leerer Slot). -->
-            <symbol id="wr-i-slot-empty" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="2.4 2.8" />
-            </symbol>
           </defs>
         </svg>
 
@@ -4812,35 +4876,35 @@
         </div>
 
         <div id="wr-slot-0" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
-          <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
           <img class="wr-slot__icon-image" alt="" draggable="false" />
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
+          <div class="wr-slot__studs"></div>
           <b class="wr-button__time" aria-live="polite"></b>
         </div>
         <div id="wr-slot-1" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
-          <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
           <img class="wr-slot__icon-image" alt="" draggable="false" />
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
+          <div class="wr-slot__studs"></div>
           <b class="wr-button__time" aria-live="polite"></b>
         </div>
         <div id="wr-slot-2" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
-          <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
           <img class="wr-slot__icon-image" alt="" draggable="false" />
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
+          <div class="wr-slot__studs"></div>
           <b class="wr-button__time" aria-live="polite"></b>
         </div>
         <div id="wr-slot-3" class="wr-button wr-slot" data-kind="empty" aria-hidden="true">
-          <svg class="wr-button__icon wr-slot__icon-empty"><use href="#wr-i-slot-empty"></use></svg>
           <span class="wr-slot__icon-emoji"></span>
           <img class="wr-slot__icon-image" alt="" draggable="false" />
           <span class="wr-slot__pips"></span>
           <div class="wr-button__cooldown"></div>
+          <div class="wr-slot__studs"></div>
           <b class="wr-button__time" aria-live="polite"></b>
         </div>
 
