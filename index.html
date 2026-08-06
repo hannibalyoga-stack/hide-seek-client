@@ -1079,7 +1079,10 @@
         left: 50%;
         transform: translateX(-50%);
         flex-direction: column;
-        gap: 0.4rem;
+        /* Zeilenabstand als Variable, weil die Zeilen-Klappe ihn im zugeklappten Zustand
+           ausgleichen muss (s. `.panel-klappe`) — eine Quelle, kein zweiter Wert. */
+        --panel-row-gap: 0.4rem;
+        gap: var(--panel-row-gap);
         padding: 0.5rem;
         border-radius: 0.6rem;
         background: rgba(10, 10, 16, 0.88);
@@ -1192,7 +1195,9 @@
         left: 50%;
         transform: translate(-50%, -50%);
         flex-direction: column;
-        gap: 0.3rem;
+        /* s. `#merchant-panel` — die Zeilen-Klappe rechnet mit diesem Abstand. */
+        --panel-row-gap: 0.3rem;
+        gap: var(--panel-row-gap);
         padding: 0.55rem 0.6rem 0.45rem;
         width: min(84vw, 17rem);
         box-sizing: border-box;
@@ -1346,7 +1351,9 @@
         left: 50%;
         transform: translate(-50%, -50%);
         flex-direction: column;
-        gap: 0.3rem;
+        /* s. `#merchant-panel` — die Zeilen-Klappe rechnet mit diesem Abstand. */
+        --panel-row-gap: 0.3rem;
+        gap: var(--panel-row-gap);
         padding: 0.55rem 0.6rem 0.45rem;
         /* Breiter als das Loot-Fenster (17rem): die Zeile trägt zusätzlich Zielstufe und Preis. */
         width: min(90vw, 21rem);
@@ -1431,6 +1438,123 @@
       /* Auf Touch gibt es kein „E" — dort bestätigt der Interaktionsknopf des Daumen-Clusters. */
       html.touch-ui #loot-panel__hint {
         font-size: 0.68rem;
+      }
+
+      /*
+       * ---------------------------------------------------------------------------------------
+       * Zeilen-Klappe (Felix-Auftrag 2026-08-06: „wenn man noch mal draufdrückt, klappt das
+       * Loot-Fenster so ein bisschen runter, und man hat dann dort die Information, was der Zauber
+       * macht — man hat ja immer nur ein Loot-Item, also genug Platz").
+       *
+       * Löst für Loot-, Händler- und Schmied-Fenster die schwebende Detailkarte ab: Die Erklärung
+       * steht jetzt IM Fenster, direkt unter der Zeile, die sie erklärt — statt als eigenes
+       * Fenster darüber, das die Zeile verdeckte, auf die man gerade drückt. `#wr-detail-card`
+       * bleibt für Aktionsleiste und Inventar zuständig (dort gibt es kein Fenster, in dem etwas
+       * aufklappen könnte). Zustandsregel: `hud/zeilenKlappe.ts`, Einhängen `MatchScene.ts`.
+       *
+       * **Aufklappen ohne geratene Höhe:** `grid-template-rows: 0fr → 1fr` lässt den Browser die
+       * Inhaltshöhe selbst messen — `max-height` bräuchte einen erfundenen Maximalwert, der bei
+       * langen Beschreibungen abschneidet oder beim Kurztext nachhängt. Engines ohne animierbares
+       * `fr` springen auf: sie zeigen dasselbe, nur ohne Bewegung.
+       *
+       * **Der negative `margin-top` im zugeklappten Zustand** gleicht den Zeilenabstand des
+       * Fensters aus (`--panel-row-gap`). Die Klappe bleibt IMMER im Fluss — nur so kann sie
+       * animieren —, und ohne diesen Ausgleich klaffte im Fenster dauerhaft eine leere Zeile.
+       */
+      .panel-klappe {
+        display: grid;
+        grid-template-rows: 0fr;
+        /*
+         * ZWEI Mindesthöhen müssen weg, sonst bleibt die Klappe sichtbar (beim 375px-Check beide
+         * einzeln erlebt): hier als FLEX-ITEM des Fensters (`#loot-panel` ist `display: flex`), und
+         * unten am Innenteil als GRID-ITEM. Fehlt eine davon, drückt der Inhalt die zugeklappte
+         * Zeile wieder auf, und die erste Textzeile der Beschreibung steht dauerhaft im Fenster.
+         */
+        min-height: 0;
+        margin-top: calc(-1 * var(--panel-row-gap));
+        transition:
+          grid-template-rows 160ms ease,
+          margin-top 160ms ease;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      .panel-klappe.offen {
+        grid-template-rows: 1fr;
+        margin-top: 0;
+      }
+
+      /* Bewegung ist hier Zierde, nicht Information — wer sie abbestellt hat, bekommt denselben
+         Inhalt sofort (Mobile-/Barrierefreiheits-Konvention). */
+      @media (prefers-reduced-motion: reduce) {
+        .panel-klappe {
+          transition: none;
+        }
+      }
+
+      /*
+       * DREI Ebenen, und jede ist nötig — beim 375px-Check einzeln erarbeitet:
+       *   `.panel-klappe`        klappt (Grid 0fr → 1fr), trägt NICHTS Sichtbares
+       *   `.panel-klappe__clip`  schneidet ab, trägt NICHTS Sichtbares — insbesondere KEIN Padding:
+       *                          `overflow: hidden` clippt den Inhalt, nicht die eigene Box, ein
+       *                          Padding hier hielte die zugeklappte Zeile dauerhaft offen
+       *   `.panel-klappe__inner` trägt Abstand, Rahmen und Grund
+       * `min-height: 0` steht auf beiden oberen Ebenen: einmal als Flex-Item des Fensters, einmal
+       * als Grid-Item — die automatische Mindesthöhe ist sonst der Inhalt, und die erste Textzeile
+       * stünde sichtbar im zugeklappten Fenster.
+       */
+      .panel-klappe__clip {
+        overflow: hidden;
+        min-height: 0;
+      }
+
+      .panel-klappe__inner {
+        display: flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.4rem 0.5rem 0.45rem;
+        border-radius: 0.25rem;
+        border-left: 2px solid var(--theme-color-brass);
+        background: rgba(0, 0, 0, 0.34);
+      }
+
+      /* Art-Kennzeichnung — dieselben Akzentfarben wie auf der Detailkarte, damit „Zauber" und
+         „Item" überall gleich aussehen. */
+      .panel-klappe__kind {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--wr-slot-accent-spell);
+      }
+
+      .panel-klappe__kind.item {
+        color: var(--wr-slot-accent-item);
+      }
+
+      /* Was der Zauber tut — der Grund für die ganze Klappe. Umbricht frei; das Fenster ist
+         schmal, aber es ist immer nur EINE Beschreibung offen, also darf sie Platz nehmen. */
+      .panel-klappe__desc {
+        font: 0.78rem / 1.45 var(--theme-font-body);
+        color: var(--theme-color-text-body);
+        opacity: 0.88;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      .panel-klappe__desc:empty {
+        display: none;
+      }
+
+      /* Meta-Zeile: beim Loot die Stufe, beim Händler der Preis, beim Schmied Ziel und Kosten. */
+      .panel-klappe__meta {
+        font-size: 0.7rem;
+        color: var(--theme-color-brass);
+      }
+
+      .panel-klappe__meta:empty {
+        display: none;
       }
 
       /*
@@ -4278,17 +4402,11 @@
       }
 
       /*
-       * Über einem Händler-Angebot (Punkt P31): Das Fenster ist regulär unten RECHTS verankert,
-       * das Händler-Panel unten MITTIG — auf 375 px überlappen beide, und das Fenster (z-index 21)
-       * läge ÜBER den Angeboten, die es erklären soll. Waagerecht mittig plus ein in JS
-       * gemessenes `bottom` (`positionWrDetailCardAbove()`) setzt es sauber DARÜBER.
+       * Die Karte erklärt seit 2026-08-06 nur noch Aktionsleiste und Inventar. Ihre frühere
+       * Mittig-Variante (`.from-merchant`, Punkt P31) ist entfallen: Händler-, Loot- und
+       * Schmied-Fenster klappen die Beschreibung jetzt IN sich auf (`.panel-klappe`) — genau, weil
+       * die Karte dort über den Zeilen lag, die sie erklären sollte.
        */
-      #wr-detail-card.from-merchant {
-        left: 50%;
-        right: auto;
-        transform: translateX(-50%);
-      }
-
       #wr-detail-card__kind {
         display: block;
         font-size: 0.65rem;
@@ -4405,7 +4523,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-5gDx7R8L.js"></script>
+    <script type="module" crossorigin src="./assets/index-ChmBTXuh.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -4476,6 +4594,16 @@
             <span class="merchant-offer__price-value"></span>
           </span>
         </button>
+        <!-- Zeilen-Klappe des Händler-Fensters, Muster `#loot-panel__klappe`. -->
+        <div class="panel-klappe" id="merchant-panel__klappe">
+          <div class="panel-klappe__clip">
+            <div class="panel-klappe__inner">
+              <span class="panel-klappe__kind">Zauber</span>
+              <span class="panel-klappe__desc"></span>
+              <span class="panel-klappe__meta"></span>
+            </div>
+          </div>
+        </div>
       </div>
       <!--
         Truhen-Loot-Fenster (Felix-Auftrag 2026-07-31 „aktiv bestätigen statt automatisch
@@ -4499,6 +4627,21 @@
           </span>
           <span class="loot-row__name"></span>
         </button>
+        <!--
+          Zeilen-Klappe (Felix-Auftrag 2026-08-06, CSS oben): EIN Block je Fenster — mehr als eine
+          Zeile ist nie aufgeklappt. `MatchScene.ts` schiebt ihn beim langen Drücken unter die
+          gemeinte Zeile (`insertAdjacentElement("afterend")`) und füllt ihn; hier steht er
+          zugeklappt am Fensterende und nimmt keinen Platz ein.
+        -->
+        <div class="panel-klappe" id="loot-panel__klappe">
+          <div class="panel-klappe__clip">
+            <div class="panel-klappe__inner">
+              <span class="panel-klappe__kind">Zauber</span>
+              <span class="panel-klappe__desc"></span>
+              <span class="panel-klappe__meta"></span>
+            </div>
+          </div>
+        </div>
         <div id="loot-panel__hint">E to take — or leave it</div>
       </div>
       <!--
@@ -4561,6 +4704,16 @@
             <span class="merchant-offer__price-value"></span>
           </span>
         </button>
+        <!-- Zeilen-Klappe des Schmied-Fensters, Muster `#loot-panel__klappe`. -->
+        <div class="panel-klappe" id="schmied-panel__klappe">
+          <div class="panel-klappe__clip">
+            <div class="panel-klappe__inner">
+              <span class="panel-klappe__kind">Zauber</span>
+              <span class="panel-klappe__desc"></span>
+              <span class="panel-klappe__meta"></span>
+            </div>
+          </div>
+        </div>
         <div id="schmied-panel__hint"></div>
       </div>
       <div id="match-result"></div>
@@ -4571,7 +4724,26 @@
       <div id="joystick-knob"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
       <div id="hidden-hint">Du bist versteckt — E zum Verlassen</div>
-      <div id="rumble-hint">Tipp, wenn der Marker im Grün ist</div>
+      <!--
+        Atem anhalten (Felix-Entscheid 2026-08-06) — löst den Pendelbalken als Verstecker-
+        Challenge ab. `#atem-hit` ist die HALTEFLÄCHE: ein großflächiges Overlay über dem oberen
+        Teil des Bildschirms (der untere Streifen bleibt für Joystick/Aktionscluster frei), das
+        NUR während einer laufenden Welle Pointer annimmt. Es gibt bewusst kein kleines Ziel —
+        der Daumen darf irgendwo liegen (Mobile-Regel 4 im Extrem: die Trefferfläche IST der
+        halbe Bildschirm). `#atem-ring` zeichnet Fenster + Füllung als SVG-Bögen, `#atem-label`
+        trägt den Countdown bzw. den Halte-/Loslass-Hinweis.
+      -->
+      <div id="atem-hint">Finger auflegen, im Messing loslassen</div>
+      <div id="atem-hit">
+        <div id="atem-ring">
+          <svg viewBox="0 0 160 160" aria-hidden="true">
+            <circle class="atem-ring-track" cx="80" cy="80" r="60" />
+            <circle id="atem-ring-window" cx="80" cy="80" r="60" transform="rotate(-90 80 80)" />
+            <circle id="atem-ring-progress" cx="80" cy="80" r="60" transform="rotate(-90 80 80)" />
+          </svg>
+          <div id="atem-label"></div>
+        </div>
+      </div>
       <div id="rumble-bar-hit">
         <div id="rumble-bar"><div id="rumble-bar-zone"></div><div id="rumble-bar-marker"></div></div>
       </div>
