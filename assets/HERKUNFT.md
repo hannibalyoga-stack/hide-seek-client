@@ -198,6 +198,14 @@ Einsatz im Client: `apps/client/src/scenes/MatchScene.ts`s `handleRuneAdd()` (`R
 |---|---|---|---|---|
 | `effects/eiswand.png` | `effects.eiswand` | `649cde87af8e747dfb253a5e2ba39158c7c189094470ea33c4c627f130f18855` | `3e49f09e764c87a24f9577588b819c819a186530b3fae947f65c2be0ed8960c0` | vorschlag |
 
+## Effekte: Geschwindigkeitsrune — Boden-Siegel (Felix-Auftrag 2026-08-06, GPT-Image-Pipeline)
+
+- `effects/geschwindigkeitsrune.png` — Quelle `assets-src/effects/geschwindigkeitsrune/rune-c.png` (eigene gpt-image-2-Generierung, 1024x1024, Magenta-Keyout, Style-Anchor `style-anchor-room.png`; **Variante C „filigraner Lichtkreis" von Felix am 2026-08-06 aus vier Varianten gewählt** — A/B „Steinsiegel" und D „wuchtiger Lichtkreis" liegen als `status: abgelehnt` daneben, Prompts in den Sidecars). Ersetzt den vormaligen Arc-Platzhalterkreis (`SPEED_RUNE_FILL_COLOR`). Derivat: Alpha-Trim → Quadrat → LANCZOS-Downscale auf 256x256 (LANCZOS statt Nearest, weil die filigranen Linien beim 4:1-Downscale sonst abreißen). Das Motiv ist rotationssymmetrisch und randscharf bis an die Texturkante — der Renderer skaliert es über `setDisplaySize(2 × Trigger-Radius)`, die sichtbare Kreisfläche entspricht damit immer exakt der Trigger-Fläche (K18), bei jeder Größe.
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `effects/geschwindigkeitsrune.png` | `effects.geschwindigkeitsrune-c` | `62537b69cb9205207bc54fafb642b3ce768672c5e45d73cf0419438b3fa8e524` | `6ed36bef760a23dd3fe3e3974e5a410fdf09777930d95afec3224af943721e29` | vorschlag |
+
 ## Audio: Eiswand-Zauber — Entstehen / Arming-Knacken / Zerbrechen (Felix-Auftrag 2026-07-23)
 
 - Drei positionale SFX (eigene ElevenLabs-Generierung, je 3 Varianten nach Sound-Pipeline-Regel, Prompts in den Sidecars offengelegt; **jeweils Variante 3 von Felix am 2026-07-23 gewählt** und als Mono-AAC-Derivat abgeleitet): `eiswand-knacken` (0,35-s-Arming-Telegraph, K18), `eiswand-entstehen` (Wand schießt aus dem Boden, Design-Gate A5), `eiswand-zerbrechen` (Lebensdauer-Ende, A5). Positional → Mono-AAC-Derivate (`afconvert -f m4af -d aac -b 96000 -c 1`).
