@@ -185,6 +185,13 @@
          */
         --rumble-result-miss-color: #ef4444;
         /*
+         * Atem-Ring (Felix-Entscheid 2026-08-06): das Trefferfenster trägt Messing (Kanon-Palette
+         * `--theme-color-brass`), die laufende Füllung Pergament — Grün bleibt exklusiv dem
+         * Erfolgs-Blitz vorbehalten (`--rumble-zone-color`), Rot dem Fehlschlag.
+         */
+        --atem-window-color: #b08d57;
+        --atem-progress-color: #e8e1d3;
+        /*
          * Mobile Bewegungsmodus-Buttons (P3d, Übergabe-Auftrag „Bewegungsmodi (Schleichen/
          * Gehen/Dash)"): 3,5rem ≈ 56px bei Standard-Root-Schriftgröße — komfortabel über der
          * Mobile-Tag-1-Mindestgröße von 48px (Regel 4), relativ zur Root-Schriftgröße (nicht
@@ -3143,12 +3150,134 @@
        * `computeRumbleHintVisibility()` gesteuert (erste `RUMBLE_HINT_MAX_WAVES` Wellen der
        * Session, s. dort) — dieses CSS-Element selbst kennt keine Wellen-Zählung.
        */
-      #rumble-hint {
+      /*
+         * Atem anhalten (Felix-Entscheid 2026-08-06): Haltefläche, Ring und Beschriftung.
+         *
+         * `#atem-hit` liegt als `position: fixed`-Overlay über der Szene, endet aber oberhalb des
+         * Daumen-Clusters (`bottom`-Formel identisch zum Balken-Anker: drei Button-Reihen +
+         * Safe-Area) — Joystick, Interagieren und die Aktions-Slots bleiben während einer Welle
+         * bedienbar. `pointer-events` schaltet AUSSCHLIESSLICH `updateAtemHud()` über `.visible`
+         * (Muster `#rumble-bar-hit`), außerhalb einer Welle schluckt die Fläche nichts.
+         * `touch-action: none` verhindert, dass ein Halten als Scroll-/Zoom-Geste interpretiert
+         * wird (dieselbe Notwendigkeit wie beim Joystick).
+         *
+         * Der Ring ist bewusst NICHT das Tap-Ziel, sondern nur Anzeige — er sitzt in der oberen
+         * Bildschirmhälfte, damit der haltende Daumen ihn nicht verdeckt.
+         */
+      #atem-hit {
+        display: none;
         position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
         bottom: calc(
-          var(--hud-safe-bottom) + var(--hud-gap) + 3 * (var(--move-mode-button-size) + var(--hud-gap)) +
-            var(--rumble-bar-height) + 2 * var(--rumble-bar-hit-halo) + var(--hud-gap)
+          var(--hud-safe-bottom) + var(--hud-gap) + 3 * (var(--move-mode-button-size) + var(--hud-gap))
         );
+        z-index: 3;
+        align-items: center;
+        justify-content: center;
+        pointer-events: none;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      #atem-hit.visible {
+        display: flex;
+        pointer-events: auto;
+      }
+
+      #atem-ring {
+        position: relative;
+        width: min(52vw, 220px);
+        aspect-ratio: 1;
+        animation: rumble-bar-appear-pop 130ms ease-out;
+      }
+
+      #atem-ring svg {
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+
+      #atem-ring circle {
+        fill: none;
+        stroke-linecap: butt;
+      }
+
+      .atem-ring-track {
+        stroke: rgba(232, 225, 211, 0.14);
+        stroke-width: 16;
+      }
+
+      /*
+         * Trefferfenster: liegt PRO WELLE an einer zufälligen Stelle (server-gewürfeltes
+         * `atemWindowStart`) — `stroke-dasharray`/`-dashoffset` werden pro Frame von
+         * `updateAtemHud()` gesetzt. Messing statt Grün, damit die Trefferfarbe des
+         * Ausgang-Blitzes (Grün) eindeutig „geschafft" bedeutet.
+         */
+      #atem-ring-window {
+        stroke: var(--atem-window-color);
+        stroke-width: 16;
+        opacity: 0.55;
+      }
+
+      #atem-ring-progress {
+        stroke: var(--atem-progress-color);
+        stroke-width: 6;
+        transition: stroke 120ms linear;
+      }
+
+      #atem-ring.in-window #atem-ring-progress {
+        stroke: var(--rumble-zone-color);
+      }
+
+      #atem-ring.in-window #atem-ring-window {
+        opacity: 0.9;
+      }
+
+      #atem-label {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--hud-text-color);
+        /* Bewusst klein gehalten: die Beschriftung sitzt IM Ring und darf ihn nie überragen
+         * (bei 375 px ist der Ring ≈195 px breit — „LOSLASSEN" passte dort nicht, deshalb das
+         * kürzere „JETZT" in `updateAtemHud()`). */
+        font: 600 calc(var(--hud-font-size) * 1.15) / 1.2 var(--theme-font-title);
+        letter-spacing: var(--theme-letter-spacing-title);
+        text-shadow: 0 0 6px #000;
+        pointer-events: none;
+      }
+
+      /*
+         * Countdown-Ziffer: deutlich größer als die Wort-Beschriftungen und mit einem kurzen
+         * Puls je Zählschritt — sie ist der Dringlichkeits-Träger der Challenge („leg JETZT den
+         * Finger auf"), s. `atem.ts`s `computeAtemCountdownStep()`.
+         */
+      #atem-label.countdown {
+        font-size: calc(var(--hud-font-size) * 3.2);
+        color: var(--theme-color-gold);
+      }
+
+      #atem-ring.result-hit #atem-ring-progress {
+        stroke: var(--rumble-zone-color);
+        stroke-width: 16;
+      }
+
+      #atem-ring.result-miss #atem-ring-progress {
+        stroke: var(--rumble-result-miss-color);
+        stroke-width: 16;
+      }
+
+      /*
+         * Hinweistext unter dem Ring — dieselbe Sichtbarkeitsregel wie vormals `#rumble-hint`
+         * (erste `RUMBLE_HINT_MAX_WAVES` Wellen der Session, `hud/rumbleHintVisibility.ts`).
+         */
+      #atem-hint {
+        position: fixed;
+        top: 62%;
         left: 50%;
         transform: translateX(-50%);
         color: var(--hud-text-color);
@@ -3160,7 +3289,7 @@
         transition: opacity 300ms ease;
       }
 
-      #rumble-hint.visible {
+      #atem-hint.visible {
         opacity: 1;
       }
 
@@ -3929,6 +4058,46 @@
       }
 
       /*
+       * Cast-Erfolgs-Puls (Querschnitts-Auftrag „Alle Zauber engaging", Fundament A, 2026-08-06):
+       * sechster Slot-Zustand neben den fünf oben — `.cast-fired` feuert am ERFOLGREICHEN
+       * Wirkmoment des getippten Zaubers (Server-bestätigte `spellCooldowns`-0→>0-Flanke,
+       * `scenes/MatchScene.ts`s `handleSelfCastFired()`, via `flashWrClass`, Muster
+       * `cooldown-ready`). Bisher passierte am Slot zwischen Fingertipp und Server-Kanal exakt
+       * nichts — dieser Puls schließt die Feedback-Lücke: kurzer Scale-Pop + Aufhellen + ein
+       * Glow in der RARITÄTSFARBE des Slots (`--cast-fired-glow`, gespeist aus denselben
+       * `--rarity-*`-Tönen wie Nieten/Innenverlauf; Common ohne Stufen-Klasse fällt auf ein
+       * warmes Weißgold zurück — Abwesenheit von Farbe bleibt die Common-Kennzeichnung, aber ein
+       * unsichtbarer Erfolgs-Puls wäre kein Feedback). Dauer deckungsgleich mit
+       * `WR_CAST_FIRED_FLASH_MS` (`scenes/MatchScene.ts`, Muster `WR_COOLDOWN_READY_FLASH_MS`).
+       * Nur auf `.wr-slot` (Zauber-/Item-Slots), nicht auf Dash/Interact — die haben keinen
+       * Cast-Erfolgs-Moment.
+       */
+      .wr-slot.cast-fired {
+        animation: wr-cast-fired 0.32s ease-out;
+      }
+
+      .wr-slot.item-slot--rarity-selten {
+        --cast-fired-glow: rgb(var(--rarity-selten) / 0.8);
+      }
+      .wr-slot.item-slot--rarity-rar {
+        --cast-fired-glow: rgb(var(--rarity-rar) / 0.8);
+      }
+      .wr-slot.item-slot--rarity-episch {
+        --cast-fired-glow: rgb(var(--rarity-episch) / 0.8);
+      }
+      .wr-slot.item-slot--rarity-legendaer {
+        --cast-fired-glow: rgb(var(--rarity-legendaer) / 0.8);
+      }
+
+      @keyframes wr-cast-fired {
+        30% {
+          transform: scale(1.08);
+          filter: brightness(1.3) saturate(1.15);
+          box-shadow: 0 0 18px 3px var(--cast-fired-glow, rgba(255, 236, 190, 0.75));
+        }
+      }
+
+      /*
        * Die 4 generischen Zauber-/Item-Slots (harte Kappe `MAX_ACTION_SLOTS`, `hud/
        * actionSlots.ts`): Bogen-Positionen 1:1 aus dem Mockup vermessen, oberster Platz =
        * Ult-Konvention (Zauber-Standardplatz). `data-kind` (von `scenes/MatchScene.ts`s
@@ -4523,7 +4692,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BYOM_0fz.js"></script>
+    <script type="module" crossorigin src="./assets/index-CdZSQCdJ.js"></script>
   </head>
   <body>
     <div id="game-container">
