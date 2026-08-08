@@ -135,6 +135,17 @@
         /* Randmarker-Kantenlänge in Pixeln (`REVEAL_MARKER_SIZE_PX`, `apps/client/src/config.ts`). */
         --reveal-marker-size: 20px;
         /*
+         * Alarm-Randpfeil (Magische Alarmanlage, Pool #22, Design-Gate 2026-08-07): dasselbe
+         * Signal-Türkis wie der Boden-Ring des Zaubers (`ALARMANLAGE_RING_COLOR`,
+         * `apps/client/src/config.ts`) — Pfeil und Ring sind dasselbe Ereignis an zwei Orten des
+         * Bildschirms, und der Spieler soll sie ohne Nachdenken zusammenbringen. Damit auch klar
+         * unterscheidbar vom Violett der Reveal-Marker (fremde Position) und den Sound-Kompass-
+         * Farben (Geräusch-Dämpfungsstufen): Dieser Pfeil zeigt auf einen EIGENEN Gegenstand.
+         * Größe kommt aus demselben Tweak-Wert wie die anderen beiden Pfeiltypen
+         * (`kompassIndicatorSizePx`, pro Frame als Inline-Style — live tunbar).
+         */
+        --alarm-arrow-color: #6fd8c8;
+        /*
          * Rumpel-HUD-Balken (Versteck-Rumpeln, Anti-Camper §5, ursprünglich Client-/Sound-
          * Scheibe R1c, Felix-Feel-Vorgabe „1:1 aus dem MVP"). **Mobile-Redesign „der Balken ist
          * selbst das Tap-Ziel" (Übergabe-Auftrag `2026-07-16-rumpel-balken-tap-redesign.md`,
@@ -927,11 +938,12 @@
       }
 
       /* Vehikel-Umbau (Felix-Auftrag 2026-08-03): das vormalige Besen-Ladungs-Pips-HUD
-         (`#item-charges-hud`) ist mit dem Ladungs-Modell ersatzlos entfallen. */
-
-      #item-charges-hud.visible {
-        display: block;
-      }
+         (`#item-charges-hud`) ist mit dem Ladungs-Modell ersatzlos entfallen — Markup, Layout-Regel
+         und Geist-Ausblendzeile fielen mit Commit `a0fa9b1a`. HIER FOLGT BEWUSST KEINE REGEL MEHR:
+         die zurückgebliebene `.visible`-Regel wirkte auf kein Element mehr und hat am 2026-08-08
+         einen Fehlbefund ausgelöst (ein Test forderte daraufhin weiterhin eine Geist-Ausblendzeile
+         für das längst entfernte Element). Die Erwähnungen des Selektors weiter unten sind reine
+         Muster-Verweise auf das alte HUD, keine lebende Abhängigkeit. */
 
       /*
        * Reliquien-Zähler (Umsetzungsauftrag „Reliquien als Mini-Währung", Scheibe S1 — Kanon §8
@@ -1749,6 +1761,38 @@
       }
 
       .reveal-marker.visible {
+        display: block;
+      }
+
+      /*
+       * Alarm-Randpfeil (Magische Alarmanlage, Pool #22, Design-Gate 2026-08-07): der EINMALIGE
+       * Pfeil zur EIGENEN Anlage im Moment ihrer Meldung. Container wie `#sound-compass`/
+       * `#reveal-markers` — reines Koordinatensystem innerhalb der Safe-Area (Mobile-Regel 5),
+       * `pointer-events: none` (Regel 1: darf den Whole-Canvas-Joystick nie stören).
+       * `scenes/MatchScene.ts`s `updateAlarmArrowHud()` verankert ihn auf DEMSELBEN Ring um die
+       * eigene Figur wie die beiden anderen Pfeiltypen und setzt Position/Drehung/Deckkraft pro
+       * Frame als Inline-Styles — deshalb bewusst KEIN `transform` und KEINE `opacity` hier.
+       *
+       * **Genau EIN Element statt eines Pools:** Es kann strukturell nur eine eigene Anlage geben
+       * (A5, ein Zweit-Cast ersetzt sie). Form kommt aus der gemeinsamen `.kompass-pfeil`-Klasse
+       * (Kompass-Pfeil-Vereinheitlichung), eigen bleibt allein die Farbe.
+       */
+      #alarm-arrow {
+        position: fixed;
+        top: var(--hud-safe-top);
+        right: var(--hud-safe-right);
+        bottom: var(--hud-safe-bottom);
+        left: var(--hud-safe-left);
+        pointer-events: none;
+      }
+
+      .alarm-arrow {
+        position: absolute;
+        background: var(--alarm-arrow-color);
+        display: none;
+      }
+
+      .alarm-arrow.visible {
         display: block;
       }
 
@@ -4692,7 +4736,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-Cf8q0Co1.js"></script>
+    <script type="module" crossorigin src="./assets/index-BKbgHVua.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -4888,6 +4932,7 @@
       <div id="match-result"></div>
       <div id="sound-compass"></div>
       <div id="reveal-markers"></div>
+      <div id="alarm-arrow"></div>
       <div id="chase-vignette"></div>
       <div id="joystick-base"></div>
       <div id="joystick-knob"></div>
