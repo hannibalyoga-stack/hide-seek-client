@@ -241,3 +241,25 @@ beim Asset-Tausch selbst keine weitere Änderung.
 | `audio/ambience/versteck-herzschlag.m4a` | `audio.versteck-herzschlag` | `c37bbb380e759f13ad3fc9ec7da1412808430a3031a13c42367b8c49dafaaa91` | `7abbc49d096f24e8fd72ff1701d8ea84e156f27f061a6fb05126bf1ecf7c0d98` | vorschlag |
 
 **Verwaiste Alt-Derivate:** `audio/ambience/atem-versteckt-{weiblich,maennlich}.m4a` werden seit der P42-Portierung (2026-07-29) von KEINEM Code-Pfad mehr geladen, liegen aber weiter im Baum. Die Master unter `assets-src/audio/atem-versteckt-*` bleiben laut Asset-Grundgesetz ohnehin erhalten; ob die Derivate gelöscht werden, entscheidet Felix (offener Punkt in `vault/30-Systeme/versteck-herzschlag.md`).
+
+## Audio + Icons: Zauber-Dreierlauf „Ein Sinneskanal, drei Verben" — Stille / Wirrsinn / Tintenwurf (2026-08-11)
+
+Quelle Audio: `assets-src/audio/<slug>/` (ElevenLabs, je 3 Design-Kandidaten nach Regel R1,
+`tinte-treffer` mit dokumentierter R9-Retry-Charge v4/v5). Gewinner-Take laut `auswahl_vermerk`
+im jeweiligen Sidecar (mit volumedetect-Messwerten); Welt-SFX mono 96 kbps AAC, private
+Self-Cues (`wirrsinn-getroffen`, `tinte-treffer`) Stereo 128 kbps (Muster `reliquie-fund`).
+Quelle Icons: `assets-src/icons/zauber-<slug>/` (GPT-Image-Pipeline, Style-Anchor
+`assets-src/style/style-anchor-room.png`); `zauber-wirrsinn` mit dokumentiertem randgebundenem
+Flood-Keyout im Ableitungs-Rezept (gpt-image-2 lieferte zweimal schwarzen statt magenta
+Hintergrund). **Ton- und Icon-Abnahme durch Felix offen** — alle Quell-Status `vorschlag`.
+
+| Datei | Asset-ID | Master-sha256 | Derivat-sha256 | Quell-Status |
+|---|---|---|---|---|
+| `audio/stille-cast/stille-cast.m4a` | `audio.stille-cast-v3` | `3e93d364fc89d6de3e646a978909e3fc78adae42a379af5cfa40448c895a7f0b` | `e9868bbbba7663487e383dd8af5d4ff952a1cac09f4d7964e992d5bdd9d4da48` | vorschlag |
+| `audio/wirrsinn-cast/wirrsinn-cast.m4a` | `audio.wirrsinn-cast-v2` | `3a176c123f69977a2e63d10684ce48fa97936187043963802da76acfbd288ddd` | `fa1d6164e80086379d6fb5f49bfbed3bced4c95641a35b06c854e93b57325377` | vorschlag |
+| `audio/wirrsinn-getroffen/wirrsinn-getroffen.m4a` | `audio.wirrsinn-getroffen-v3` | `a32a4fc2af721815ae96744550e7a5b81a833de8c575375a928f56121e5ad43e` | `420965936f06a0ff0112d334fb50707554961b1e7d1778023e36b16ea55c2ec9` | vorschlag |
+| `audio/tinte-wurf/tinte-wurf.m4a` | `audio.tinte-wurf-v3` | `cf025734aed5e588d64ef57a1a3cbb806d5fbac51c59cb687d3363bd0cbfa764` | `e692129a5fad97f10aba22ca15e41914ba4b79fccafae2e921bc1074d36c69b8` | vorschlag |
+| `audio/tinte-treffer/tinte-treffer.m4a` | `audio.tinte-treffer-v4` | `921a25d3091dba215fb3dfd3fe26ee7708b9686e103595e8588b4cf40e898ded` | `2d8f684e13ef63ad711924448988902acbfd54d6902693b7aeab8527c90162b0` | vorschlag |
+| `icons/zauber-stille.png` | `icons.zauber-stille` | `a9ae8faa47aedbe79aed6db974c02d0a1064eabc62e5ec852475e208efaebf70` | `09bca27da866625fc514f72a31f56909bd2ed6b61780e28657e2700e4ae4b61d` | vorschlag |
+| `icons/zauber-wirrsinn.png` | `icons.zauber-wirrsinn` | `24d0631b696e6891540f3460cbbbc2f54f15b7ae70b8ee98b582baaf1a5bb017` | `448d831bc1123d493bffc1004bf63d50b5052ef0f5a335b464945d645376c02f` | vorschlag |
+| `icons/zauber-tintenwurf.png` | `icons.zauber-tintenwurf` | `32cb3af7af34a73bc73af2ac224395488242c3b05f200c7713e2059072652965` | `0b2bc94f1dfbab4e6abefa96f28915ab6ab404e601528895f6f916a231095b00` | vorschlag |
