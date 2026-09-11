@@ -581,6 +581,24 @@
         pointer-events: none;
       }
 
+      /* FPS-Anzeige (Felix 2026-09-11): klein unter „Players", Touch nur mit dem Augensymbol. */
+      #fps-anzeige {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + 1.5em);
+        left: calc(var(--hud-safe-left) + var(--hud-gap));
+        color: var(--hud-text-color);
+        font: var(--hud-font-size) / 1.4 monospace;
+        opacity: 0.8;
+        text-shadow: 0 0 4px #000;
+        pointer-events: none;
+      }
+      html.touch-ui #fps-anzeige {
+        display: none;
+      }
+      html.touch-ui.hud-werkzeuge-sichtbar #fps-anzeige {
+        display: block;
+      }
+
       /*
        * Debug-HUD-Toggle-Button (Playtest-Fix, Felix 2026-07-11): oben rechts verankert, ÜBER
        * `#match-timer`/`#wins-counter` (die beide entsprechend nach unten verschoben sind).
@@ -1058,6 +1076,73 @@
        * erfüllt die Auftragsvorgabe „muss ohne jedes Asset funktionieren"), die Pips
        * wiederverwenden exakt die `●`/`○`-Zeichen-Konvention von `#item-charges-hud`.
        */
+      /* Kristall-HUD (Felix 2026-09-11) — eigener Block, direkt über dem Reliquien-Zähler. */
+      #kristall-hud {
+        display: none;
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + var(--debug-toggle-button-size) + var(--hud-gap) + 4.4em);
+        right: calc(var(--hud-safe-right) + var(--hud-gap));
+        align-items: center;
+        gap: 0.35em;
+        color: #9be7ff;
+        font: var(--hud-font-size) / 1.4 monospace;
+        font-weight: 700;
+        text-shadow: 0 0 4px #000, 0 0 10px rgba(120, 220, 255, 0.45);
+        pointer-events: none;
+      }
+      #kristall-hud.visible {
+        display: flex;
+      }
+      #kristall-hud-gain {
+        position: absolute;
+        right: 100%;
+        margin-right: 0.5em;
+        white-space: nowrap;
+        color: #d7f4ff;
+        opacity: 0;
+        transform: translateY(0.3em);
+        pointer-events: none;
+      }
+      #kristall-hud-gain.pulse {
+        animation: relic-gain-pulse var(--relic-hud-gain-duration, 1400ms) ease-out 1;
+      }
+      #kristall-banner {
+        position: fixed;
+        left: 50%;
+        top: 30%;
+        transform: translate(-50%, -50%) scale(0.9);
+        opacity: 0;
+        padding: 0.8rem 1.4rem;
+        border-radius: 0.8rem;
+        background: rgba(8, 20, 30, 0.9);
+        border: 1px solid rgba(155, 231, 255, 0.6);
+        box-shadow: 0 0 24px rgba(120, 220, 255, 0.35);
+        color: #e8fbff;
+        font: 1rem / 1.3 sans-serif;
+        text-align: center;
+        pointer-events: none;
+        z-index: 1050;
+        transition: opacity 220ms ease-out, transform 220ms ease-out;
+      }
+      #kristall-banner.is-offen {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      #kristall-banner-titel {
+        font-size: 0.85rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #9be7ff;
+      }
+      #kristall-banner-zeile {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0.15rem 0;
+      }
+      #kristall-banner-detail {
+        font-size: 0.9rem;
+        opacity: 0.85;
+      }
       #relic-hud {
         display: none;
         position: fixed;
@@ -3931,6 +4016,15 @@
         display: inline-block;
       }
 
+      /* Zauberliste (Felix 2026-09-11): auf Touch wie Bot-/Tweak-Knopf hinter dem Augensymbol. */
+      html.touch-ui #zauberliste-toggle {
+        display: none;
+      }
+
+      html.touch-ui.hud-werkzeuge-sichtbar #zauberliste-toggle {
+        display: inline-block;
+      }
+
       /* Augensymbol neben der Minimap (nur Touch): schaltet Bot- und Tweak-Knopf ein/aus. Sitzt
          rechts vom Panel; die Panel-Breite kommt aus `--minimap-breite-px`, das
          `applyMinimapCanvasSize()` in `scenes/MatchScene.ts` setzt. 48-px-Touch-Ziel. */
@@ -5052,7 +5146,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-DlBEdP4c.js"></script>
+    <script type="module" crossorigin src="./assets/index-670NZ5mT.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -5062,6 +5156,8 @@
       </div>
       <div id="debug-overlay"></div>
       <div id="players-count">Players: 0</div>
+      <!-- FPS (Felix 2026-09-11): Desktop immer, Touch nur hinter dem Augensymbol. -->
+      <div id="fps-anzeige">FPS –</div>
       <div id="debug-toggle-button">DBG</div>
       <div id="netlog-export-button">LOG</div>
       <div id="dev-reset-button" title="Dev: Raum leeren &amp; neu starten">⟳</div>
@@ -5097,6 +5193,18 @@
       <div id="match-timer"></div>
       <div id="wins-counter">Wins: 0</div>
       <!-- Reliquien-Zähler (Scheibe S1, s. CSS oben): Gold-Edelstein rein per Inline-SVG gezeichnet (kein PNG-Asset nötig). -->
+      <!-- Kristall-Zähler (Felix 2026-09-11): zweite Währung, sitzt ÜBER den Reliquien (s. CSS). -->
+      <div id="kristall-hud">
+        <span id="kristall-hud-icon" aria-hidden="true">💎</span>
+        <span id="kristall-hud-wert">0</span>
+        <span id="kristall-hud-gain"></span>
+      </div>
+      <!-- Kristall-Banner: Beute beim Fang, Extraktion bei Flucht/Rundenende. -->
+      <div id="kristall-banner" aria-hidden="true">
+        <div id="kristall-banner-titel"></div>
+        <div id="kristall-banner-zeile"></div>
+        <div id="kristall-banner-detail"></div>
+      </div>
       <div id="relic-hud">
         <img id="relic-hud-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
         <span id="relic-hud-pips"></span>
