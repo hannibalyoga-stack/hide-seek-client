@@ -3533,6 +3533,56 @@
       #zauberliste-toggle.is-offen {
         background: rgba(60, 40, 110, 0.9);
       }
+      /* Käfig-Rückfrage (Felix 2026-09-11) — eigener Block, unabhängig von den Touch-Ausblendungen. */
+      #kaefig-frage {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: min(92vw, 22rem);
+        box-sizing: border-box;
+        display: none;
+        flex-direction: column;
+        gap: 0.7rem;
+        padding: 1rem;
+        border-radius: 0.7rem;
+        background: rgba(12, 10, 22, 0.96);
+        border: 1px solid rgba(255, 90, 70, 0.55);
+        color: var(--hud-text-color);
+        font: 0.95rem / 1.35 sans-serif;
+        text-align: center;
+        z-index: 1100;
+        pointer-events: auto;
+      }
+      #kaefig-frage.is-offen {
+        display: flex;
+      }
+      #kaefig-frage-titel {
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: #ff7a66;
+      }
+      #kaefig-frage-knoepfe {
+        display: flex;
+        gap: 0.6rem;
+        justify-content: center;
+      }
+      #kaefig-frage-knoepfe button {
+        min-height: 48px;
+        min-width: 48px;
+        flex: 1 1 0;
+        padding: 0.6rem 0.8rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(255, 255, 255, 0.08);
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+      }
+      #kaefig-frage-ja {
+        background: rgba(196, 58, 48, 0.55);
+        border-color: rgba(255, 120, 100, 0.7);
+      }
       #zauberliste-panel {
         position: fixed;
         top: calc(var(--hud-safe-top) + var(--hud-gap) + 40px);
@@ -5002,7 +5052,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CidxRGFL.js"></script>
+    <script type="module" crossorigin src="./assets/index-DlBEdP4c.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -5030,6 +5080,16 @@
         Fang-Finale-Banner (Felix-Auftrag 2026-08-10, s. CSS oben): NUR der Fänger sieht es, EIN
         Element mit zwei Zeilen (Schlagwort + Ausbeute), Texte aus `hud/catchFinisherBanner.ts`.
       -->
+      <!-- Käfig-Rückfrage (Felix 2026-09-11): erscheint, wenn der Server `kaefigFrage` schickt;
+           „Befreien" sendet `kaefigFreilassen`, „Lieber nicht" schließt nur. Touch-Ziele ≥ 48 px. -->
+      <div id="kaefig-frage" role="dialog" aria-modal="true" aria-hidden="true">
+        <div id="kaefig-frage-titel">Ein Käfig</div>
+        <div id="kaefig-frage-text">Willst du das Wesen befreien?</div>
+        <div id="kaefig-frage-knoepfe">
+          <button type="button" id="kaefig-frage-nein">Lieber nicht</button>
+          <button type="button" id="kaefig-frage-ja">Befreien</button>
+        </div>
+      </div>
       <div id="catch-finisher-banner" aria-hidden="true">
         <div id="catch-finisher-headline"></div>
         <div id="catch-finisher-detail"></div>
