@@ -3732,8 +3732,53 @@
          (Begründung ausführlich an `#dev-reset-button` oben). Schlägt das `display: flex` aus
          `#dev-reset-button.visible`, das `setupDevResetButton()` bei aktivem Dev-Gate setzt:
          höhere Spezifität durch das zusätzliche `html`-Element im Selektor. */
-      html.touch-ui #dev-reset-button {
+      html.touch-ui #dev-reset-button,
+      /* Felix-Auftrag 2026-09-11: auch der Bot-Knopf ist auf dem Handy standardmäßig aus —
+         beide Werkzeug-Knöpfe (Bots, Tweak) holt das Augensymbol neben der Minimap zurück
+         (`html.hud-werkzeuge-sichtbar`, gesetzt in `src/index.ts`). */
+      html.touch-ui #bot-panel-button {
         display: none;
+      }
+
+      html.touch-ui.hud-werkzeuge-sichtbar #bot-panel-button {
+        display: flex;
+      }
+
+      html.touch-ui.hud-werkzeuge-sichtbar #tweak-console-toggle {
+        display: inline-block;
+      }
+
+      /* Augensymbol neben der Minimap (nur Touch): schaltet Bot- und Tweak-Knopf ein/aus. Sitzt
+         rechts vom Panel; die Panel-Breite kommt aus `--minimap-breite-px`, das
+         `applyMinimapCanvasSize()` in `scenes/MatchScene.ts` setzt. 48-px-Touch-Ziel. */
+      #hud-werkzeuge-auge {
+        display: none;
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + 2em);
+        left: calc(var(--hud-safe-left) + var(--hud-gap) + var(--minimap-breite-px, 150px) + var(--hud-gap));
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--hud-text-color);
+        background: rgba(0, 0, 0, 0.35);
+        color: var(--hud-text-color);
+        font: 1.1rem / 1 sans-serif;
+        align-items: center;
+        justify-content: center;
+        pointer-events: auto;
+        touch-action: none;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        cursor: pointer;
+        opacity: 0.55;
+      }
+
+      html.touch-ui #hud-werkzeuge-auge {
+        display: flex;
+      }
+
+      html.hud-werkzeuge-sichtbar #hud-werkzeuge-auge {
+        opacity: 1;
       }
 
       html.touch-ui #match-timer {
@@ -4824,10 +4869,11 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-ByOduNBY.js"></script>
+    <script type="module" crossorigin src="./assets/index-BR3oT8Sb.js"></script>
   </head>
   <body>
     <div id="game-container">
+      <div id="hud-werkzeuge-auge" role="button" aria-label="Werkzeug-Knöpfe ein-/ausblenden" title="Bots und Settings ein-/ausblenden">👁</div>
       <div id="minimap-panel">
         <canvas id="minimap-canvas"></canvas>
       </div>
