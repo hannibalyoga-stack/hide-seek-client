@@ -3732,10 +3732,14 @@
          (Begründung ausführlich an `#dev-reset-button` oben). Schlägt das `display: flex` aus
          `#dev-reset-button.visible`, das `setupDevResetButton()` bei aktivem Dev-Gate setzt:
          höhere Spezifität durch das zusätzliche `html`-Element im Selektor. */
-      html.touch-ui #dev-reset-button,
+      html.touch-ui #dev-reset-button {
+        display: none;
+      }
+
       /* Felix-Auftrag 2026-09-11: auch der Bot-Knopf ist auf dem Handy standardmäßig aus —
          beide Werkzeug-Knöpfe (Bots, Tweak) holt das Augensymbol neben der Minimap zurück
-         (`html.hud-werkzeuge-sichtbar`, gesetzt in `src/index.ts`). */
+         (`html.hud-werkzeuge-sichtbar`, gesetzt in `src/index.ts`). Eigener Block, damit der
+         gemeinsame Ausblend-Block der Dev-Knöpfe (Wächtertests) unverändert bleibt. */
       html.touch-ui #bot-panel-button {
         display: none;
       }
@@ -4869,7 +4873,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-BR3oT8Sb.js"></script>
+    <script type="module" crossorigin src="./assets/index-ALLvo20-.js"></script>
   </head>
   <body>
     <div id="game-container">
