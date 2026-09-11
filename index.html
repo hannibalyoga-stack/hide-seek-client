@@ -3508,6 +3508,135 @@
        * interaktiven Kindelemente bekommen ihre 48px-Mindestgröße über die jeweiligen
        * `.tweak-*`-Klassen unten (Regel 4).
        */
+      /* Zauberliste (Felix 2026-09-11): Knopf neben dem Tweak-Knopf, Fenster als Kachelraster —
+         Icon, Name, Haken; Tipp wählt an/ab. Auf Touch immer sichtbar (Playtest-Werkzeug). */
+      #zauberliste-toggle {
+        position: fixed;
+        top: 6px;
+        left: 50%;
+        transform: translateX(calc(-50% + 78px));
+        z-index: 10000;
+        padding: 5px 12px;
+        min-height: 32px;
+        background: rgba(18, 20, 28, 0.82);
+        color: #e5e7eb;
+        border: 1px solid #4b5563;
+        border-radius: 6px;
+        font: 600 13px system-ui, sans-serif;
+        cursor: pointer;
+        pointer-events: auto;
+      }
+      html.touch-ui #zauberliste-toggle {
+        transform: translateX(-50%);
+        min-height: 40px;
+      }
+      #zauberliste-toggle.is-offen {
+        background: rgba(60, 40, 110, 0.9);
+      }
+      #zauberliste-panel {
+        position: fixed;
+        top: calc(var(--hud-safe-top) + var(--hud-gap) + 40px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(94vw, 34rem);
+        max-height: calc(100vh - var(--hud-safe-top) - var(--hud-safe-bottom) - 60px);
+        overflow-y: auto;
+        box-sizing: border-box;
+        display: none;
+        flex-direction: column;
+        gap: 0.6rem;
+        padding: 0.75rem;
+        border-radius: 0.6rem;
+        background: rgba(12, 10, 22, 0.94);
+        border: 1px solid rgba(199, 155, 255, 0.35);
+        color: var(--hud-text-color);
+        font: 0.85rem / 1.3 sans-serif;
+        z-index: 1000;
+        pointer-events: auto;
+        touch-action: pan-y;
+      }
+      #zauberliste-panel.is-offen {
+        display: flex;
+      }
+      .zauberliste__kopf {
+        display: flex;
+        align-items: baseline;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+      }
+      .zauberliste__kopf span {
+        opacity: 0.7;
+        font-size: 0.78rem;
+      }
+      .zauberliste__schliessen {
+        margin-left: auto;
+        min-width: 40px;
+        min-height: 40px;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 6px;
+        color: inherit;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      .zauberliste__raster {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+        gap: 0.5rem;
+      }
+      .zauberliste__kachel {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.3rem;
+        min-height: 92px;
+        padding: 0.5rem 0.3rem;
+        border-radius: 0.5rem;
+        border: 2px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.04);
+        color: inherit;
+        cursor: pointer;
+        opacity: 0.45;
+        filter: grayscale(0.8);
+        transition: opacity 120ms, filter 120ms, border-color 120ms;
+      }
+      .zauberliste__kachel.is-aktiv {
+        opacity: 1;
+        filter: none;
+        border-color: #c79bff;
+        background: rgba(120, 90, 200, 0.18);
+      }
+      .zauberliste__icon {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+      }
+      .zauberliste__icon img {
+        width: 44px;
+        height: 44px;
+        object-fit: contain;
+      }
+      .zauberliste__name {
+        font-size: 0.75rem;
+        text-align: center;
+        line-height: 1.15;
+      }
+      .zauberliste__haken {
+        position: absolute;
+        top: 4px;
+        right: 6px;
+        font-size: 0.8rem;
+        color: #c79bff;
+        opacity: 0;
+      }
+      .zauberliste__kachel.is-aktiv .zauberliste__haken {
+        opacity: 1;
+      }
+
       #tweak-console {
         position: fixed;
         top: calc(var(--hud-safe-top) + var(--hud-gap));
@@ -4873,7 +5002,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-ALLvo20-.js"></script>
+    <script type="module" crossorigin src="./assets/index-DyKOpoiJ.js"></script>
   </head>
   <body>
     <div id="game-container">
