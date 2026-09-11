@@ -1348,6 +1348,17 @@
       }
 
       /* Preis — Reliquien-Icon + Zahl, deutlich golden abgesetzt (Felix-Vorgabe „klar sehen wie teuer"). */
+      /* Kauf-Rückmeldung (Backlog 6, 2026-09-11): Grund unter dem Angebot, nur bei ausgegrautem Knopf. */
+      .merchant-offer__grund {
+        display: none;
+        flex-basis: 100%;
+        font-size: 0.72rem;
+        color: #ff8a7a;
+        opacity: 0.95;
+      }
+      .merchant-offer:disabled .merchant-offer__grund:not(:empty) {
+        display: block;
+      }
       .merchant-offer__price {
         display: flex;
         align-items: center;
@@ -5146,7 +5157,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-fqu7hGXh.js"></script>
+    <script type="module" crossorigin src="./assets/index-aeTHwsYl.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -5231,6 +5242,7 @@
             <img class="merchant-offer__price-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
             <span class="merchant-offer__price-value"></span>
           </span>
+          <span class="merchant-offer__grund"></span>
         </button>
         <button type="button" class="merchant-offer" id="merchant-offer-1" data-entry-index="1">
           <span class="merchant-offer__icon-emoji"></span>
@@ -5240,6 +5252,7 @@
             <img class="merchant-offer__price-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
             <span class="merchant-offer__price-value"></span>
           </span>
+          <span class="merchant-offer__grund"></span>
         </button>
         <button type="button" class="merchant-offer" id="merchant-offer-2" data-entry-index="2">
           <span class="merchant-offer__icon-emoji"></span>
@@ -5249,6 +5262,7 @@
             <img class="merchant-offer__price-icon" src="assets/icons/reliquie.png" alt="Reliquie" aria-hidden="true" />
             <span class="merchant-offer__price-value"></span>
           </span>
+          <span class="merchant-offer__grund"></span>
         </button>
         <!-- Zeilen-Klappe des Händler-Fensters, Muster `#loot-panel__klappe`. -->
         <div class="panel-klappe" id="merchant-panel__klappe">
