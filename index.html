@@ -890,6 +890,75 @@
        * Photosensitivität: eine einzelne ~180-ms-Skalierung ohne Farbwechsel-Flackern, keine
        * Wiederholung (A4-Regel, s. `config.ts`s Fang-Finale-Blockdoku).
        */
+      /*
+       * ROLLEN-BANNER (Felix-Auftrag 2026-09-12) — dieselbe Bildsprache wie das Fang-Finale
+       * (Cinzel-Schlagwort, Georgia-Detailzeile), aber höher im Bild und mit einem Einflug von
+       * oben: es ist die Eröffnung einer Runde, nicht ihr Höhepunkt.
+       *
+       * `z-index: 12` liegt bewusst ÜBER der Vollbild-Karte (`#karte-vollbild`), weil beide zum
+       * Rundenstart gleichzeitig erscheinen und die Rolle die wichtigere der beiden Nachrichten
+       * ist.
+       */
+      #rollen-banner {
+        position: fixed;
+        top: 22%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: min(94vw, 38rem);
+        text-align: center;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 12;
+        transition: opacity 260ms ease;
+      }
+
+      #rollen-banner.visible {
+        opacity: 1;
+        animation: rollen-banner-einflug 420ms cubic-bezier(0.2, 1.3, 0.4, 1) both;
+      }
+
+      #rollen-banner-headline {
+        color: var(--theme-color-text-title);
+        font: calc(var(--hud-font-size) * 2.3) / 1.1 var(--theme-font-title);
+        letter-spacing: var(--theme-letter-spacing-title);
+        text-shadow:
+          0 0 12px #000,
+          0 0 26px rgba(255, 215, 94, 0.5);
+      }
+
+      #rollen-banner-detail {
+        margin-top: 0.35em;
+        color: var(--theme-color-text-body);
+        font: calc(var(--hud-font-size) * 1.1) / 1.4 var(--theme-font-body);
+        font-variant-numeric: tabular-nums;
+        text-shadow: 0 0 6px #000;
+      }
+
+      /* Der Fänger bekommt seinen Rollen-Ton, damit die Rolle auch ohne Lesen erkennbar ist. */
+      #rollen-banner.is-catcher #rollen-banner-headline {
+        color: var(--theme-color-catcher, #ffd9a0);
+        text-shadow:
+          0 0 12px #000,
+          0 0 26px rgba(255, 140, 60, 0.55);
+      }
+
+      @keyframes rollen-banner-einflug {
+        from {
+          transform: translate(-50%, calc(-50% - 1.2rem));
+          opacity: 0;
+        }
+        to {
+          transform: translate(-50%, -50%);
+          opacity: 1;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #rollen-banner.visible {
+          animation: none;
+        }
+      }
+
       #catch-finisher-banner {
         position: fixed;
         top: 32%;
@@ -2004,6 +2073,361 @@
        * (`chaseVignetteMaxAlpha` / `chaseVignetteMaxBlurVmin` / `chaseVignetteMaxSpreadVmin`) — die
        * Grundfarbe selbst bleibt ein fester, gedämpfter Warnrot-Ton (kein Kampf-/Blut-Rot, K1).
        */
+      /*
+       * ========================================================================================
+       * ZWISCHENRUNDEN-SHOP (Felix-Auftrag 2026-09-12: „Die UI muss einladend sein. Orientiere
+       * dich hier an anderen Mobile-Game-Shops.")
+       * ========================================================================================
+       *
+       * Die Anleihen bei Mobile-Shops sind bewusst und benannt: eine große Karte statt eines
+       * Fensterchens, ein Kopf mit Währung und Countdown, Reiter statt einer endlosen Liste,
+       * Kacheln mit Preis-Pille unten rechts, und ein einziger großer Handlungsknopf am Fuß.
+       *
+       * Was NICHT übernommen ist: die Dringlichkeits-Dramaturgie dieser Shops (rote Timer,
+       * blinkende „nur noch 2!"-Etiketten, Konfetti beim Kauf). Hier drin wird mit erspielter
+       * Währung gekauft, nicht mit echtem Geld — der Shop darf einladend sein, aber er hat
+       * niemanden zu drängen. Der Countdown zählt deshalb ruhig herunter und wird erst in den
+       * letzten Sekunden farbig.
+       *
+       * Mobile-Tag-1-Regeln: alles relativ (rem/%/vh), Touch-Targets ≥ 48 px, Safe-Area oben und
+       * unten berücksichtigt, Kachelraster fließend (`auto-fill`), Scrollen nur im Kachelbereich.
+       */
+      #shop-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 11;
+        background: radial-gradient(circle at 50% 30%, rgba(28, 26, 23, 0.86), rgba(10, 9, 8, 0.96));
+        backdrop-filter: blur(2px);
+        padding: calc(var(--hud-safe-top) + var(--hud-gap)) calc(var(--hud-safe-right) + var(--hud-gap))
+          calc(var(--hud-safe-bottom) + var(--hud-gap)) calc(var(--hud-safe-left) + var(--hud-gap));
+        align-items: center;
+        justify-content: center;
+      }
+
+      #shop-overlay.visible {
+        display: flex;
+      }
+
+      #shop-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.6rem;
+        width: min(100%, 34rem);
+        max-height: 100%;
+        padding: 0.9rem;
+        border-radius: 0.9rem;
+        border: 1px solid var(--theme-color-brass);
+        background: linear-gradient(180deg, rgba(38, 34, 29, 0.98), rgba(22, 20, 17, 0.98));
+        box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.6);
+        color: var(--theme-color-text-body);
+        font: var(--hud-font-size) / 1.4 var(--theme-font-body);
+      }
+
+      #shop-head {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      #shop-titel {
+        flex: 1;
+        color: var(--theme-color-text-title);
+        font: calc(var(--hud-font-size) * 1.4) / 1.1 var(--theme-font-title);
+        letter-spacing: var(--theme-letter-spacing-title);
+      }
+
+      #shop-kristalle {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.25rem 0.6rem;
+        border-radius: 999px;
+        border: 1px solid rgba(176, 141, 87, 0.5);
+        background: rgba(0, 0, 0, 0.35);
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+      }
+
+      #shop-timer {
+        min-width: 3rem;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        color: var(--theme-color-text-body);
+      }
+
+      /* Nur die letzten Sekunden werden farbig — kein Dauer-Alarm. */
+      #shop-timer.is-knapp {
+        color: var(--hud-low-time-color);
+        font-weight: 700;
+      }
+
+      /* ── Runen-Slots ───────────────────────────────────────────────────────────────────────── */
+      #shop-slots {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+
+      .shop-slot {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        min-height: 48px;
+        padding: 0.4rem 0.6rem;
+        border-radius: 0.6rem;
+        /* Der leere Slot ist gestrichelt, der belegte massiv — der Unterschied ist auf einen Blick
+           lesbar, auch ohne den Text zu lesen. */
+        border: 1px dashed rgba(176, 141, 87, 0.45);
+        background: rgba(0, 0, 0, 0.25);
+        color: rgba(232, 225, 211, 0.55);
+      }
+
+      .shop-slot.is-belegt {
+        border-style: solid;
+        border-color: var(--theme-color-gold);
+        background: linear-gradient(180deg, rgba(212, 175, 55, 0.18), rgba(0, 0, 0, 0.3));
+        color: var(--theme-color-text-title);
+        box-shadow: inset 0 0 0.8rem rgba(212, 175, 55, 0.25);
+      }
+
+      .shop-slot__icon {
+        font-size: 1.2em;
+      }
+
+      .shop-slot__name {
+        font-size: 0.9em;
+      }
+
+      /* ── Reiter ────────────────────────────────────────────────────────────────────────────── */
+      #shop-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.35rem;
+      }
+
+      .shop-tab {
+        min-height: 48px;
+        padding: 0.4rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(176, 141, 87, 0.35);
+        background: rgba(0, 0, 0, 0.3);
+        color: rgba(232, 225, 211, 0.75);
+        font: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .shop-tab.is-active {
+        border-color: var(--theme-color-gold);
+        background: rgba(212, 175, 55, 0.18);
+        color: var(--theme-color-text-title);
+        font-weight: 700;
+      }
+
+      /* ── Kachelraster ─────────────────────────────────────────────────────────────────────── */
+      #shop-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+        gap: 0.5rem;
+        overflow-y: auto;
+        /* Scrollen NUR hier, nicht auf der Karte — sonst wandert der Fertig-Knopf aus dem Bild. */
+        flex: 1;
+        min-height: 6rem;
+        padding-right: 0.15rem;
+      }
+
+      .shop-kachel {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        min-height: 5.5rem;
+        padding: 0.55rem 0.6rem 2rem;
+        border-radius: 0.6rem;
+        border: 1px solid rgba(176, 141, 87, 0.4);
+        background: linear-gradient(180deg, rgba(52, 46, 38, 0.9), rgba(26, 23, 20, 0.9));
+        color: var(--theme-color-text-body);
+        font: inherit;
+        text-align: left;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+      }
+
+      .shop-kachel__name {
+        color: var(--theme-color-text-title);
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      .shop-kachel__kurz {
+        font-size: 0.8em;
+        opacity: 0.7;
+      }
+
+      /* Preis-Pille unten rechts — die Stelle, an der in jedem Mobile-Shop der Preis steht. */
+      .shop-kachel__preis {
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.45);
+        border: 1px solid rgba(176, 141, 87, 0.5);
+        font-size: 0.85em;
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+      }
+
+      .shop-kachel__grund {
+        position: absolute;
+        left: 0.6rem;
+        right: 0.6rem;
+        bottom: 0.5rem;
+        font-size: 0.75em;
+        color: var(--hud-low-time-color);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /*
+       * Gesperrte Kachel: der Grund bekommt die volle Breite unten, der Preis rückt dafür nach
+       * OBEN rechts. Im ersten Layout-Durchgang lagen beide unten und überlappten bei
+       * „Not enough crystals" sichtbar — und ausgerechnet die Kachel, die etwas erklären soll,
+       * war die einzige unleserliche.
+       */
+      .shop-kachel.is-gesperrt {
+        opacity: 0.45;
+      }
+
+      .shop-kachel.is-gesperrt .shop-kachel__preis {
+        top: 0.5rem;
+        bottom: auto;
+      }
+
+      /* Besessen: die Kachel bleibt stehen, verliert aber ihren Preis und bekommt einen Haken —
+         „das hast du schon" ist eine andere Aussage als „das kannst du nicht". */
+      .shop-kachel.is-besessen {
+        border-color: rgba(212, 175, 55, 0.7);
+      }
+
+      .shop-kachel.is-besessen .shop-kachel__preis {
+        color: var(--theme-color-text-title);
+      }
+
+      /* Angelegte Rune: kräftiger Rahmen + Leuchten, damit „equipped" nie verwechselbar ist. */
+      .shop-kachel.is-aktiv {
+        border-color: var(--theme-color-gold);
+        box-shadow:
+          0 0 0 1px var(--theme-color-gold),
+          0 0 1.2rem rgba(212, 175, 55, 0.35);
+        background: linear-gradient(180deg, rgba(212, 175, 55, 0.22), rgba(26, 23, 20, 0.9));
+      }
+
+      /* ── Tooltip (Long-Press) ─────────────────────────────────────────────────────────────── */
+      #shop-tooltip {
+        display: none;
+        padding: 0.6rem 0.7rem;
+        border-radius: 0.6rem;
+        border: 1px solid var(--theme-color-brass);
+        background: rgba(12, 11, 9, 0.97);
+        font-size: 0.9em;
+        white-space: pre-wrap;
+      }
+
+      #shop-tooltip.visible {
+        display: block;
+      }
+
+      #shop-tooltip-titel {
+        color: var(--theme-color-text-title);
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+      }
+
+      /* ── Fuß ──────────────────────────────────────────────────────────────────────────────── */
+      #shop-foot {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+      }
+
+      #shop-bereit {
+        flex: 1;
+        font-size: 0.9em;
+        opacity: 0.8;
+        font-variant-numeric: tabular-nums;
+      }
+
+      #shop-fertig {
+        min-height: 48px;
+        min-width: 9rem;
+        padding: 0.5rem 1.1rem;
+        border-radius: 0.6rem;
+        border: 1px solid var(--theme-color-gold);
+        background: linear-gradient(180deg, rgba(212, 175, 55, 0.85), rgba(150, 118, 30, 0.85));
+        color: #1c1a17;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      /* Gedrückter Zustand: der Knopf bleibt sichtbar, wird aber ruhig — man hat abgegeben. */
+      #shop-fertig.is-fertig {
+        background: rgba(0, 0, 0, 0.35);
+        color: var(--theme-color-text-title);
+      }
+
+      /*
+       * GESPERRTE FÄHIGKEITEN (Felix-Auftrag 2026-09-12) — Dash, Schleichen und Besen sind im
+       * Shop-Modus nicht mehr von Anfang an da.
+       *
+       * Der Knopf bleibt STEHEN und bekommt ein Schloss, statt zu verschwinden: ein fehlender
+       * Knopf sieht aus wie ein Fehler, ein Knopf mit Schloss sagt „das gibt es, und du kannst es
+       * kaufen". Er ist zugleich der einzige Ort, an dem man mitten in der Runde daran erinnert
+       * wird, dass es einen Shop gibt.
+       */
+      .wr-button.is-locked {
+        opacity: 0.4;
+        filter: grayscale(0.85);
+      }
+
+      .wr-button.is-locked::after {
+        content: "🔒";
+        position: absolute;
+        right: 0.15rem;
+        bottom: 0.1rem;
+        font-size: 0.8rem;
+        line-height: 1;
+        filter: none;
+        opacity: 0.95;
+      }
+
+      /*
+       * Teleport-Rune am Dash-Knopf: derselbe Knopf, andere Bedeutung. Der Ladestand steigt als
+       * goldener Balken von unten — bewusst NICHT der Cooldown-Wipe, der im selben Knopf die
+       * Gegenrichtung erzählt („wird wieder frei"), während das Laden „wird stärker" heißt.
+       */
+      .wr-button.is-teleport::before {
+        content: "";
+        position: absolute;
+        inset: auto 0 0 0;
+        height: calc(var(--wr-slot-ladung, 0) * 100%);
+        background: linear-gradient(0deg, rgba(212, 175, 55, 0.75), rgba(255, 232, 170, 0.35));
+        pointer-events: none;
+        border-radius: inherit;
+      }
+
+      .wr-button.is-teleport.is-ladend {
+        box-shadow: 0 0 0.9rem rgba(212, 175, 55, 0.6);
+      }
+
       #chase-vignette {
         position: fixed;
         top: 0;
@@ -2015,6 +2439,102 @@
         opacity: 0;
         box-shadow: inset 0 0 calc(var(--chase-vignette-blur, 12) * 1vmin)
           calc(var(--chase-vignette-spread, 2) * 1vmin) rgba(153, 27, 27, 0.9);
+      }
+
+      /*
+       * FANG-BEREITSCHAFT (Felix-Auftrag 2026-09-12) — „jetzt kannst du fangen".
+       *
+       * Zwei getrennte Lautstärken in EINEM Element (volle Begründung in
+       * `MatchScene.updateFangBereitSignal()`):
+       *   · `is-flash` — EIN kurzer goldener Vollbild-Anriss in dem Moment, in dem es losgeht.
+       *   · `is-ready` — danach nur noch ein ruhig atmender Rand, solange es möglich bleibt.
+       *
+       * Photosensitivität: der Blitz läuft GENAU EINMAL je Flanke und bleibt mit 0,28 unter dem
+       * Deckel des Fang-Finales; der Dauerpuls atmet mit 1,4 s (≈ 0,7 Hz) weit unterhalb des
+       * kritischen 3-Hz-Bereichs und erreicht nie mehr als ein Drittel der Blitz-Deckung.
+       * `prefers-reduced-motion` schaltet beide Bewegungen ab und lässt nur einen stillen Rand.
+       */
+      #catch-ready-overlay {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+        z-index: 5;
+      }
+
+      #catch-ready-overlay.is-ready {
+        opacity: 1;
+        box-shadow: inset 0 0 14vmin 2vmin rgba(255, 205, 90, 0.32);
+        animation: catch-ready-atmen 1.4s ease-in-out infinite;
+      }
+
+      #catch-ready-overlay.is-flash::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 55%, rgba(255, 232, 170, 0.85), rgba(255, 200, 80, 0) 72%);
+        animation: catch-ready-blitz 320ms ease-out 1 both;
+      }
+
+      @keyframes catch-ready-atmen {
+        0%,
+        100% {
+          box-shadow: inset 0 0 12vmin 1.5vmin rgba(255, 205, 90, 0.22);
+        }
+        50% {
+          box-shadow: inset 0 0 18vmin 3vmin rgba(255, 205, 90, 0.42);
+        }
+      }
+
+      @keyframes catch-ready-blitz {
+        0% {
+          opacity: 0;
+        }
+        22% {
+          opacity: 0.28;
+        }
+        100% {
+          opacity: 0;
+        }
+      }
+
+      /*
+       * Der Knopf selbst, wenn gefangen werden kann (Felix: „sehr auffällig"). Er wächst, bekommt
+       * einen goldenen Doppelring und pulst im GLEICHEN Takt wie der Bildschirmrand — beide
+       * Signale sollen als EIN Signal gelesen werden, nicht als zwei konkurrierende.
+       */
+      #wr-interact-button.is-catch-ready {
+        color: #fff3cf;
+        transform: scale(1.14);
+        box-shadow:
+          0 0 0 0.35rem rgba(255, 205, 90, 0.55),
+          0 0 2.2rem 0.5rem rgba(255, 180, 40, 0.65);
+        animation: catch-ready-knopf 1.4s ease-in-out infinite;
+      }
+
+      @keyframes catch-ready-knopf {
+        0%,
+        100% {
+          box-shadow:
+            0 0 0 0.25rem rgba(255, 205, 90, 0.45),
+            0 0 1.6rem 0.3rem rgba(255, 180, 40, 0.5);
+        }
+        50% {
+          box-shadow:
+            0 0 0 0.5rem rgba(255, 205, 90, 0.7),
+            0 0 2.8rem 0.7rem rgba(255, 180, 40, 0.8);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #catch-ready-overlay.is-ready,
+        #wr-interact-button.is-catch-ready {
+          animation: none;
+        }
+        #catch-ready-overlay.is-flash::after {
+          animation: none;
+          opacity: 0;
+        }
       }
 
       /*
@@ -5157,7 +5677,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-CCwFYLGT.js"></script>
+    <script type="module" crossorigin src="./assets/index-Bed9p6eI.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -5196,6 +5716,17 @@
           <button type="button" id="kaefig-frage-nein">Lieber nicht</button>
           <button type="button" id="kaefig-frage-ja">Befreien</button>
         </div>
+      </div>
+      <!--
+        Rollen-Banner zum Rundenstart (Felix-Auftrag 2026-09-12: „es soll klar werden, welche Rolle
+        man jetzt ist"). Eigenes Element statt einer zweiten Betriebsart des Fang-Finale-Banners:
+        beide können sich zeitlich überschneiden (ein Fang kurz vor Rundenende), und ein geteiltes
+        Element hieße, dass eine Meldung die andere still auffrisst. Liegt ÜBER der Vollbild-Karte
+        (z-index), damit Rolle und frischer Grundriss zusammen lesbar sind.
+      -->
+      <div id="rollen-banner" aria-hidden="true">
+        <div id="rollen-banner-headline"></div>
+        <div id="rollen-banner-detail"></div>
       </div>
       <div id="catch-finisher-banner" aria-hidden="true">
         <div id="catch-finisher-headline"></div>
@@ -5386,11 +5917,65 @@
         </div>
         <div id="schmied-panel__hint"></div>
       </div>
+      <!--
+        ZWISCHENRUNDEN-SHOP (Felix-Auftrag 2026-09-12). Ein Vollbild-Overlay statt eines weiteren
+        kleinen Panels: der Shop ist der einzige Moment, in dem die Welt NICHT läuft — er darf den
+        Bildschirm ganz haben, und er braucht ihn auch (drei Reiter, Slots, Countdown, Fertig-Knopf).
+
+        Der Kachel-Bereich ist das einzige Stück, das zur Laufzeit gebaut wird; alles andere steht
+        hier fest. Das ist dieselbe Arbeitsteilung wie beim Händler-Panel (feste Element-Hülle,
+        wechselnder Inhalt) — nur dass die Zahl der Kacheln je Reiter wechselt und ein fester Pool
+        deshalb nicht reichen würde.
+      -->
+      <div id="shop-overlay" aria-hidden="true">
+        <div id="shop-card" role="dialog" aria-modal="true" aria-label="Between-round shop">
+          <div id="shop-head">
+            <div id="shop-titel">SHOP</div>
+            <div id="shop-kristalle"><span aria-hidden="true">💎</span><span id="shop-kristalle-wert">0</span></div>
+            <div id="shop-timer">15s</div>
+          </div>
+
+          <!-- Runen-Slots: immer sichtbar, in JEDEM Reiter (Felix: „Bei den Perks muss klar sein,
+               welche man equipped hat"). Sie stehen oben, nicht im Runen-Reiter, damit man beim
+               Kaufen einer Rune sofort sieht, wohin sie wandert. -->
+          <div id="shop-slots" aria-label="Equipped runes">
+            <div class="shop-slot" data-slot="0"><span class="shop-slot__icon">◇</span><span class="shop-slot__name">Empty slot</span></div>
+            <div class="shop-slot" data-slot="1"><span class="shop-slot__icon">◇</span><span class="shop-slot__name">Empty slot</span></div>
+          </div>
+
+          <div id="shop-tabs" role="tablist">
+            <button type="button" class="shop-tab is-active" data-tab="spells" role="tab">Spells</button>
+            <button type="button" class="shop-tab" data-tab="items" role="tab">Potions</button>
+            <button type="button" class="shop-tab" data-tab="runes" role="tab">Runes</button>
+          </div>
+
+          <div id="shop-grid"></div>
+
+          <!-- Tooltip (Long-Press). EIN Element für alle Kacheln — es ist immer nur eines offen,
+               und ein Pool je Kachel wäre Dreck im DOM. -->
+          <div id="shop-tooltip" aria-hidden="true">
+            <div id="shop-tooltip-titel"></div>
+            <div id="shop-tooltip-text"></div>
+          </div>
+
+          <div id="shop-foot">
+            <div id="shop-bereit">0 / 0 ready</div>
+            <button type="button" id="shop-fertig">I'm ready</button>
+          </div>
+        </div>
+      </div>
       <div id="match-result"></div>
       <div id="sound-compass"></div>
       <div id="reveal-markers"></div>
       <div id="alarm-arrow"></div>
       <div id="chase-vignette"></div>
+      <!--
+        Fang-Bereitschaft (Felix-Auftrag 2026-09-12: „lasse auch den Bildschirm aufblinken, damit
+        klar ist, dass jetzt gefangen werden kann"). EIN Element, zwei Rollen: `is-flash` spielt
+        den einmaligen Blitz der Flanke, `is-ready` hält den ruhigen Randpuls, solange der Fang
+        möglich bleibt. Begründung der Aufteilung in `MatchScene.updateFangBereitSignal()`.
+      -->
+      <div id="catch-ready-overlay" aria-hidden="true"></div>
       <div id="joystick-base"></div>
       <div id="joystick-knob"></div>
       <div id="audio-unlock-hint">Tippen für Ton</div>
@@ -5725,6 +6310,25 @@
                 stroke-linejoin="round"
               />
               <path d="M12 4 14.2 8.4 12 11.2 9.8 8.4Z" fill="currentColor" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round" />
+            </symbol>
+            <!--
+              Interaktionsknopf: FANGEN (Felix-Auftrag 2026-09-12, Stufe 2 von
+              `fangBestaetigungAktiv`) — ein Greif-Ring: vier Klammern, die auf eine Mitte
+              zulaufen. Bewusst kein Handsymbol: die Hand ist im Knopfsatz bereits der
+              „nichts zu tun"-Zustand, und zwei Hände nebeneinander wären im schnellsten Moment des
+              Spiels die schlechteste mögliche Unterscheidung. Die Klammern sind derselbe
+              Bildgedanke wie der Fangkreis in der Welt.
+            -->
+            <symbol id="wr-i-interact-catch" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="3.2" fill="currentColor" stroke="none" />
+              <path
+                d="M4 8V4.6h3.4M20 8V4.6h-3.4M4 16v3.4h3.4M20 16v3.4h-3.4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </symbol>
             <!-- Generischer Leerplatz-Umriss (leerer Slot). -->
           </defs>
