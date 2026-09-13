@@ -926,6 +926,24 @@
           0 0 26px rgba(255, 215, 94, 0.5);
       }
 
+      #rollen-banner-karte {
+        display: none;
+        margin-top: 0.35rem;
+        padding: 0.25rem 0.7rem;
+        border-radius: 0.4rem;
+        border: 1px solid var(--theme-color-gold);
+        background: rgba(212, 175, 55, 0.16);
+        color: var(--theme-color-text-title);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 0.82em;
+      }
+
+      #rollen-banner-karte.visible {
+        display: inline-block;
+      }
+
       #rollen-banner-detail {
         margin-top: 0.35em;
         color: var(--theme-color-text-body);
@@ -2115,6 +2133,12 @@
         gap: 0.6rem;
         width: min(100%, 34rem);
         max-height: 100%;
+        /* **`border-box`, sonst ist `max-height: 100%` eine Lüge** (Felix-Befund 2026-09-13: „Der
+           ready Knopf sehe ich auch nicht mehr"). Bei `content-box` gilt die Grenze nur für den
+           INHALT — Innenabstand und Rahmen kommen obendrauf, und die Karte wurde damit um genau
+           diese 14 px höher als das Fenster. Gemessen bei 375 × 560: Karte 575 px hoch, oben und
+           unten abgeschnitten, und als Unterstes traf es den Fertig-Knopf. */
+        box-sizing: border-box;
         padding: 0.9rem;
         border-radius: 0.9rem;
         border: 1px solid var(--theme-color-brass);
@@ -2122,6 +2146,14 @@
         box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.6);
         color: var(--theme-color-text-body);
         font: var(--hud-font-size) / 1.4 var(--theme-font-body);
+      }
+
+      /* Alles über der Kachelliste hat feste Höhe: schrumpfen soll ausschliesslich die Liste. */
+      #shop-head,
+      #shop-inventar,
+      #shop-runen,
+      #shop-tabs {
+        flex: 0 0 auto;
       }
 
       #shop-head {
@@ -2304,14 +2336,66 @@
       }
 
       /* ── Kachelraster ─────────────────────────────────────────────────────────────────────── */
+      #shop-faehigkeiten {
+        display: none;
+        margin-bottom: 0.3rem;
+        color: var(--theme-color-accent-soft, #9ad39a);
+        font-size: 0.8em;
+      }
+
+      #shop-faehigkeiten.visible {
+        display: block;
+      }
+
+      .shop-kachel__kopf {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        min-width: 0;
+      }
+
+      .shop-kachel__icon {
+        width: 1.6rem;
+        height: 1.6rem;
+        flex: 0 0 auto;
+        object-fit: contain;
+        /* Pixel-Derivate: hart skalieren, nie weichzeichnen (Kanon Pixeldichte). */
+        image-rendering: pixelated;
+      }
+
+      .shop-kachel__icon--emoji {
+        display: grid;
+        place-items: center;
+        font-size: 1.15rem;
+        line-height: 1;
+      }
+
+      .shop-inv__icon {
+        width: 1.4rem;
+        height: 1.4rem;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
+
       #shop-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+        /* Zeilen wachsen mit dem längsten Namen der Reihe („Mirror Image" bricht auf zwei Zeilen
+           um). Ohne das stand die Zeilenhöhe auf der `min-height` der Kachel fest und der
+           Aktionsbalken der höheren Kachel wurde unten angeschnitten. */
+        grid-auto-rows: minmax(7.5rem, auto);
         gap: 0.5rem;
         overflow-y: auto;
         /* Scrollen NUR hier, nicht auf der Karte — sonst wandert der Fertig-Knopf aus dem Bild. */
-        flex: 1;
-        min-height: 6rem;
+        flex: 1 1 auto;
+        /* `min-height: 0` ist der eigentliche Riegel (Felix-Befund 2026-09-13: „Der ready Knopf
+           sehe ich auch nicht mehr"). Ein Flex-Kind bekommt implizit `min-height: auto` und
+           schrumpft dann NICHT unter seinen Inhalt — die Kachelliste drückte damit alles unter
+           sich aus der Karte, und als Unterstes traf es den Fertig-Knopf. Vorher stand hier sogar
+           `6rem` als ausdrückliche Untergrenze. Gemessen bei 375 × 560: Karte 574 px hoch in einem
+           560-px-Fenster. Mit `0` schrumpft stattdessen die scrollbare Liste, die dafür da ist. */
+        min-height: 0;
         padding-right: 0.15rem;
       }
 
@@ -2320,8 +2404,12 @@
         display: flex;
         flex-direction: column;
         gap: 0.15rem;
-        min-height: 6rem;
-        padding: 0.55rem 0.6rem 2.3rem;
+        /* Platz für einen ZWEIZEILIGEN Namen („Mirror Image" bei 8,5 rem Spaltenbreite). Vorher
+           6 rem: die Kachel blieb auf ihrer Mindesthöhe stehen, und der Aktionsbalken stand unten
+           heraus. Alle Kacheln gleich hoch ist hier mehr wert als ein paar Pixel Ersparnis — ein
+           Raster, in dem jede Karte anders hoch ist, liest sich unruhig. */
+        min-height: 7.5rem;
+        padding: 0.55rem 0.6rem;
         border-radius: 0.6rem;
         border: 1px solid rgba(176, 141, 87, 0.4);
         background: linear-gradient(180deg, rgba(52, 46, 38, 0.9), rgba(26, 23, 20, 0.9));
@@ -2342,6 +2430,7 @@
       .shop-kachel__kurz {
         font-size: 0.8em;
         opacity: 0.7;
+        margin-bottom: 0.35rem;
       }
 
       /*
@@ -2353,10 +2442,16 @@
        * und der Balken ist seine Beschriftung.
        */
       .shop-kachel__aktion {
-        position: absolute;
-        left: 0.4rem;
-        right: 0.4rem;
-        bottom: 0.4rem;
+        /* **Im Fluss, nicht absolut** (2026-09-13): Der Balken lag über dem Text und überdeckte
+           bei einem zweizeiligen Namen („Mirror Image") die Kurzbeschreibung darunter. Das feste
+           `padding-bottom` der Kachel war der Versuch, ihm Platz freizuhalten — ein Maß, das nur
+           bei einzeiligen Namen stimmt. `margin-top: auto` schiebt ihn stattdessen ans untere
+           Ende, egal wie hoch der Text darüber ausfällt. */
+        margin-top: auto;
+        /* Nie stauchen. Als Flex-Kind schrumpfte der Balken sonst auf die Resthöhe zusammen — bei
+           einem zweizeiligen Namen gemessen auf 10 px, Text unlesbar im Strich. Dieselbe Lehre
+           wie beim Fertig-Knopf: was bedient werden soll, ist nie die Stelle, die nachgibt. */
+        flex: 0 0 auto;
         padding: 0.25rem 0.4rem;
         border-radius: 0.35rem;
         background: rgba(0, 0, 0, 0.45);
@@ -2452,6 +2547,8 @@
         display: flex;
         align-items: center;
         gap: 0.6rem;
+        /* Der Fertig-Knopf ist die einzige Pflicht-Bedienung des Fensters — er schrumpft nie mit. */
+        flex: 0 0 auto;
       }
 
       #shop-bereit {
@@ -3618,6 +3715,26 @@
         ohne sie misst `getBoundingClientRect()` in einem Flex-Kind die falsche Höhe (dieselbe
         Falle, die `resizeShrineRuneCanvas()` in `scenes/MatchScene.ts` dokumentiert).
       */
+      /* Überschrift NUR während der Kartenwechsel-Vorschau — beim selbst geöffneten Kartenblick
+         wäre sie überflüssig, dort weiß man ja, warum man hinschaut. */
+      #karte-vollbild-titel {
+        display: none;
+        margin-bottom: 0.5rem;
+        padding: 0.35rem 0.9rem;
+        border-radius: 0.45rem;
+        border: 1px solid var(--theme-color-gold);
+        background: rgba(212, 175, 55, 0.18);
+        color: var(--theme-color-text-title);
+        font: 700 0.95rem/1.3 var(--theme-font-title, var(--theme-font-body));
+        letter-spacing: 0.05em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      #karte-vollbild.zeigt-vorschau #karte-vollbild-titel {
+        display: block;
+      }
+
       #karte-vollbild-flaeche {
         flex: 1 1 auto;
         min-height: 0;
@@ -5774,7 +5891,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-By3PHz6X.js"></script>
+    <script type="module" crossorigin src="./assets/index-DfxRcCo4.js"></script>
   </head>
   <body>
     <div id="game-container">
@@ -5824,6 +5941,7 @@
       <div id="rollen-banner" aria-hidden="true">
         <div id="rollen-banner-headline"></div>
         <div id="rollen-banner-detail"></div>
+        <div id="rollen-banner-karte"></div>
       </div>
       <div id="catch-finisher-banner" aria-hidden="true">
         <div id="catch-finisher-headline"></div>
@@ -6050,6 +6168,7 @@
           -->
           <div id="shop-runen">
             <div class="shop-abschnitt__titel">Runes — <span id="shop-runen-zaehler">0 / 2</span> equipped</div>
+            <div id="shop-faehigkeiten" aria-live="polite"></div>
             <div id="shop-slots" aria-label="Equipped runes">
               <button type="button" class="shop-slot" data-slot="0">
                 <span class="shop-slot__icon">◇</span>
@@ -6631,6 +6750,7 @@
         Overlay schließt, und er ist ein Kind davon. Ein Ziel, ein Weg.
       -->
       <div id="karte-vollbild" aria-hidden="true">
+        <div id="karte-vollbild-titel" aria-live="polite"></div>
         <div id="karte-vollbild-flaeche">
           <canvas id="karte-vollbild-canvas"></canvas>
         </div>
