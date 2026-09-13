@@ -2148,6 +2148,129 @@
         font: var(--hud-font-size) / 1.4 var(--theme-font-body);
       }
 
+      /**
+       * **Querformat auf dem Handy: zweispaltig statt untereinander** (Felix-Befund 2026-09-13:
+       * „im Querformat ist der Ready Knopf nicht sichtbar … da hat man das Spiel ja hauptsächlich
+       * im Querformat gespielt mobile").
+       *
+       * Gemessen bei 812 × 375: Kopf 32 + Inventar 83 + Runen 96 + Reiter 48 + Fuß 48 plus
+       * Abstände und Innenabstand ergeben rund 394 px in einem 375-px-Fenster. Die einspaltige
+       * Anordnung passt dort schlicht nicht — das Kachel-Grid war auf Höhe **0** zusammengedrückt
+       * (man sah also gar keine Ware mehr), und der Fertig-Knopf endete 4 px UNTER dem Rand.
+       *
+       * `min-height: 0` am Grid und `flex: 0 0 auto` am Fuß waren richtig und reichen hier nicht:
+       * Wenn die festen Blöcke allein schon höher sind als das Fenster, hilft kein Verteilen mehr,
+       * sondern nur eine andere Anordnung. Im Querformat ist die BREITE im Überfluss da (812 px) —
+       * also wandern Inventar und Runen in eine linke Spalte, Reiter und Kacheln in eine rechte.
+       * Kopf und Fuß laufen über beide. Die Umschaltung hängt an der HÖHE, nicht an einer
+       * Orientierungs-Abfrage: entscheidend ist, dass es vertikal eng wird — ein niedriges
+       * Desktop-Fenster hat dasselbe Problem und profitiert genauso.
+       *
+       * **`min-width: 560px` ist der Riegel dagegen, das Problem nur zu verschieben.** Ein
+       * Fenster, das schmal UND niedrig ist (etwa 375 × 500 — kleines Handy hochkant mit
+       * eingeblendeter Browserleiste), hätte sonst zwei Spalten auf 375 px Breite bekommen: je
+       * 180 px für Runen-Slots und Kacheln, beides unlesbar. Zweispaltig lohnt nur, wo die Breite
+       * tatsächlich im Überfluss da ist. Darunter bleibt es einspaltig und scrollt — unschön,
+       * aber bedienbar.
+       */
+      @media (max-height: 520px) and (min-width: 560px) {
+        #shop-card {
+          /* Im Hochformat deckelt `34rem` die Zeilenlänge — das ist dort richtig. Quer ist die
+             Breite aber die Ressource, die übrig ist: mit dem alten Deckel blieb die rechte
+             Spalte 269 px schmal und zeigte EINE Kachel pro Zeile, während links und rechts der
+             Karte je 130 px leer standen. */
+          width: min(100%, 52rem);
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+          grid-template-rows: auto minmax(0, 1fr) auto;
+          column-gap: 0.7rem;
+          row-gap: 0.4rem;
+        }
+
+        #shop-head {
+          grid-column: 1 / -1;
+          grid-row: 1;
+        }
+
+        /* Linke Spalte: was man BESITZT — Inventar-Vorschau über den Runen-Slots. */
+        #shop-inventar {
+          grid-column: 1;
+          grid-row: 2;
+          align-self: start;
+        }
+
+        #shop-runen {
+          grid-column: 1;
+          grid-row: 2;
+          align-self: end;
+          margin-bottom: 0;
+        }
+
+        /* Rechte Spalte: was man KAUFEN kann — Reiter über der scrollbaren Kachelliste. */
+        #shop-tabs {
+          grid-column: 2;
+          grid-row: 2;
+          align-self: start;
+        }
+
+        #shop-grid {
+          grid-column: 2;
+          grid-row: 2;
+          /* Unter den Reitern beginnen (sie liegen in derselben Zelle, oben verankert). */
+          margin-top: 3.4rem;
+          min-height: 0;
+        }
+
+        #shop-foot {
+          grid-column: 1 / -1;
+          grid-row: 3;
+        }
+
+        /* Der Tooltip überlagert im Querformat, statt eine eigene Zeile zu verlangen — für die
+           ist kein Platz, und er ist ohnehin transient. */
+        #shop-tooltip.visible {
+          position: absolute;
+          left: 1rem;
+          right: 1rem;
+          bottom: 4rem;
+          z-index: 1;
+        }
+
+        #shop-card {
+          position: relative;
+        }
+
+        /* Kompakter: im Querformat zählt jede Zeile. */
+        #shop-inventar-slots {
+          gap: 0.3rem;
+        }
+
+        .shop-inv {
+          min-height: 2.6rem;
+          font-size: 0.78em;
+        }
+
+        .shop-slot {
+          padding: 0.35rem 0.5rem;
+        }
+
+        /* Flachere Kacheln: bei 181 px Listenhöhe zeigten 7,5-rem-Kacheln nur anderthalb Zeilen.
+           Der Name bleibt zweizeilig umbrechbar, der Aktionsbalken behält seine volle Höhe
+           (`flex: 0 0 auto`) — gekürzt wird der Leerraum dazwischen. */
+        .shop-kachel {
+          min-height: 5.4rem;
+          padding: 0.4rem 0.5rem;
+        }
+
+        #shop-grid {
+          grid-auto-rows: minmax(5.4rem, auto);
+        }
+
+        .shop-kachel__kurz {
+          margin-bottom: 0.25rem;
+        }
+      }
+
       /* Alles über der Kachelliste hat feste Höhe: schrumpfen soll ausschliesslich die Liste. */
       #shop-head,
       #shop-inventar,
@@ -5891,7 +6014,7 @@
         background: rgba(160, 40, 40, 0.55);
       }
     </style>
-    <script type="module" crossorigin src="./assets/index-8E6Qtihj.js"></script>
+    <script type="module" crossorigin src="./assets/index-DBB0203y.js"></script>
   </head>
   <body>
     <div id="game-container">
